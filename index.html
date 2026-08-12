@@ -178,6 +178,12 @@
   .card.kata:hover { box-shadow: 0 26px 60px rgba(110, 80, 20, 0.5); }
   .card.kata h2 { color: #fff2dd; letter-spacing: 0.16em; }
   .card.kata .en, .card.kata .go { color: #ffbf4d; }
+  /* bingo (フィールドビンゴ) theming */
+  .card.bingo .tag { background: rgba(233, 181, 63, 0.16); color: #f4d489; border: 1px solid rgba(233,181,63,0.32); }
+  .card.bingo:hover { box-shadow: 0 26px 60px rgba(120, 95, 30, 0.45); }
+  .card.bingo h2 { color: #fff5e0; letter-spacing: 0.10em; }
+  .card.bingo .en, .card.bingo .go { color: #e9b53f; }
+  .card.bingo .desc b { color: #f4d489; font-weight: 700; }
   /* kare (枯山水) theming */
   .card.kare .tag { background: rgba(216, 178, 106, 0.14); color: #e7cfa0; border: 1px solid rgba(216,178,106,0.30); }
   .card.kare:hover { box-shadow: 0 26px 60px rgba(96, 78, 44, 0.5); }
@@ -202,8 +208,8 @@
 <div class="wrap">
   <header>
     <div class="eyebrow">INTERACTIVE WORLDS</div>
-    <h1>12の、小さな世界。</h1>
-    <p>ブラウザだけで動く、12の体験。<br>宇宙のいちばん大きなものから、深海、大地、形と空(くう)のあわい、小さないきもの、こどものまなび、草原を這うへび、チャートに潜むかたち、そして 光が砂に落ちる庭まで。</p>
+    <h1>13の、小さな世界。</h1>
+    <p>ブラウザだけで動く、13の体験。<br>宇宙のいちばん大きなものから、深海、大地、形と空(くう)のあわい、小さないきもの、こどものまなび、草原を這うへび、チャートに潜むかたち、光が砂に落ちる庭、そして 画面をとじて外に出る 5×5 のビンゴまで。</p>
   </header>
 
   <div class="cards">
@@ -350,10 +356,22 @@
         <div class="go"><span>点数を数える</span><span class="arrow">→</span></div>
       </div>
     </a>
+
+    <a class="card bingo" href="bingo.html">
+      <div class="art"><canvas id="art-bingo"></canvas></div>
+      <div class="body">
+        <span class="tag">OUTDOOR · こども</span>
+        <h2>フィールドビンゴ</h2>
+        <div class="en">FIELD BINGO ― そとで さがす 5×5</div>
+        <div class="desc">たんぽぽ、だんごむし、ひこうきぐも。5×5のマスに並んだお題を外で探して○をつける、散歩とビンゴ。マスは5つのテーマから自動生成され、できた盤面は<b>6文字のコード</b>になる。口頭で伝えられる短さなので、聞いた人は同じ24マスで一緒に遊べる。65種のお題はすべて手描き水彩ふうのイラスト。</div>
+        <div class="feat"><span>🌸 5テーマ・65のお題</span><span>🔤 6文字コードで共有</span><span>🖨 そのまま印刷</span><span>📱 スマホ前提</span></div>
+        <div class="go"><span>そとに でる</span><span class="arrow">→</span></div>
+      </div>
+    </a>
   </div>
 
   <footer>
-    Canvas / WebGL &amp; Web Audio でつくった、依存ライブラリなしの12作品。<br>
+    Canvas / WebGL &amp; Web Audio でつくった、依存ライブラリなしの13作品。<br>
     <a href="https://github.com/tishiyama1/challenge" target="_blank" rel="noopener">GitHub でソースを見る</a>
     <div class="hint">カードをクリックで起動 ・ どれもフルスクリーン推奨</div>
   </footer>
@@ -483,6 +501,12 @@
       snGold = Math.random() < 0.3;
     } else snBody.pop();
   }
+
+  // bingo preview: 5×5の紙のカードに、お題が一つずつ○で囲まれ、そろった列に線が引かれる
+  const BI = setup("art-bingo");
+  const biOrder = [12, 7, 17, 2, 22, 9, 3, 15, 21, 6, 18, 1];   // 中央(フリー)→縦の一列→おまけ
+  let biN = 1, biT = 0, biLine = 0;
+  const biMotif = i => (i * 7 + Math.floor(i / 5) * 3) % 5;
 
   // kata preview: candlesticks forming a head & shoulders top with a neckline
   const KA = setup("art-kata");
@@ -917,6 +941,80 @@
       const vg = c.createRadialGradient(w / 2, h / 2, h * 0.2, w / 2, h / 2, h * 0.95);
       vg.addColorStop(0, "rgba(0,0,0,0)"); vg.addColorStop(1, "rgba(6,4,10,0.5)");
       c.fillStyle = vg; c.fillRect(0, 0, w, h);
+    }
+
+    // ---- bingo card: 紙の5×5、○が増えて 一列そろうと 線が引かれる ----
+    {
+      const { c, w, h } = BI;
+      const paper = c.createLinearGradient(0, 0, 0, h);
+      paper.addColorStop(0, "#fbf5e7"); paper.addColorStop(1, "#f2e6ce");
+      c.fillStyle = paper; c.fillRect(0, 0, w, h);
+
+      biT += 0.016;
+      if (biT > 0.62 && biN < biOrder.length) { biT = 0; biN++; }
+      const marked = new Set(biOrder.slice(0, biN));
+      const colDone = [2, 7, 12, 17, 22].every(i => marked.has(i));
+      if (colDone) biLine = Math.min(1, biLine + 0.03);
+      if (biLine >= 1 && biT > 1.8) { biN = 1; biLine = 0; biT = 0; }
+
+      const pad = Math.min(w, h) * 0.06, gap = 3;
+      const size = Math.min(w - pad * 2, h - pad * 2);
+      const ox = (w - size) / 2, oy = (h - size) / 2, cs = (size - gap * 4) / 5;
+      const cx0 = i => ox + (i % 5) * (cs + gap), cy0 = i => oy + Math.floor(i / 5) * (cs + gap);
+
+      for (let i = 0; i < 25; i++) {
+        const x = cx0(i), y = cy0(i), on = marked.has(i);
+        c.fillStyle = i === 12 ? "#fff3d2" : (on ? "#fff9e6" : "#fffdf6");
+        roundRectP(c, x, y, cs, cs, 3.5); c.fill();
+        c.strokeStyle = on ? "rgba(223,97,84,0.42)" : "rgba(111,91,73,0.20)";
+        c.lineWidth = 1.1; c.stroke();
+
+        // お題(かんたんな絵)
+        const mx = x + cs / 2, my = y + cs * 0.47, r = cs * 0.19;
+        c.save(); c.globalAlpha = on ? 0.5 : 0.95;
+        const k = biMotif(i);
+        if (i === 12) {                                   // フリー = ほし
+          c.fillStyle = "#f7d743"; c.beginPath();
+          for (let s = 0; s < 10; s++) {
+            const a = -Math.PI / 2 + s * Math.PI / 5, rr = s % 2 ? r * 0.45 : r * 1.05;
+            c[s ? "lineTo" : "moveTo"](mx + Math.cos(a) * rr, my + Math.sin(a) * rr);
+          }
+          c.closePath(); c.fill();
+        } else if (k === 0) {                             // はな
+          c.fillStyle = "#f7d743";
+          for (let s = 0; s < 6; s++) { const a = s * TAU / 6; c.beginPath(); c.arc(mx + Math.cos(a) * r * 0.62, my + Math.sin(a) * r * 0.62, r * 0.42, 0, TAU); c.fill(); }
+          c.fillStyle = "#e9b53f"; c.beginPath(); c.arc(mx, my, r * 0.42, 0, TAU); c.fill();
+        } else if (k === 1) {                             // はっぱ
+          c.fillStyle = "#84c256"; c.beginPath();
+          c.moveTo(mx - r, my + r * 0.5); c.quadraticCurveTo(mx, my - r * 1.3, mx + r, my - r * 0.2);
+          c.quadraticCurveTo(mx * 0 + mx, my + r * 1.1, mx - r, my + r * 0.5); c.fill();
+        } else if (k === 2) {                             // むし
+          c.fillStyle = "#e2685c"; c.beginPath(); c.ellipse(mx, my, r * 0.85, r, 0, 0, TAU); c.fill();
+          c.fillStyle = "#5c5148"; c.beginPath(); c.arc(mx, my - r * 0.8, r * 0.4, 0, TAU); c.fill();
+        } else if (k === 3) {                             // き
+          c.fillStyle = "#b3803f"; c.fillRect(mx - r * 0.16, my, r * 0.32, r);
+          c.fillStyle = "#6fae4e"; c.beginPath(); c.arc(mx, my - r * 0.2, r * 0.85, 0, TAU); c.fill();
+        } else {                                          // いし
+          c.fillStyle = "#cfc6bd"; c.beginPath(); c.ellipse(mx, my + r * 0.2, r, r * 0.72, 0, 0, TAU); c.fill();
+        }
+        c.restore();
+
+        // なまえの かわりの 罫線
+        c.fillStyle = "rgba(139,118,96,0.45)";
+        c.fillRect(x + cs * 0.22, y + cs * 0.82, cs * 0.56, 1.6);
+
+        if (on) {                                        // 手描きふうの ○
+          c.strokeStyle = "rgba(223,97,84,0.85)"; c.lineWidth = Math.max(1.4, cs * 0.075);
+          c.beginPath(); c.ellipse(mx, my + cs * 0.02, cs * 0.34, cs * 0.32, 0.12, 0, TAU); c.stroke();
+        }
+      }
+      if (biLine > 0) {                                  // そろった列に線
+        const x = cx0(2) + cs / 2;
+        c.strokeStyle = `rgba(233,181,63,${0.9 * biLine})`; c.lineWidth = 2.4; c.lineCap = "round";
+        c.beginPath(); c.moveTo(x, cy0(2) + cs / 2);
+        c.quadraticCurveTo(x + 4, h / 2, x, cy0(22) + cs / 2);
+        c.stroke();
+      }
     }
 
     // ---- kata card: candlesticks tracing a head & shoulders, drawn progressively ----
