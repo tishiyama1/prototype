@@ -1,0 +1,797 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>café まるみ ｜ デザイン見本 A ナチュラル</title>
+<meta name="description" content="Webサイトデザイン見本 A ― ナチュラル・温かみのある個人店向けデザイン(架空のカフェ)">
+<style>
+* { margin:0; padding:0; box-sizing:border-box; }
+:root{
+  --cream:#FBF6EC; --paper:#FFFDF8; --ink:#3E3227; --ink-dim:#7A6A57;
+  --terra:#C4673F; --olive:#7C8B5B; --line:#E3D8C6;
+  --serif:"Hiragino Mincho ProN","Yu Mincho",YuMincho,"Noto Serif JP",serif;
+  --sans:"Hiragino Maru Gothic ProN","Hiragino Kaku Gothic ProN","Yu Gothic",system-ui,sans-serif;
+}
+html{ scroll-behavior:smooth; }
+body{ font-family:var(--sans); color:var(--ink); background:var(--cream); line-height:1.9; overflow-x:hidden; }
+img,svg{ display:block; max-width:100%; }
+a{ color:inherit; }
+
+/* ===== デモ共通パーツ(カタログ全ページ共通) ===== */
+.demo-bar{ position:fixed; inset:0 0 auto 0; z-index:900; display:flex; gap:12px; align-items:center; flex-wrap:wrap;
+  padding:8px 14px; background:#1B1714; color:#EFE7DA; font-size:12.5px; font-family:var(--sans); }
+.demo-bar a.demo-back{ text-decoration:none; background:rgba(255,255,255,.12); padding:5px 12px; border-radius:999px; white-space:nowrap; }
+.demo-bar a.demo-back:hover{ background:rgba(255,255,255,.22); }
+.demo-note{ opacity:.8; }
+.demo-note b{ color:#E9C78F; }
+.demo-toggle{ margin-left:auto; font:inherit; cursor:pointer; color:#1B1714; background:#E9C78F; border:0; padding:6px 14px; border-radius:999px; white-space:nowrap; }
+.demo-toggle[aria-pressed="true"]{ background:#7EC8A9; }
+body{ padding-top:42px; }
+html.embedded body{ padding-top:0; }
+html.embedded .demo-bar{ display:none; }
+@media(max-width:600px){ .demo-note{ display:none; } }
+
+.hint-badge{ display:none; }
+body.hints .hint-badge{ display:inline-flex; align-items:center; gap:5px; position:absolute; z-index:60; top:-13px; left:10px;
+  background:#166B4F; color:#fff; font-size:11px; line-height:1.5; letter-spacing:.02em; padding:3px 10px; border-radius:999px;
+  font-family:var(--sans); box-shadow:0 4px 14px rgba(0,0,0,.22); max-width:calc(100% - 20px); }
+body.hints .has-hint{ position:relative; outline:2px dashed #166B4F; outline-offset:6px; border-radius:6px; }
+
+.toast{ position:fixed; left:50%; bottom:26px; transform:translate(-50%,26px); z-index:950; opacity:0; pointer-events:none;
+  background:#1B1714; color:#F5EEE2; padding:14px 20px; border-radius:14px; max-width:min(92vw,420px);
+  box-shadow:0 18px 44px rgba(0,0,0,.3); transition:opacity .3s, transform .3s; font-size:13.5px; line-height:1.7; }
+.toast.on{ opacity:1; transform:translate(-50%,0); }
+.toast b{ display:block; color:#E9C78F; margin-bottom:2px; }
+.toast small{ display:block; margin-top:6px; opacity:.7; font-size:11.5px; }
+.spin{ display:inline-block; width:13px; height:13px; border:2px solid rgba(255,255,255,.3); border-top-color:#E9C78F;
+  border-radius:50%; animation:sp .7s linear infinite; vertical-align:-2px; margin-right:6px; }
+@keyframes sp{ to{ transform:rotate(360deg); } }
+
+/* ===== 写真プレースホルダ ===== */
+.ph{ position:relative; overflow:hidden; background:#E8DCC8; }
+.ph::after{ content:attr(data-label); position:absolute; right:10px; bottom:8px; font-size:10px; letter-spacing:.18em;
+  color:rgba(62,50,39,.45); }
+.ph-a{ background:
+  radial-gradient(120% 90% at 20% 15%, #F0DEC0 0%, transparent 55%),
+  radial-gradient(100% 80% at 85% 80%, #C9A882 0%, transparent 60%),
+  linear-gradient(150deg,#D9BF9B,#A78968); }
+.ph-b{ background:
+  radial-gradient(90% 70% at 75% 20%, #EFE3CB 0%, transparent 60%),
+  linear-gradient(200deg,#B9C29A,#7C8B5B); }
+.ph-c{ background:
+  radial-gradient(80% 80% at 30% 70%, #E6A981 0%, transparent 60%),
+  linear-gradient(160deg,#D98B5F,#8C4A2C); }
+.ph-d{ background:
+  radial-gradient(70% 70% at 60% 30%, #FFF6E6 0%, transparent 60%),
+  linear-gradient(30deg,#E4D3B6,#BFA57E); }
+
+/* ===== ヘッダー ===== */
+header.site{ position:sticky; top:42px; z-index:400; border-bottom:1px solid var(--line); }
+/* すりガラスは擬似要素へ。header 自身に backdrop-filter を置くと、
+   中の position:fixed（モバイルメニュー）の基準がヘッダーになってしまうため。 */
+header.site::before{ content:""; position:absolute; inset:0; z-index:-1;
+  background:rgba(251,246,236,.88); backdrop-filter:blur(10px); -webkit-backdrop-filter:blur(10px); }
+html.embedded header.site{ top:0; }
+.hd{ max-width:1120px; margin:0 auto; padding:14px 22px; display:flex; align-items:center; gap:20px; }
+.logo{ font-family:var(--serif); font-size:20px; letter-spacing:.14em; text-decoration:none; }
+.logo span{ color:var(--terra); }
+nav.main{ margin-left:auto; display:flex; gap:26px; font-size:13px; letter-spacing:.08em; }
+nav.main a{ text-decoration:none; padding:4px 0; border-bottom:1px solid transparent; transition:.25s; }
+nav.main a:hover{ border-color:var(--terra); color:var(--terra); }
+.hd .btn-res{ background:var(--terra); color:#fff; text-decoration:none; font-size:13px; padding:9px 20px; border-radius:999px;
+  letter-spacing:.06em; transition:.25s; }
+.hd .btn-res:hover{ background:#A9532F; transform:translateY(-1px); }
+.burger{ display:none; margin-left:auto; background:none; border:0; font-size:22px; cursor:pointer; color:var(--ink); }
+@media(max-width:860px){
+  nav.main{ position:fixed; inset:0; background:var(--cream); flex-direction:column; justify-content:center; align-items:center;
+    gap:26px; font-size:17px; clip-path:inset(0 0 0 100%); pointer-events:none; transition:clip-path .4s cubic-bezier(.4,0,.2,1); z-index:500; margin:0; }
+  nav.main.open{ clip-path:inset(0); pointer-events:auto; }
+  .burger{ display:block; z-index:600; }
+  .hd .btn-res{ display:none; }
+}
+
+/* ===== ヒーロー ===== */
+.hero{ position:relative; min-height:min(86vh,720px); display:grid; grid-template-columns:1.05fr .95fr; align-items:center; gap:40px;
+  max-width:1180px; margin:0 auto; padding:70px 22px 80px; }
+.hero-copy .eyebrow{ font-size:11px; letter-spacing:.34em; color:var(--olive); margin-bottom:22px; }
+.hero-copy h1{ font-family:var(--serif); font-weight:400; font-size:clamp(30px,4.6vw,52px); line-height:1.55; letter-spacing:.08em; }
+.hero-copy h1 em{ font-style:normal; color:var(--terra); }
+.hero-copy p{ margin-top:26px; color:var(--ink-dim); font-size:15px; max-width:26em; }
+.hero-cta{ margin-top:34px; display:flex; gap:14px; flex-wrap:wrap; }
+.btn{ display:inline-flex; align-items:center; gap:9px; text-decoration:none; font-size:14px; letter-spacing:.06em;
+  padding:14px 28px; border-radius:999px; border:1px solid var(--terra); transition:.25s; cursor:pointer; font-family:inherit; }
+.btn.fill{ background:var(--terra); color:#fff; }
+.btn.fill:hover{ background:#A9532F; transform:translateY(-2px); box-shadow:0 12px 26px rgba(196,103,63,.28); }
+.btn.ghost{ color:var(--terra); background:transparent; }
+.btn.ghost:hover{ background:rgba(196,103,63,.08); }
+.hero-art{ position:relative; }
+.hero-art .frame{ aspect-ratio:4/5; border-radius:230px 230px 24px 24px; }
+.hero-art .badge{ position:absolute; left:-22px; bottom:36px; width:132px; height:132px; border-radius:50%; background:var(--paper);
+  border:1px solid var(--line); display:grid; place-content:center; text-align:center; font-family:var(--serif); font-size:13px;
+  line-height:1.7; letter-spacing:.1em; box-shadow:0 14px 34px rgba(62,50,39,.1); animation:float 5s ease-in-out infinite; }
+@keyframes float{ 50%{ transform:translateY(-10px); } }
+.steam{ position:absolute; right:16%; top:6%; opacity:.5; }
+.steam path{ stroke:var(--ink-dim); stroke-width:2; fill:none; stroke-linecap:round; animation:steam 4s ease-in-out infinite; }
+.steam path:nth-child(2){ animation-delay:.8s; } .steam path:nth-child(3){ animation-delay:1.6s; }
+@keyframes steam{ 0%{ opacity:0; transform:translateY(8px);} 40%{opacity:.7;} 100%{ opacity:0; transform:translateY(-14px);} }
+@media(max-width:860px){ .hero{ grid-template-columns:1fr; padding-top:44px; } .hero-art{ order:-1; max-width:420px; } }
+
+/* ===== 汎用セクション ===== */
+section{ padding:clamp(64px,9vw,110px) 22px; }
+.inner{ max-width:1120px; margin:0 auto; }
+.sec-head{ text-align:center; margin-bottom:52px; }
+.sec-head .en{ font-size:11px; letter-spacing:.36em; color:var(--olive); }
+.sec-head h2{ font-family:var(--serif); font-weight:400; font-size:clamp(23px,3.2vw,32px); letter-spacing:.14em; margin-top:12px; }
+.sec-head p{ margin-top:16px; color:var(--ink-dim); font-size:14px; }
+.reveal{ opacity:0; transform:translateY(26px); transition:opacity .8s cubic-bezier(.2,.8,.3,1), transform .8s cubic-bezier(.2,.8,.3,1); }
+.reveal.in{ opacity:1; transform:none; }
+
+/* CONCEPT */
+.concept{ background:var(--paper); }
+.concept-grid{ display:grid; grid-template-columns:repeat(3,1fr); gap:34px; }
+.concept-card{ text-align:center; }
+.concept-card .ico{ width:64px; height:64px; margin:0 auto 18px; border-radius:50%; background:rgba(124,139,91,.12);
+  display:grid; place-content:center; color:var(--olive); }
+.concept-card h3{ font-family:var(--serif); font-size:17px; letter-spacing:.1em; font-weight:400; margin-bottom:10px; }
+.concept-card p{ font-size:13.5px; color:var(--ink-dim); }
+@media(max-width:760px){ .concept-grid{ grid-template-columns:1fr; gap:40px; } }
+
+/* MENU */
+.tabs{ display:flex; justify-content:center; gap:8px; margin-bottom:44px; flex-wrap:wrap; }
+.tab{ font:inherit; font-size:13px; letter-spacing:.1em; cursor:pointer; background:transparent; border:1px solid var(--line);
+  color:var(--ink-dim); padding:9px 24px; border-radius:999px; transition:.25s; }
+.tab[aria-selected="true"]{ background:var(--ink); color:var(--cream); border-color:var(--ink); }
+.menu-list{ display:grid; grid-template-columns:1fr 1fr; gap:6px 54px; }
+.menu-item{ display:flex; align-items:baseline; gap:12px; padding:16px 4px; border-bottom:1px dashed var(--line); }
+.menu-item .nm{ font-family:var(--serif); font-size:16px; letter-spacing:.06em; }
+.menu-item .ds{ font-size:12px; color:var(--ink-dim); margin-top:3px; }
+.menu-item .dots{ flex:1; border-bottom:1px dotted var(--line); transform:translateY(-4px); }
+.menu-item .pr{ font-family:var(--serif); font-size:15px; white-space:nowrap; }
+.menu-item .tagv{ font-size:10px; color:var(--olive); border:1px solid rgba(124,139,91,.4); padding:1px 7px; border-radius:999px; margin-left:8px; }
+@media(max-width:760px){ .menu-list{ grid-template-columns:1fr; } }
+
+/* カレンダー */
+.cal-wrap{ display:grid; grid-template-columns:1fr 1fr; gap:46px; align-items:start; }
+@media(max-width:820px){ .cal-wrap{ grid-template-columns:1fr; gap:34px; } }
+.cal{ background:var(--paper); border:1px solid var(--line); border-radius:20px; padding:26px; }
+.cal-head{ display:flex; align-items:center; justify-content:space-between; margin-bottom:18px; }
+.cal-head strong{ font-family:var(--serif); font-size:18px; letter-spacing:.1em; font-weight:400; }
+.cal-nav{ background:none; border:1px solid var(--line); width:32px; height:32px; border-radius:50%; cursor:pointer; color:var(--ink); font:inherit; }
+.cal-nav:hover{ background:var(--cream); }
+.cal-grid{ display:grid; grid-template-columns:repeat(7,1fr); gap:5px; text-align:center; }
+.cal-grid .dow{ font-size:11px; color:var(--ink-dim); padding-bottom:6px; }
+.cal-grid .dow:first-child{ color:#C05A5A; } .cal-grid .dow:last-child{ color:#5A7BC0; }
+.cal-day{ aspect-ratio:1; display:grid; place-content:center; font-size:13px; border-radius:10px; position:relative; }
+.cal-day.off{ color:#C9BCA8; text-decoration:line-through; }
+.cal-day.open{ background:rgba(124,139,91,.13); color:var(--ink); }
+.cal-day.event{ background:rgba(196,103,63,.15); color:var(--terra); font-weight:700; }
+.cal-day.event::after{ content:""; position:absolute; bottom:5px; left:50%; transform:translateX(-50%);
+  width:4px; height:4px; border-radius:50%; background:var(--terra); }
+.cal-legend{ display:flex; gap:16px; flex-wrap:wrap; margin-top:18px; font-size:11.5px; color:var(--ink-dim); }
+.cal-legend i{ display:inline-block; width:11px; height:11px; border-radius:3px; margin-right:5px; vertical-align:-1px; }
+
+/* NEWS */
+.news{ background:var(--paper); }
+.news-list{ max-width:800px; margin:0 auto; }
+.news-item{ display:grid; grid-template-columns:110px 92px 1fr; gap:18px; align-items:center; padding:20px 6px;
+  border-bottom:1px solid var(--line); text-decoration:none; transition:.25s; }
+.news-item:hover{ background:var(--cream); }
+.news-item time{ font-size:12px; color:var(--ink-dim); letter-spacing:.08em; }
+.news-item .cat{ font-size:11px; text-align:center; padding:3px 0; border-radius:999px; background:rgba(124,139,91,.14); color:#5C6B3E; }
+.news-item .cat.new{ background:rgba(196,103,63,.14); color:var(--terra); }
+.news-item .ttl{ font-size:14.5px; }
+@media(max-width:640px){ .news-item{ grid-template-columns:auto auto; grid-template-areas:"t c" "n n"; gap:8px 12px; }
+  .news-item time{grid-area:t;} .news-item .cat{grid-area:c; padding:3px 12px;} .news-item .ttl{grid-area:n;} }
+
+/* ギャラリー */
+.gal{ display:grid; grid-template-columns:repeat(4,1fr); gap:10px; }
+.gal button{ border:0; padding:0; cursor:pointer; aspect-ratio:1; border-radius:12px; overflow:hidden; transition:.3s; }
+.gal button:hover{ transform:scale(1.03); filter:brightness(1.06); }
+.gal button:nth-child(1),.gal button:nth-child(6){ grid-row:span 2; aspect-ratio:auto; }
+@media(max-width:760px){ .gal{ grid-template-columns:repeat(2,1fr); } }
+.lightbox{ position:fixed; inset:0; z-index:800; background:rgba(27,23,20,.9); display:grid; place-content:center;
+  padding:24px; opacity:0; pointer-events:none; transition:.3s; }
+.lightbox.on{ opacity:1; pointer-events:auto; }
+.lightbox .frame{ width:min(84vw,620px); aspect-ratio:4/3; border-radius:14px; }
+.lightbox .cap{ color:#EFE7DA; text-align:center; margin-top:16px; font-size:13px; letter-spacing:.1em; }
+.lightbox .x{ position:absolute; top:20px; right:24px; background:none; border:0; color:#EFE7DA; font-size:30px; cursor:pointer; }
+
+/* 予約 */
+.reserve{ background:linear-gradient(180deg,var(--cream),#F2E9DA); }
+.form-card{ max-width:760px; margin:0 auto; background:var(--paper); border:1px solid var(--line); border-radius:22px;
+  padding:clamp(26px,4vw,44px); box-shadow:0 20px 50px rgba(62,50,39,.07); }
+.steps{ display:flex; gap:6px; margin-bottom:30px; }
+.step{ flex:1; text-align:center; font-size:11.5px; color:var(--ink-dim); padding-bottom:10px; border-bottom:2px solid var(--line); }
+.step.on{ color:var(--terra); border-color:var(--terra); }
+.field{ margin-bottom:22px; }
+.field label{ display:block; font-size:12.5px; letter-spacing:.08em; margin-bottom:9px; }
+.field .req{ color:var(--terra); font-size:10.5px; border:1px solid currentColor; padding:0 6px; border-radius:3px; margin-left:8px; }
+.field input,.field select,.field textarea{ width:100%; font:inherit; font-size:14px; color:var(--ink); background:var(--cream);
+  border:1px solid var(--line); border-radius:10px; padding:13px 15px; transition:.2s; }
+.field input:focus,.field select:focus,.field textarea:focus{ outline:none; border-color:var(--terra); background:#fff;
+  box-shadow:0 0 0 3px rgba(196,103,63,.12); }
+.row2{ display:grid; grid-template-columns:1fr 1fr; gap:18px; }
+@media(max-width:600px){ .row2{ grid-template-columns:1fr; gap:0; } }
+.slots{ display:grid; grid-template-columns:repeat(auto-fill,minmax(88px,1fr)); gap:8px; }
+.slot{ font:inherit; font-size:13px; padding:11px 0; border-radius:10px; border:1px solid var(--line); background:var(--cream);
+  cursor:pointer; transition:.2s; }
+.slot:hover:not(:disabled){ border-color:var(--terra); color:var(--terra); }
+.slot[aria-pressed="true"]{ background:var(--terra); color:#fff; border-color:var(--terra); }
+.slot:disabled{ color:#C9BCA8; text-decoration:line-through; cursor:not-allowed; background:#F3EDE2; }
+.slot small{ display:block; font-size:10px; opacity:.75; }
+.err{ color:#B4482F; font-size:12px; margin-top:7px; display:none; }
+.field.bad input,.field.bad select{ border-color:#B4482F; }
+.field.bad .err{ display:block; }
+.done{ text-align:center; padding:20px 0; }
+.done .mark{ width:64px; height:64px; margin:0 auto 20px; border-radius:50%; background:rgba(124,139,91,.15); color:var(--olive);
+  display:grid; place-content:center; font-size:30px; }
+.done h3{ font-family:var(--serif); font-weight:400; font-size:22px; letter-spacing:.1em; margin-bottom:12px; }
+.done p{ font-size:13.5px; color:var(--ink-dim); }
+.recap{ text-align:left; background:var(--cream); border-radius:14px; padding:20px; margin:24px 0; font-size:13.5px; }
+.recap div{ display:flex; justify-content:space-between; gap:14px; padding:6px 0; border-bottom:1px dashed var(--line); }
+.recap div:last-child{ border:0; }
+.recap span:first-child{ color:var(--ink-dim); font-size:12.5px; }
+
+/* ACCESS */
+.access-grid{ display:grid; grid-template-columns:1fr 1fr; gap:44px; align-items:center; }
+.map{ aspect-ratio:16/11; border-radius:18px; overflow:hidden; border:1px solid var(--line); background:#EDE6D8; }
+.info-table{ width:100%; font-size:13.5px; }
+.info-table th{ text-align:left; font-weight:400; color:var(--ink-dim); width:6.5em; padding:12px 0; vertical-align:top;
+  border-bottom:1px solid var(--line); font-size:12.5px; letter-spacing:.08em; }
+.info-table td{ padding:12px 0; border-bottom:1px solid var(--line); }
+@media(max-width:820px){ .access-grid{ grid-template-columns:1fr; } }
+
+/* フッター */
+footer.site{ background:var(--ink); color:#E8DFD1; padding:60px 22px 30px; }
+.ft{ max-width:1120px; margin:0 auto; display:grid; grid-template-columns:1.3fr 1fr 1fr; gap:38px; }
+.ft .logo{ color:#fff; font-size:22px; }
+.ft p{ font-size:12.5px; opacity:.65; margin-top:14px; }
+.ft h4{ font-size:11px; letter-spacing:.24em; opacity:.55; margin-bottom:14px; font-weight:400; }
+.ft ul{ list-style:none; font-size:13px; }
+.ft ul li{ margin-bottom:9px; }
+.ft a{ text-decoration:none; opacity:.85; }
+.ft a:hover{ opacity:1; color:#E9C78F; }
+.ft-btm{ max-width:1120px; margin:40px auto 0; padding-top:20px; border-top:1px solid rgba(255,255,255,.12);
+  font-size:11.5px; opacity:.5; display:flex; justify-content:space-between; gap:14px; flex-wrap:wrap; }
+@media(max-width:760px){ .ft{ grid-template-columns:1fr; gap:30px; } }
+
+/* 追従CTA(スマホ) */
+.sticky-cta{ position:fixed; left:0; right:0; bottom:0; z-index:500; display:none; gap:8px; padding:10px 12px;
+  background:rgba(251,246,236,.95); border-top:1px solid var(--line); backdrop-filter:blur(8px); }
+.sticky-cta a{ flex:1; text-align:center; text-decoration:none; font-size:13px; padding:13px 0; border-radius:999px; }
+.sticky-cta .tel{ border:1px solid var(--terra); color:var(--terra); }
+.sticky-cta .res{ background:var(--terra); color:#fff; }
+@media(max-width:860px){ .sticky-cta{ display:flex; } body{ padding-bottom:64px; } }
+</style>
+</head>
+<body>
+
+<div class="demo-bar" id="demoBar">
+  <a class="demo-back" href="index.html">← カタログへ戻る</a>
+  <span class="demo-note">デザイン見本 A ／ ナチュラル ― <b>café まるみ</b>（架空の店舗です）</span>
+  <button class="demo-toggle" id="hintBtn" aria-pressed="false">⚙ サーバーが要る機能を示す</button>
+</div>
+
+<header class="site">
+  <div class="hd">
+    <a class="logo" href="#top">café まる<span>み</span></a>
+    <button class="burger" id="burger" aria-label="メニュー">☰</button>
+    <nav class="main" id="nav">
+      <a href="#concept">コンセプト</a>
+      <a href="#menu">メニュー</a>
+      <a href="#calendar">営業カレンダー</a>
+      <a href="#news">お知らせ</a>
+      <a href="#gallery">店内の様子</a>
+      <a href="#access">アクセス</a>
+    </nav>
+    <a class="btn-res" href="#reserve">席を予約する</a>
+  </div>
+</header>
+
+<div class="hero" id="top">
+  <div class="hero-copy">
+    <div class="eyebrow">STONE-GROUND COFFEE &amp; BAKE</div>
+    <h1>まるい一日の、<br>まんなかに。<br><em>珈琲と、焼きたて。</em></h1>
+    <p>朝七時。石臼で挽いた豆の音と、オーブンの匂いで店が目を覚まします。ここは十二席だけの小さなカフェ。豆は月替わりの三種、パンは毎朝その日のぶんだけ。ゆっくりしていってください。</p>
+    <div class="hero-cta">
+      <a class="btn fill" href="#reserve">席を予約する <span>→</span></a>
+      <a class="btn ghost" href="#menu">メニューを見る</a>
+    </div>
+  </div>
+  <div class="hero-art">
+    <div class="frame ph ph-a" data-label="PHOTO"></div>
+    <svg class="steam" width="60" height="70" viewBox="0 0 60 70">
+      <path d="M14 60 C6 46,24 40,16 26 C10 16,20 10,18 4"/>
+      <path d="M32 62 C24 48,42 42,34 28 C28 18,38 12,36 6"/>
+      <path d="M50 60 C42 46,60 40,52 26"/>
+    </svg>
+    <div class="badge">毎朝 7:00<br>焼き上がり</div>
+  </div>
+</div>
+
+<section class="concept" id="concept">
+  <div class="inner">
+    <div class="sec-head reveal">
+      <div class="en">CONCEPT</div>
+      <h2>ちいさく、ていねいに。</h2>
+      <p>十二席のカフェが、毎日つづけている三つのこと。</p>
+    </div>
+    <div class="concept-grid">
+      <div class="concept-card reveal">
+        <div class="ico"><svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4"><path d="M4 8h13v6a5 5 0 0 1-5 5H9a5 5 0 0 1-5-5V8Z"/><path d="M17 9h2.2a2.3 2.3 0 0 1 0 4.6H17"/><path d="M7 4.5c.8-1 .8-1.6 0-2.5M11 4.5c.8-1 .8-1.6 0-2.5"/></svg></div>
+        <h3>その日、挽く</h3>
+        <p>豆は月替わりの三種類。注文をいただいてから一杯ぶんずつ挽いています。浅煎りは酸味、深煎りは余韻。</p>
+      </div>
+      <div class="concept-card reveal">
+        <div class="ico"><svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4"><path d="M12 21c4.5 0 8-3.2 8-7.5 0-2.6-1.4-4.6-3-6-.4 1.6-1.3 2.4-2.2 2.7.3-2.6-.7-5.6-3.8-7.2.4 3-1.2 4.3-2.6 5.6C6.6 10.2 4 12 4 15.2 4 18.6 7.5 21 12 21Z"/></svg></div>
+        <h3>朝七時に焼く</h3>
+        <p>国産小麦と自家製の酵母で、その日ぶんだけ。売り切れごめんですが、翌朝またおなじ時間に焼いています。</p>
+      </div>
+      <div class="concept-card reveal">
+        <div class="ico"><svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4"><path d="M12 21s-7-4.4-7-9.4A4 4 0 0 1 12 8a4 4 0 0 1 7 3.6C19 16.6 12 21 12 21Z"/></svg></div>
+        <h3>十二席のまま</h3>
+        <p>広げないと決めています。顔とお好みを覚えられるくらいの大きさが、いちばん気持ちよく続けられるので。</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="menu">
+  <div class="inner">
+    <div class="sec-head reveal">
+      <div class="en">MENU</div>
+      <h2>お品書き</h2>
+      <p>価格は税込です。季節によって内容が変わります。</p>
+    </div>
+    <div class="tabs reveal" role="tablist">
+      <button class="tab" role="tab" aria-selected="true" data-tab="coffee">コーヒー</button>
+      <button class="tab" role="tab" aria-selected="false" data-tab="bake">パンと焼菓子</button>
+      <button class="tab" role="tab" aria-selected="false" data-tab="food">軽食</button>
+    </div>
+    <div class="menu-list reveal" id="menuList"></div>
+  </div>
+</section>
+
+<section id="calendar" style="background:var(--paper)">
+  <div class="inner">
+    <div class="sec-head reveal">
+      <div class="en">CALENDAR</div>
+      <h2>営業カレンダー</h2>
+      <p>臨時休業やイベントの予定は、お店の管理画面からその場で更新できます。</p>
+    </div>
+    <div class="cal-wrap">
+      <div class="cal reveal has-hint" data-hint="⚙ 定休日・イベントは管理画面から更新（要サーバー）">
+        <div class="cal-head">
+          <button class="cal-nav" id="calPrev" aria-label="前の月">‹</button>
+          <strong id="calTitle">2026年 8月</strong>
+          <button class="cal-nav" id="calNext" aria-label="次の月">›</button>
+        </div>
+        <div class="cal-grid" id="calGrid"></div>
+        <div class="cal-legend">
+          <span><i style="background:rgba(124,139,91,.4)"></i>営業日</span>
+          <span><i style="background:rgba(196,103,63,.5)"></i>イベント</span>
+          <span><i style="background:#E3D8C6"></i>定休（火・水）</span>
+        </div>
+      </div>
+      <div class="reveal">
+        <h3 style="font-family:var(--serif);font-weight:400;font-size:20px;letter-spacing:.1em;margin-bottom:18px">今月のこと</h3>
+        <p style="font-size:14px;color:var(--ink-dim);margin-bottom:26px">第二土曜は焙煎所の見学会、第四日曜は近くの農家さんを招いた朝市を開いています。どちらも予約は要りません。</p>
+        <table class="info-table">
+          <tr><th>営業時間</th><td>7:00 – 18:00（L.O. 17:30）</td></tr>
+          <tr><th>定休日</th><td>毎週火曜・水曜</td></tr>
+          <tr><th>お席</th><td>12席（カウンター4／テーブル8）</td></tr>
+          <tr><th>ご予約</th><td>2名さまから承ります</td></tr>
+        </table>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="news" id="news">
+  <div class="inner">
+    <div class="sec-head reveal">
+      <div class="en">NEWS</div>
+      <h2>お知らせ</h2>
+      <p>新商品やお休みのご案内。</p>
+    </div>
+    <div class="news-list reveal has-hint" data-hint="⚙ 記事はブログ管理画面から投稿（要サーバー）" id="newsList"></div>
+    <div style="text-align:center;margin-top:34px" class="reveal">
+      <button class="btn ghost" id="newsMore">もっと見る</button>
+    </div>
+  </div>
+</section>
+
+<section id="gallery">
+  <div class="inner">
+    <div class="sec-head reveal">
+      <div class="en">GALLERY</div>
+      <h2>店内の様子</h2>
+      <p>写真をクリックすると大きく表示されます。</p>
+    </div>
+    <div class="gal reveal" id="gal"></div>
+  </div>
+</section>
+
+<section class="reserve" id="reserve">
+  <div class="inner">
+    <div class="sec-head reveal">
+      <div class="en">RESERVATION</div>
+      <h2>席のご予約</h2>
+      <p>2名さまから、3日先まで承っています。</p>
+    </div>
+    <div class="form-card reveal has-hint" data-hint="⚙ 予約の保存・空席の管理・確認メール（要サーバー）">
+      <div class="steps">
+        <div class="step on" data-step="1">1. 日時と人数</div>
+        <div class="step" data-step="2">2. お客さま情報</div>
+        <div class="step" data-step="3">3. 完了</div>
+      </div>
+
+      <div id="rStep1">
+        <div class="field">
+          <label>ご希望日 <span class="req">必須</span></label>
+          <input type="date" id="rDate">
+          <div class="err">日付を選んでください</div>
+        </div>
+        <div class="field">
+          <label>お時間 <span class="req">必須</span>　<small style="color:var(--ink-dim)">残席はリアルタイムで表示されます</small></label>
+          <div class="slots" id="rSlots"></div>
+          <div class="err">時間を選んでください</div>
+        </div>
+        <div class="field">
+          <label>人数 <span class="req">必須</span></label>
+          <select id="rPeople">
+            <option value="2">2名</option><option value="3">3名</option>
+            <option value="4">4名</option><option value="5">5名</option><option value="6">6名</option>
+          </select>
+        </div>
+        <button class="btn fill" id="rNext" style="width:100%;justify-content:center">お客さま情報の入力へ</button>
+      </div>
+
+      <div id="rStep2" hidden>
+        <div class="row2">
+          <div class="field"><label>お名前 <span class="req">必須</span></label><input type="text" id="rName" placeholder="山田 花子"><div class="err">お名前を入力してください</div></div>
+          <div class="field"><label>電話番号 <span class="req">必須</span></label><input type="tel" id="rTel" placeholder="090-1234-5678"><div class="err">電話番号を入力してください</div></div>
+        </div>
+        <div class="field"><label>メールアドレス <span class="req">必須</span></label><input type="email" id="rMail" placeholder="hanako@example.com"><div class="err">メールアドレスの形式をご確認ください</div></div>
+        <div class="field"><label>ご要望（アレルギー・お祝いなど）</label><textarea id="rMemo" rows="3" placeholder="窓際の席を希望します"></textarea></div>
+        <div style="display:flex;gap:12px">
+          <button class="btn ghost" id="rBack" style="flex:1;justify-content:center">戻る</button>
+          <button class="btn fill" id="rSend" style="flex:2;justify-content:center">この内容で予約する</button>
+        </div>
+      </div>
+
+      <div id="rStep3" hidden>
+        <div class="done">
+          <div class="mark">✓</div>
+          <h3>ご予約をお受けしました</h3>
+          <p>確認のメールをお送りしました。当日お待ちしております。</p>
+          <div class="recap" id="rRecap"></div>
+          <button class="btn ghost" id="rReset">もう一度ためす</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="access">
+  <div class="inner">
+    <div class="sec-head reveal">
+      <div class="en">ACCESS</div>
+      <h2>アクセス</h2>
+    </div>
+    <div class="access-grid">
+      <div class="map reveal">
+        <svg viewBox="0 0 400 275" width="100%" height="100%">
+          <rect width="400" height="275" fill="#EDE6D8"/>
+          <path d="M0 170 H400 M150 0 V275 M0 60 H400" stroke="#E0D5C2" stroke-width="14"/>
+          <path d="M0 170 H400 M150 0 V275" stroke="#F6F0E4" stroke-width="8"/>
+          <rect x="30" y="80" width="80" height="60" fill="#E3DAC7"/>
+          <rect x="200" y="90" width="120" height="55" fill="#E3DAC7"/>
+          <rect x="200" y="200" width="70" height="50" fill="#DFE7D2"/>
+          <text x="215" y="230" font-size="11" fill="#7C8B5B">公園</text>
+          <circle cx="150" cy="170" r="13" fill="#C4673F"/>
+          <circle cx="150" cy="170" r="24" fill="#C4673F" opacity=".18"/>
+          <text x="172" y="166" font-size="13" fill="#3E3227" font-family="serif">café まるみ</text>
+          <text x="172" y="182" font-size="10" fill="#7A6A57">みなと駅から徒歩6分</text>
+          <rect x="36" y="26" width="46" height="22" rx="4" fill="#5A7BC0"/>
+          <text x="45" y="41" font-size="11" fill="#fff">駅</text>
+        </svg>
+      </div>
+      <div class="reveal">
+        <table class="info-table">
+          <tr><th>店名</th><td>café まるみ</td></tr>
+          <tr><th>住所</th><td>〒000-0000 ○○県○○市みなと町1-2-3 まるみビル 1F</td></tr>
+          <tr><th>電話</th><td>000-000-0000</td></tr>
+          <tr><th>最寄り</th><td>みなと駅 東口から徒歩6分</td></tr>
+          <tr><th>駐車場</th><td>2台（満車の際は近隣のコインパーキングをご利用ください）</td></tr>
+        </table>
+        <div style="margin-top:26px;display:flex;gap:12px;flex-wrap:wrap">
+          <a class="btn fill" href="#reserve">席を予約する</a>
+          <a class="btn ghost" href="tel:0000000000">電話でお問い合わせ</a>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<footer class="site">
+  <div class="ft">
+    <div>
+      <div class="logo">café まるみ</div>
+      <p>〒000-0000 ○○県○○市みなと町1-2-3<br>7:00 – 18:00／火・水 定休</p>
+    </div>
+    <div>
+      <h4>MENU</h4>
+      <ul>
+        <li><a href="#concept">コンセプト</a></li>
+        <li><a href="#menu">お品書き</a></li>
+        <li><a href="#calendar">営業カレンダー</a></li>
+        <li><a href="#news">お知らせ</a></li>
+      </ul>
+    </div>
+    <div>
+      <h4>FOLLOW</h4>
+      <ul>
+        <li><a href="#" onclick="return false">Instagram</a></li>
+        <li><a href="#" onclick="return false">X（Twitter）</a></li>
+        <li><a href="#reserve">ご予約</a></li>
+      </ul>
+      <div class="has-hint" data-hint="⚙ メール配信（要サーバー）" style="margin-top:20px">
+        <h4>NEWSLETTER</h4>
+        <form id="mlForm" style="display:flex;gap:6px">
+          <input type="email" placeholder="メールアドレス" required style="flex:1;min-width:0;font:inherit;font-size:12.5px;padding:9px 12px;border-radius:8px;border:1px solid rgba(255,255,255,.2);background:rgba(255,255,255,.08);color:#fff">
+          <button style="font:inherit;font-size:12.5px;padding:9px 14px;border-radius:8px;border:0;background:#E9C78F;color:#3E3227;cursor:pointer">登録</button>
+        </form>
+      </div>
+    </div>
+  </div>
+  <div class="ft-btm">
+    <span>© 2026 café まるみ（架空の店舗です）</span>
+    <span>デザイン見本 A ／ ナチュラル</span>
+  </div>
+</footer>
+
+<div class="sticky-cta">
+  <a class="tel" href="tel:0000000000">☎ 電話する</a>
+  <a class="res" href="#reserve">席を予約する</a>
+</div>
+
+<div class="lightbox" id="lb">
+  <button class="x" id="lbX" aria-label="閉じる">×</button>
+  <div class="frame ph ph-a" id="lbFrame" data-label="PHOTO"></div>
+  <div class="cap" id="lbCap"></div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+/* ============================================================
+   デモ共通スクリプト（カタログの全ページに同じものが入っています）
+   ============================================================ */
+if (window.self !== window.top) document.documentElement.classList.add('embedded');
+
+const hintBtn = document.getElementById('hintBtn');
+document.querySelectorAll('[data-hint]').forEach(el=>{
+  const b = document.createElement('span');
+  b.className = 'hint-badge'; b.textContent = el.dataset.hint;
+  el.appendChild(b);
+});
+hintBtn && hintBtn.addEventListener('click', ()=>{
+  const on = document.body.classList.toggle('hints');
+  hintBtn.setAttribute('aria-pressed', on);
+  hintBtn.textContent = on ? '⚙ 表示中（クリックで戻す）' : '⚙ サーバーが要る機能を示す';
+  if (on) toast('サーバー（バックエンド）が要る箇所', '緑の点線で囲まれた部分は、データの保存・メール送信・在庫管理などをサーバー側で行う機能です。');
+});
+
+let toastTimer;
+function toast(title, body){
+  const t = document.getElementById('toast');
+  t.innerHTML = '<b>'+title+'</b>'+(body||'')+'<small>※これはデザイン見本です。実際の動作はしません。</small>';
+  t.classList.add('on');
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(()=>t.classList.remove('on'), 5200);
+}
+function serverCall(ms){ return new Promise(r=>setTimeout(r, ms || (600 + Math.random()*500))); }
+
+/* スクロールで出現 */
+const io = new IntersectionObserver(es=>es.forEach(e=>{ if(e.isIntersecting){ e.target.classList.add('in'); io.unobserve(e.target); } }), {threshold:.12});
+document.querySelectorAll('.reveal').forEach((el,i)=>{ el.style.transitionDelay = (i%3)*0.08+'s'; io.observe(el); });
+
+/* ============================================================
+   このページ固有のスクリプト
+   ============================================================ */
+/* ハンバーガー */
+const nav = document.getElementById('nav'), burger = document.getElementById('burger');
+burger.addEventListener('click', ()=>{ nav.classList.toggle('open'); burger.textContent = nav.classList.contains('open') ? '×' : '☰'; });
+nav.querySelectorAll('a').forEach(a=>a.addEventListener('click', ()=>{ nav.classList.remove('open'); burger.textContent='☰'; }));
+
+/* メニュー */
+const MENU = {
+  coffee:[
+    ['本日の珈琲','浅煎り／中煎り／深煎りから', '¥520', ''],
+    ['カフェオレ','ミルクは低温殺菌のものを', '¥600', ''],
+    ['エスプレッソ','小さなカップで一息', '¥450', ''],
+    ['水出しアイス珈琲','12時間かけて落とします', '¥600', '夏季'],
+    ['季節のラテ','8月はほうじ茶ラテ', '¥680', '限定'],
+    ['ハーブティー','自家菜園のミント／カモミール', '¥560', '']
+  ],
+  bake:[
+    ['角食パン（1斤）','国産小麦と自家製酵母', '¥480', '朝限定'],
+    ['クロワッサン','発酵バターを層に', '¥320', ''],
+    ['くるみとレーズンのカンパーニュ','半分売りもできます', '¥760', ''],
+    ['スコーン','プレーン／チョコ', '¥280', ''],
+    ['季節のタルト','8月は白桃', '¥620', '限定'],
+    ['キャロットケーキ','チーズクリームを添えて', '¥580', '']
+  ],
+  food:[
+    ['本日のスープとパン','日替わりの野菜で', '¥780', ''],
+    ['たまごサンド','厚焼きたまごを挟んで', '¥820', ''],
+    ['季節のオープンサンド','8月はトマトとバジル', '¥940', '限定'],
+    ['モーニングセット','パン＋卵＋珈琲（〜10:30）', '¥880', '朝限定'],
+    ['グラノーラとヨーグルト','自家製グラノーラ', '¥620', ''],
+    ['プリン','固めです', '¥420', '']
+  ]
+};
+const menuList = document.getElementById('menuList');
+function drawMenu(key){
+  menuList.innerHTML = MENU[key].map(([n,d,p,t])=>`
+    <div class="menu-item">
+      <div><div class="nm">${n}${t?`<span class="tagv">${t}</span>`:''}</div><div class="ds">${d}</div></div>
+      <div class="dots"></div><div class="pr">${p}</div>
+    </div>`).join('');
+}
+drawMenu('coffee');
+document.querySelectorAll('.tab').forEach(tab=>{
+  tab.addEventListener('click', ()=>{
+    document.querySelectorAll('.tab').forEach(t=>t.setAttribute('aria-selected','false'));
+    tab.setAttribute('aria-selected','true');
+    drawMenu(tab.dataset.tab);
+  });
+});
+
+/* 営業カレンダー */
+let calY = 2026, calM = 7; /* 0-indexed */
+const EVENTS = { '2026-8-8':'焙煎所の見学会', '2026-8-23':'朝市', '2026-9-12':'焙煎所の見学会', '2026-9-27':'朝市' };
+function drawCal(){
+  document.getElementById('calTitle').textContent = `${calY}年 ${calM+1}月`;
+  const g = document.getElementById('calGrid');
+  const first = new Date(calY, calM, 1).getDay();
+  const days = new Date(calY, calM+1, 0).getDate();
+  let h = ['日','月','火','水','木','金','土'].map(d=>`<div class="dow">${d}</div>`).join('');
+  for(let i=0;i<first;i++) h += '<div></div>';
+  for(let d=1; d<=days; d++){
+    const dow = new Date(calY, calM, d).getDay();
+    const key = `${calY}-${calM+1}-${d}`;
+    let cls = 'cal-day ' + (EVENTS[key] ? 'event' : (dow===2||dow===3) ? 'off' : 'open');
+    h += `<div class="${cls}" title="${EVENTS[key]||''}">${d}</div>`;
+  }
+  g.innerHTML = h;
+}
+drawCal();
+document.getElementById('calPrev').onclick = ()=>{ calM--; if(calM<0){calM=11;calY--;} drawCal(); };
+document.getElementById('calNext').onclick = ()=>{ calM++; if(calM>11){calM=0;calY++;} drawCal(); };
+
+/* お知らせ */
+const NEWS = [
+  ['2026.08.15','お知らせ','夏季休業（8/13〜8/16）のご案内',1],
+  ['2026.08.02','新商品','季節のタルトが白桃に変わりました',1],
+  ['2026.07.20','イベント','8月の朝市は23日（日）に開きます',0],
+  ['2026.07.05','新商品','水出しアイス珈琲、はじめました',0],
+  ['2026.06.28','お知らせ','7月から朝の開店を7:00に早めます',0],
+  ['2026.06.10','イベント','焙煎所の見学会、参加者を募集しています',0]
+];
+let newsShown = 3;
+function drawNews(){
+  document.getElementById('newsList').innerHTML = NEWS.slice(0,newsShown).map(([d,c,t,isNew])=>`
+    <a class="news-item" href="#news" onclick="return false">
+      <time>${d}</time><span class="cat ${isNew?'new':''}">${c}</span><span class="ttl">${t}</span>
+    </a>`).join('');
+  document.getElementById('newsMore').style.display = newsShown >= NEWS.length ? 'none' : '';
+}
+drawNews();
+document.getElementById('newsMore').onclick = async (e)=>{
+  const b = e.currentTarget; const old = b.textContent;
+  b.innerHTML = '<span class="spin"></span>読み込み中';
+  await serverCall(700);
+  newsShown = NEWS.length; drawNews(); b.textContent = old;
+};
+
+/* ギャラリー */
+const GAL = [['ph-a','カウンター席'],['ph-b','中庭の緑'],['ph-c','焼きたてのパン'],['ph-d','朝の光'],['ph-b','自家菜園のハーブ'],['ph-c','焙煎機'],['ph-a','テーブル席'],['ph-d','看板']];
+document.getElementById('gal').innerHTML = GAL.map(([c,cap],i)=>`<button class="ph ${c}" data-i="${i}" data-label=""></button>`).join('');
+const lb = document.getElementById('lb');
+document.getElementById('gal').addEventListener('click', e=>{
+  const b = e.target.closest('button'); if(!b) return;
+  const [c,cap] = GAL[b.dataset.i];
+  const f = document.getElementById('lbFrame');
+  f.className = 'frame ph ' + c;
+  document.getElementById('lbCap').textContent = cap;
+  lb.classList.add('on');
+});
+document.getElementById('lbX').onclick = ()=>lb.classList.remove('on');
+lb.addEventListener('click', e=>{ if(e.target===lb) lb.classList.remove('on'); });
+document.addEventListener('keydown', e=>{ if(e.key==='Escape') lb.classList.remove('on'); });
+
+/* 予約フォーム */
+const TIMES = ['08:00','09:00','10:00','11:00','12:00','13:00','14:00','15:00','16:00','17:00'];
+let pickedTime = null;
+function seatsFor(dateStr, t){
+  /* 日付と時刻から「それっぽい」残席数を作る（本来はサーバーが返す値） */
+  let h = 0; const s = dateStr + t;
+  for(let i=0;i<s.length;i++) h = (h*31 + s.charCodeAt(i)) % 9973;
+  const n = h % 7;
+  return n > 4 ? 0 : n;
+}
+function drawSlots(){
+  const d = document.getElementById('rDate').value;
+  const el = document.getElementById('rSlots');
+  if(!d){ el.innerHTML = '<div style="grid-column:1/-1;font-size:13px;color:var(--ink-dim)">先に日付を選んでください</div>'; return; }
+  const dow = new Date(d).getDay();
+  if(dow===2||dow===3){ el.innerHTML = '<div style="grid-column:1/-1;font-size:13px;color:#B4482F">この日は定休日です（火・水）</div>'; return; }
+  el.innerHTML = TIMES.map(t=>{
+    const n = seatsFor(d,t);
+    return `<button type="button" class="slot" data-t="${t}" ${n===0?'disabled':''} aria-pressed="false">${t}<small>${n===0?'満席':'残り'+n+'席'}</small></button>`;
+  }).join('');
+}
+const rDate = document.getElementById('rDate');
+const today = new Date(); today.setDate(today.getDate()+3);
+rDate.min = new Date().toISOString().slice(0,10);
+rDate.value = today.toISOString().slice(0,10);
+drawSlots();
+rDate.addEventListener('change', ()=>{ pickedTime=null; drawSlots(); });
+document.getElementById('rSlots').addEventListener('click', e=>{
+  const b = e.target.closest('.slot'); if(!b || b.disabled) return;
+  document.querySelectorAll('.slot').forEach(s=>s.setAttribute('aria-pressed','false'));
+  b.setAttribute('aria-pressed','true'); pickedTime = b.dataset.t;
+  b.closest('.field').classList.remove('bad');
+});
+function setStep(n){
+  [1,2,3].forEach(i=>{ document.getElementById('rStep'+i).hidden = (i!==n); });
+  document.querySelectorAll('.step').forEach(s=>s.classList.toggle('on', +s.dataset.step <= n));
+  document.getElementById('reserve').scrollIntoView({behavior:'smooth', block:'start'});
+}
+document.getElementById('rNext').onclick = ()=>{
+  let ok = true;
+  const dField = rDate.closest('.field');
+  dField.classList.toggle('bad', !rDate.value); if(!rDate.value) ok = false;
+  const sField = document.getElementById('rSlots').closest('.field');
+  sField.classList.toggle('bad', !pickedTime); if(!pickedTime) ok = false;
+  if(ok) setStep(2);
+};
+document.getElementById('rBack').onclick = ()=>setStep(1);
+document.getElementById('rSend').onclick = async (e)=>{
+  const name = document.getElementById('rName'), tel = document.getElementById('rTel'), mail = document.getElementById('rMail');
+  let ok = true;
+  [[name, v=>v.trim().length>0],[tel, v=>v.trim().length>=8],[mail, v=>/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(v)]].forEach(([el,test])=>{
+    const bad = !test(el.value); el.closest('.field').classList.toggle('bad', bad); if(bad) ok=false;
+  });
+  if(!ok) return;
+  const btn = e.currentTarget; const old = btn.innerHTML;
+  btn.innerHTML = '<span class="spin"></span>送信中…'; btn.disabled = true;
+  await serverCall(1100);
+  btn.innerHTML = old; btn.disabled = false;
+  document.getElementById('rRecap').innerHTML = [
+    ['ご予約日', rDate.value.replace(/-/g,'/')],
+    ['お時間', pickedTime],
+    ['人数', document.getElementById('rPeople').value + '名'],
+    ['お名前', name.value + ' さま'],
+    ['ご連絡先', tel.value + '／' + mail.value],
+    ['予約番号', 'MRM-' + Math.random().toString(36).slice(2,7).toUpperCase()]
+  ].map(([k,v])=>`<div><span>${k}</span><span>${v}</span></div>`).join('');
+  setStep(3);
+  toast('予約データを送信しました', '本番ではこの内容がデータベースに保存され、お客さまとお店の両方に確認メールが届きます。');
+};
+document.getElementById('rReset').onclick = ()=>{ pickedTime=null; drawSlots(); setStep(1); };
+
+/* メール登録 */
+document.getElementById('mlForm').addEventListener('submit', async e=>{
+  e.preventDefault();
+  const btn = e.target.querySelector('button'); btn.textContent = '…';
+  await serverCall(800);
+  btn.textContent = '登録'; e.target.reset();
+  toast('メールマガジンに登録しました', '本番では配信リストに追加され、お店から一斉にお知らせを送れるようになります。');
+});
+</script>
+</body>
+</html>

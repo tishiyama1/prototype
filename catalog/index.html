@@ -1,0 +1,763 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Webサイト デザインカタログ ｜ こんなサイトが作れます</title>
+<meta name="description" content="個人事業主さま向けに「どんなWebサイトが作れるのか」を、6つのデザイン見本と機能一覧でご覧いただけるカタログです。">
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+:root{
+  --bg:#F7F7F9; --card:#FFFFFF; --ink:#171A21; --dim:#646C7A; --line:#E3E6EC;
+  --ac:#3F4BD8; --ac-d:#2F39B0; --ac-l:#EEF0FE; --ok:#1B7A5A; --warn:#B26A1B;
+  --sans:"Hiragino Kaku Gothic ProN","Yu Gothic","Noto Sans JP",system-ui,sans-serif;
+  --serif:"Hiragino Mincho ProN","Yu Mincho",serif;
+  --sh:0 1px 2px rgba(23,26,33,.05),0 8px 24px rgba(23,26,33,.06);
+}
+html{scroll-behavior:smooth}
+body{font-family:var(--sans);background:var(--bg);color:var(--ink);line-height:1.9;overflow-x:hidden;-webkit-font-smoothing:antialiased}
+a{color:inherit}svg{display:block}button{font-family:inherit}
+::selection{background:var(--ac);color:#fff}
+
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;font:inherit;font-size:14px;font-weight:700;
+  padding:13px 24px;border-radius:10px;border:1px solid var(--ac);background:var(--ac);color:#fff;cursor:pointer;text-decoration:none;transition:.2s}
+.btn:hover{background:var(--ac-d);border-color:var(--ac-d);transform:translateY(-1px);box-shadow:0 8px 20px rgba(63,75,216,.25)}
+.btn.out{background:#fff;color:var(--ac)}
+.btn.out:hover{background:var(--ac-l);box-shadow:none}
+.btn.gray{background:#fff;color:var(--ink);border-color:var(--line)}
+.btn.gray:hover{background:#F0F1F5;border-color:#CFD4DE;box-shadow:none}
+.btn.sm{font-size:12.5px;padding:9px 16px;border-radius:8px}
+.btn.lg{font-size:16px;padding:17px 34px}
+
+/* ヘッダー */
+header.site{position:sticky;top:0;z-index:500;border-bottom:1px solid var(--line)}
+/* すりガラスは擬似要素へ（header 自身に backdrop-filter を置くと中の position:fixed の基準が変わるため） */
+header.site::before{content:"";position:absolute;inset:0;z-index:-1;background:rgba(247,247,249,.9);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px)}
+.hd{max-width:1180px;margin:0 auto;padding:12px 20px;display:flex;align-items:center;gap:18px}
+.brand{display:flex;align-items:center;gap:10px;text-decoration:none}
+.brand .mk{width:34px;height:34px;border-radius:9px;background:var(--ac);color:#fff;display:grid;place-content:center;font-size:15px;font-weight:800}
+.brand .tx{font-size:15px;font-weight:800;line-height:1.3}
+.brand .tx small{display:block;font-size:10px;color:var(--dim);font-weight:400}
+nav.main{margin-left:auto;display:flex;gap:22px;font-size:13.5px}
+nav.main a{text-decoration:none;color:var(--dim);transition:.2s}
+nav.main a:hover{color:var(--ac)}
+.likebtn{position:relative;background:#fff;border:1px solid var(--line);border-radius:999px;padding:8px 16px;font-size:12.5px;cursor:pointer;white-space:nowrap}
+.likebtn b{color:var(--ac)}
+.burger{display:none;background:none;border:0;font-size:20px;cursor:pointer;z-index:600}
+@media(max-width:900px){
+  nav.main{position:fixed;inset:0;background:var(--bg);flex-direction:column;justify-content:center;align-items:center;gap:24px;font-size:17px;clip-path:inset(0 0 0 100%);pointer-events:none;transition:clip-path .4s cubic-bezier(.4,0,.2,1);z-index:550;margin:0}
+  nav.main.open{clip-path:inset(0);pointer-events:auto}
+  .burger{display:block;margin-left:auto}
+  .likebtn{display:none}
+}
+
+/* ヒーロー */
+.hero{max-width:1180px;margin:0 auto;padding:clamp(46px,7vw,86px) 20px clamp(30px,4vw,50px);position:relative}
+.hero .kicker{display:inline-flex;align-items:center;gap:8px;background:var(--ac-l);color:var(--ac);font-size:12.5px;font-weight:700;padding:6px 16px;border-radius:999px;margin-bottom:22px}
+.hero h1{font-size:clamp(28px,5vw,52px);font-weight:800;line-height:1.35;letter-spacing:-.01em}
+.hero h1 .u{background:linear-gradient(transparent 64%,rgba(63,75,216,.18) 64%)}
+.hero .lead{margin-top:24px;font-size:clamp(14.5px,1.7vw,17px);color:var(--dim);max-width:44em}
+.hero .cta{margin-top:32px;display:flex;gap:12px;flex-wrap:wrap}
+.hero .note{margin-top:20px;font-size:12.5px;color:var(--dim)}
+.hero-stats{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-top:46px}
+.hero-stats div{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:20px 22px;box-shadow:var(--sh)}
+.hero-stats b{display:block;font-size:26px;font-weight:800;color:var(--ac);line-height:1.4}
+.hero-stats span{font-size:12.5px;color:var(--dim)}
+@media(max-width:760px){.hero-stats{grid-template-columns:1fr}}
+
+section{padding:clamp(50px,7vw,84px) 20px}
+.inner{max-width:1180px;margin:0 auto}
+.sec-head{margin-bottom:38px}
+.sec-head .en{font-size:11px;font-weight:800;letter-spacing:.2em;color:var(--ac)}
+.sec-head h2{font-size:clamp(22px,3.4vw,32px);font-weight:800;margin-top:8px;letter-spacing:-.01em}
+.sec-head p{margin-top:14px;font-size:14.5px;color:var(--dim);max-width:46em}
+.reveal{opacity:0;transform:translateY(22px);transition:.75s cubic-bezier(.2,.8,.3,1)}
+.reveal.in{opacity:1;transform:none}
+
+/* パターン一覧 */
+.pats{display:grid;grid-template-columns:repeat(3,1fr);gap:24px}
+@media(max-width:1000px){.pats{grid-template-columns:repeat(2,1fr)}}
+@media(max-width:700px){.pats{grid-template-columns:1fr}}
+.pat{background:var(--card);border:1px solid var(--line);border-radius:16px;overflow:hidden;box-shadow:var(--sh);display:flex;flex-direction:column;transition:.28s}
+.pat:hover{transform:translateY(-4px);box-shadow:0 16px 40px rgba(23,26,33,.12)}
+.pat .thumb{position:relative;aspect-ratio:4/3;overflow:hidden;cursor:pointer;background:#fff;border-bottom:1px solid var(--line)}
+.pat .thumb svg{width:100%;height:100%}
+.pat .thumb .hoverbar{position:absolute;inset:auto 0 0 0;background:rgba(23,26,33,.86);color:#fff;font-size:12.5px;padding:9px;text-align:center;transform:translateY(100%);transition:.28s}
+.pat:hover .thumb .hoverbar{transform:none}
+.pat .letter{position:absolute;top:10px;left:10px;width:26px;height:26px;border-radius:7px;background:var(--ink);color:#fff;display:grid;place-content:center;font-size:13px;font-weight:800}
+.pat .like{position:absolute;top:10px;right:10px;width:30px;height:30px;border-radius:50%;background:rgba(255,255,255,.92);border:1px solid var(--line);cursor:pointer;color:#B9BECB;font-size:14px;transition:.2s}
+.pat .like.on{color:#E0455B;border-color:#F2C3CA}
+.pat .bd{padding:20px;flex:1;display:flex;flex-direction:column}
+.pat .style{font-size:11.5px;font-weight:700;letter-spacing:.06em;color:var(--ac)}
+.pat h3{font-size:18px;font-weight:800;margin:6px 0 4px}
+.pat .who{font-size:12.5px;color:var(--dim)}
+.pat .desc{font-size:13px;color:var(--dim);margin:12px 0 14px}
+.pat .tags{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:16px}
+.pat .tags span{font-size:11px;background:#F1F3F7;border-radius:999px;padding:3px 10px;color:#4C5566}
+.pat .tags span.srv{background:rgba(27,122,90,.1);color:var(--ok)}
+.pat .acts{margin-top:auto;display:flex;gap:8px}
+.pat .acts .btn{flex:1}
+
+/* プレビューモーダル */
+.pv{position:fixed;inset:0;z-index:800;background:rgba(12,13,17,.93);display:none;flex-direction:column}
+.pv.on{display:flex}
+.pv-hd{display:flex;align-items:center;gap:12px;padding:10px 14px;background:#12141A;color:#fff;flex-wrap:wrap}
+.pv-hd .t{font-size:13.5px;font-weight:700}
+.pv-hd .t small{display:block;font-size:11px;opacity:.6;font-weight:400}
+.devs{display:flex;gap:4px;background:rgba(255,255,255,.1);padding:3px;border-radius:9px;margin-left:auto}
+.devs button{background:none;border:0;color:#fff;font-size:12px;padding:6px 14px;border-radius:7px;cursor:pointer;opacity:.65}
+.devs button[aria-pressed="true"]{background:rgba(255,255,255,.9);color:#12141A;opacity:1;font-weight:700}
+.pv-hd .x{background:rgba(255,255,255,.12);border:0;color:#fff;width:34px;height:34px;border-radius:9px;font-size:19px;cursor:pointer}
+.pv-hd .open{background:#fff;color:#12141A;border:0;font-size:12px;font-weight:700;padding:8px 14px;border-radius:8px;cursor:pointer;text-decoration:none}
+.pv-stage{flex:1;overflow:auto;display:grid;place-items:start center;padding:18px}
+.pv-frame{background:#fff;border-radius:10px;overflow:hidden;box-shadow:0 20px 60px rgba(0,0,0,.5);transform-origin:top center;transition:width .25s}
+.pv-frame iframe{border:0;display:block;background:#fff}
+@media(max-width:640px){.devs{order:3;margin:0;width:100%;justify-content:center}}
+
+/* できること */
+.can{background:var(--card)}
+.cantabs{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:22px}
+.cantabs button{font:inherit;font-size:13px;background:var(--bg);border:1px solid var(--line);border-radius:999px;padding:8px 18px;cursor:pointer;color:var(--dim);transition:.2s}
+.cantabs button[aria-pressed="true"]{background:var(--ink);color:#fff;border-color:var(--ink)}
+.cangrid{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}
+@media(max-width:1000px){.cangrid{grid-template-columns:repeat(2,1fr)}}
+@media(max-width:660px){.cangrid{grid-template-columns:1fr}}
+.can-card{border:1px solid var(--line);border-radius:13px;padding:18px;background:var(--card);position:relative;transition:.2s}
+.can-card:hover{border-color:#C6CCDA;box-shadow:var(--sh)}
+.can-card .top{display:flex;align-items:flex-start;gap:10px;margin-bottom:8px}
+.can-card h4{font-size:14.5px;font-weight:800;flex:1}
+.can-card .badge{font-size:10.5px;font-weight:700;padding:3px 9px;border-radius:999px;white-space:nowrap}
+.badge.stat{background:#F1F3F7;color:#5A6376}
+.badge.srv{background:rgba(27,122,90,.12);color:var(--ok)}
+.can-card p{font-size:12.5px;color:var(--dim)}
+.can-card .ex{font-size:11.5px;color:var(--ac);margin-top:8px}
+.can-card .lk{position:absolute;top:14px;right:14px}
+.legend{display:flex;gap:18px;flex-wrap:wrap;font-size:12.5px;color:var(--dim);margin-bottom:20px}
+
+/* 見積り */
+.est{display:grid;grid-template-columns:1.25fr .75fr;gap:26px;align-items:start}
+@media(max-width:900px){.est{grid-template-columns:1fr}}
+.est-box{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:24px;box-shadow:var(--sh)}
+.est-group{margin-bottom:22px}
+.est-group h4{font-size:13px;font-weight:800;color:var(--dim);margin-bottom:10px;letter-spacing:.04em}
+.opts{display:grid;grid-template-columns:repeat(auto-fill,minmax(190px,1fr));gap:8px}
+.opt{display:flex;gap:9px;align-items:flex-start;border:1px solid var(--line);border-radius:10px;padding:11px 13px;cursor:pointer;font-size:13px;transition:.2s;background:var(--bg)}
+.opt:hover{border-color:#B9C0D2}
+.opt:has(input:checked){border-color:var(--ac);background:var(--ac-l)}
+.opt input{margin-top:5px}
+.opt .nm{font-weight:700}
+.opt .pp{font-size:11.5px;color:var(--dim)}
+.est-out{position:sticky;top:76px}
+.est-out .row{display:flex;justify-content:space-between;gap:12px;font-size:13px;padding:7px 0;border-bottom:1px dashed var(--line)}
+.est-out .row:last-of-type{border:0}
+.est-total{margin-top:16px;padding-top:16px;border-top:2px solid var(--ink)}
+.est-total .n{font-size:32px;font-weight:800;letter-spacing:-.02em}
+.est-total .n small{font-size:14px;font-weight:400;color:var(--dim)}
+.est-meta{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:16px}
+.est-meta div{background:var(--bg);border-radius:10px;padding:12px;text-align:center}
+.est-meta b{display:block;font-size:17px;font-weight:800}
+.est-meta span{font-size:11.5px;color:var(--dim)}
+.est-note{font-size:11.5px;color:var(--dim);margin-top:16px;background:#FFF9EC;border:1px solid #F2E3C4;border-radius:10px;padding:12px}
+
+/* 流れ */
+.flow{display:grid;grid-template-columns:repeat(5,1fr);gap:12px;counter-reset:f}
+@media(max-width:900px){.flow{grid-template-columns:1fr 1fr}}
+.fstep{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:20px;box-shadow:var(--sh)}
+.fstep::before{counter-increment:f;content:counter(f);display:grid;place-content:center;width:30px;height:30px;border-radius:9px;background:var(--ac-l);color:var(--ac);font-weight:800;font-size:14px;margin-bottom:12px}
+.fstep h4{font-size:15px;font-weight:800;margin-bottom:6px}
+.fstep p{font-size:12.5px;color:var(--dim)}
+.fstep .d{font-size:11px;color:var(--ac);margin-top:8px;font-weight:700}
+
+/* FAQ */
+.faq{max-width:860px}
+.faq-item{background:var(--card);border:1px solid var(--line);border-radius:12px;margin-bottom:10px;overflow:hidden}
+.faq-q{width:100%;text-align:left;font:inherit;font-size:14.5px;font-weight:700;background:var(--card);border:0;padding:18px 48px 18px 20px;cursor:pointer;position:relative}
+.faq-q::after{content:"＋";position:absolute;right:20px;top:16px;color:var(--ac);font-size:18px}
+.faq-item.open .faq-q::after{content:"−"}
+.faq-a{display:none;padding:0 20px 20px;font-size:13.5px;color:var(--dim)}
+.faq-item.open .faq-a{display:block}
+
+/* まとめ */
+.sum{background:var(--ink);color:#EDEFF4}
+.sum .sec-head h2{color:#fff}
+.sum .sec-head p{color:#A3AAB8}
+.sum .sec-head .en{color:#8E9AFF}
+.sum-box{background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.12);border-radius:16px;padding:24px}
+.sum-box h4{font-size:14px;font-weight:800;margin-bottom:12px}
+.sum-list{list-style:none;font-size:13.5px}
+.sum-list li{padding:8px 0;border-bottom:1px solid rgba(255,255,255,.08);display:flex;gap:10px}
+.sum-list li:last-child{border:0}
+.sum-list li::before{content:"◆";color:#8E9AFF;font-size:10px;margin-top:6px}
+.sum-empty{font-size:13.5px;color:#A3AAB8}
+.sum textarea{width:100%;font:inherit;font-size:12.5px;line-height:1.8;background:rgba(0,0,0,.3);border:1px solid rgba(255,255,255,.14);color:#EDEFF4;border-radius:10px;padding:14px;min-height:150px;margin-top:14px;resize:vertical}
+.sum .btn.gray{background:rgba(255,255,255,.1);color:#fff;border-color:rgba(255,255,255,.2)}
+.sum .btn.gray:hover{background:rgba(255,255,255,.18)}
+
+footer.site{background:#0F1116;color:#98A0B0;padding:44px 20px 30px;font-size:12.5px}
+.ft{max-width:1180px;margin:0 auto;display:flex;justify-content:space-between;gap:20px;flex-wrap:wrap}
+.ft a{color:#C9CFDA;text-decoration:none}
+.ft a:hover{color:#fff}
+
+.toast{position:fixed;left:50%;bottom:24px;transform:translate(-50%,24px);z-index:900;opacity:0;pointer-events:none;background:var(--ink);color:#fff;padding:13px 20px;border-radius:11px;max-width:min(92vw,420px);box-shadow:0 18px 44px rgba(0,0,0,.25);transition:.3s;font-size:13px;line-height:1.7}
+.toast.on{opacity:1;transform:translate(-50%,0)}
+.toast b{display:block;color:#B8C0FF;margin-bottom:2px}
+</style>
+</head>
+<body>
+
+<header class="site">
+  <div class="hd">
+    <a class="brand" href="#top">
+      <span class="mk">W</span>
+      <span class="tx">Webサイト デザインカタログ<small>こんなサイトが作れます</small></span>
+    </a>
+    <button class="burger" id="burger" aria-label="メニュー">☰</button>
+    <nav class="main" id="nav">
+      <a href="#patterns">デザイン見本</a>
+      <a href="#can">できること</a>
+      <a href="#estimate">概算の見積り</a>
+      <a href="#flow">進め方</a>
+      <a href="#faq">よくある質問</a>
+    </nav>
+    <button class="likebtn" id="likeBtn">♡ 気になったもの <b id="likeCnt">0</b></button>
+  </div>
+</header>
+
+<div class="hero" id="top">
+  <div class="kicker">◆ 個人事業主・小さなお店の方へ</div>
+  <h1>「どんなサイトが作れますか？」に、<br><span class="u">6つの見本</span>でお答えします。</h1>
+  <p class="lead">
+    言葉だけだと、どうしてもイメージしづらいところです。そこで、実際に触れるデザイン見本を6種類つくりました。
+    どれも本物のサイトと同じように動きます。予約フォームを送ってみたり、カートに商品を入れたりしてみてください。<br>
+    <b>ここに載っているものが上限ではありません。</b>気に入った見本の「この部分だけ」を組み合わせることも、まったく別の雰囲気にすることもできます。
+  </p>
+  <div class="cta">
+    <a class="btn lg" href="#patterns">デザイン見本を見る</a>
+    <a class="btn out lg" href="#can">どこまでできるかを見る</a>
+  </div>
+  <p class="note">※ 掲載している店名・事務所名・写真・価格はすべて架空のサンプルです。写真の枠には、実際にはお客さまの写真が入ります。</p>
+  <div class="hero-stats">
+    <div><b>6種類</b><span>業種と雰囲気の違うデザイン見本。そのまま使うことも、混ぜることもできます。</span></div>
+    <div><b>30以上</b><span>「できること」の一覧。サーバーが必要な機能もひと目で分かるようにしています。</span></div>
+    <div><b>その場で</b><span>気になった見本と機能に印をつけると、そのまま送れるメモができあがります。</span></div>
+  </div>
+</div>
+
+<section id="patterns">
+  <div class="inner">
+    <div class="sec-head reveal">
+      <div class="en">DESIGN PATTERNS</div>
+      <h2>6つのデザイン見本</h2>
+      <p>クリックすると、その場でスマホ・タブレット・パソコンの見え方を切り替えられます。各見本の上部にある「⚙ サーバーが要る機能を示す」を押すと、どの部分にサーバー（バックエンド）が必要かが色つきで表示されます。</p>
+    </div>
+    <div class="pats reveal" id="pats"></div>
+  </div>
+</section>
+
+<section class="can" id="can">
+  <div class="inner">
+    <div class="sec-head reveal">
+      <div class="en">FEATURES</div>
+      <h2>どこまでできるのか</h2>
+      <p>Webサイトの機能は、大きく2種類に分かれます。「ページを作れば終わるもの（静的）」と、「データを預かる仕組みが必要なもの（サーバー）」です。後者は月々の維持費がかかりますが、その分できることが大きく広がります。</p>
+    </div>
+    <div class="legend reveal">
+      <span><span class="badge stat">静的</span>　ページを作るだけで実現できます。維持費はほぼかかりません。</span>
+      <span><span class="badge srv">サーバー</span>　データの保存や送信が必要です。月々の費用が発生します。</span>
+    </div>
+    <div class="cantabs reveal" id="canTabs"></div>
+    <div class="cangrid reveal" id="canGrid"></div>
+  </div>
+</section>
+
+<section id="estimate">
+  <div class="inner">
+    <div class="sec-head reveal">
+      <div class="en">ESTIMATE</div>
+      <h2>ざっくりした費用の目安</h2>
+      <p>必要そうなものにチェックを入れると、おおよその費用と期間が出ます。実際のお見積りは打ち合わせのうえで作成しますので、あくまで「だいたいこのくらい」の目安としてご覧ください。</p>
+    </div>
+    <div class="est reveal">
+      <div class="est-box">
+        <div class="est-group">
+          <h4>1. サイトの規模</h4>
+          <div class="opts" id="optScale"></div>
+        </div>
+        <div class="est-group">
+          <h4>2. デザインの作り方</h4>
+          <div class="opts" id="optDesign"></div>
+        </div>
+        <div class="est-group">
+          <h4>3. つけたい機能（複数選べます）</h4>
+          <div class="opts" id="optFeat"></div>
+        </div>
+        <div class="est-group">
+          <h4>4. 素材のご用意</h4>
+          <div class="opts" id="optAsset"></div>
+        </div>
+      </div>
+      <div class="est-box est-out">
+        <h4 style="font-size:14px;font-weight:800;margin-bottom:14px">お見積りの目安</h4>
+        <div id="estRows"></div>
+        <div class="est-total">
+          <div style="font-size:12px;color:var(--dim)">初期費用（税込）</div>
+          <div class="n" id="estTotal">¥0</div>
+        </div>
+        <div class="est-meta">
+          <div><b id="estMonth">¥0</b><span>月額（維持費）</span></div>
+          <div><b id="estWeeks">—</b><span>制作期間の目安</span></div>
+        </div>
+        <div class="est-note" id="estNote">※ 金額はサンプルです。実際の条件によって変わります。</div>
+        <button class="btn out sm" id="estCopy" style="width:100%;margin-top:14px">この内容をメモに追加する</button>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="can" id="flow">
+  <div class="inner">
+    <div class="sec-head reveal">
+      <div class="en">PROCESS</div>
+      <h2>ご依頼から公開までの進め方</h2>
+      <p>ご負担が大きいのは最初のヒアリングと、原稿・写真のご用意です。そこさえ越えれば、あとはこちらで進めます。</p>
+    </div>
+    <div class="flow reveal">
+      <div class="fstep"><h4>ご相談・ヒアリング</h4><p>どんなお客さまに、何を伝えたいのか。この見本を見ながら「こういう雰囲気」を決めます。</p><div class="d">1〜2回の打ち合わせ</div></div>
+      <div class="fstep"><h4>構成とお見積り</h4><p>ページの並びと必要な機能を決め、正式なお見積りをお出しします。</p><div class="d">約1週間</div></div>
+      <div class="fstep"><h4>デザイン</h4><p>トップページのデザイン案をお見せします。ここで方向性をしっかり合わせます。</p><div class="d">1〜2週間</div></div>
+      <div class="fstep"><h4>制作・確認</h4><p>実際に動くものをご覧いただきながら、文章や写真を差し替えていきます。</p><div class="d">2〜4週間</div></div>
+      <div class="fstep"><h4>公開・引き渡し</h4><p>公開後に、ご自身で更新する方法をご説明します。操作のマニュアルもお渡しします。</p><div class="d">公開後もサポート</div></div>
+    </div>
+  </div>
+</section>
+
+<section id="faq">
+  <div class="inner">
+    <div class="sec-head reveal">
+      <div class="en">FAQ</div>
+      <h2>よくいただくご質問</h2>
+    </div>
+    <div class="faq reveal" id="faqList"></div>
+  </div>
+</section>
+
+<section class="sum" id="summary">
+  <div class="inner">
+    <div class="sec-head reveal">
+      <div class="en">YOUR NOTES</div>
+      <h2>気になったもの メモ</h2>
+      <p>デザイン見本や機能の「♡」を押すと、ここにたまっていきます。下のテキストをコピーして、そのままメール・LINEでお送りいただければ、それを元にお見積りをお作りします。</p>
+    </div>
+    <div class="sum-box reveal">
+      <h4>選ばれているもの</h4>
+      <ul class="sum-list" id="sumList"></ul>
+      <textarea id="sumText" readonly></textarea>
+      <div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:14px">
+        <button class="btn" id="copyBtn">この内容をコピーする</button>
+        <button class="btn gray" id="clearBtn">選択をすべて消す</button>
+      </div>
+    </div>
+  </div>
+</section>
+
+<footer class="site">
+  <div class="ft">
+    <span>Webサイト デザインカタログ ― 掲載の店名・事務所名・価格はすべて架空のサンプルです。</span>
+    <span><a href="../index.html">← ほかの作品一覧へ</a></span>
+  </div>
+</footer>
+
+<div class="pv" id="pv">
+  <div class="pv-hd">
+    <button class="x" id="pvX" aria-label="閉じる">×</button>
+    <div class="t" id="pvT">—<small id="pvS"></small></div>
+    <div class="devs" id="devs">
+      <button data-w="390" aria-pressed="false">📱 スマホ</button>
+      <button data-w="834" aria-pressed="false">📲 タブレット</button>
+      <button data-w="1280" aria-pressed="true">💻 パソコン</button>
+    </div>
+    <a class="open" id="pvOpen" href="#" target="_blank" rel="noopener">別タブで開く ↗</a>
+  </div>
+  <div class="pv-stage" id="pvStage">
+    <div class="pv-frame" id="pvFrame"><iframe id="pvIframe" title="デザイン見本のプレビュー"></iframe></div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+/* ============================================================
+   デザイン見本の一覧
+   ============================================================ */
+const PATTERNS=[
+  {id:'cafe',L:'A',file:'cafe.html',style:'ナチュラル・温かみ',name:'café まるみ',who:'カフェ／パン屋／雑貨店など',
+   desc:'手ざわりのある色と余白で、お店の空気を伝えるタイプ。写真が主役になります。',
+   tags:['メニュー表','営業カレンダー','お知らせ','ギャラリー'],srv:['席の予約フォーム','お知らせの投稿','メール配信'],
+   pal:{bg:'#FBF6EC',ink:'#3E3227',ac:'#C4673F',sub:'#7C8B5B'},layout:'split'},
+  {id:'salon',L:'B',file:'salon.html',style:'エレガント・高級感',name:'LUNE hair & spa',who:'美容室／エステ／ネイル／隠れ家の飲食店',
+   desc:'暗い背景に細い明朝体。落ち着いた印象で、単価の高いサービスと相性がよい方向です。',
+   tags:['料金表','スタイリスト紹介','スタイル集','お客さまの声'],srv:['オンライン予約（空き枠表示）','会員マイページ','口コミ投稿'],
+   pal:{bg:'#12100E',ink:'#EAE3D6',ac:'#C6A96B',sub:'#9C9284'},layout:'full'},
+  {id:'studio',L:'C',file:'studio.html',style:'ミニマル・大きな文字',name:'STUDIO KAI',who:'写真家／デザイナー／建築／作家',
+   desc:'白と黒と、大きなタイポグラフィ。作品そのものを見せたい方に向いた、削ぎ落とした構成です。',
+   tags:['作品一覧（絞り込み）','事務所紹介','サービスと料金'],srv:['お問い合わせフォーム','パスワード付き納品ページ','作品の登録'],
+   pal:{bg:'#FFFFFF',ink:'#0A0A0A',ac:'#0A0A0A',sub:'#8A8A8A'},layout:'type'},
+  {id:'office',L:'D',file:'office.html',style:'信頼・実直',name:'みなと社会保険労務士事務所',who:'士業／クリニック／工務店／BtoBの事業',
+   desc:'情報量が多くても迷わせない構成。料金・流れ・実績をきちんと並べて、不安を減らす方向です。',
+   tags:['料金表','ご相談の流れ','事務所案内','スマホ追従ボタン'],srv:['無料相談フォーム（確認画面つき）','よくある質問の検索','コラムの投稿','資料の自動送付'],
+   pal:{bg:'#FFFFFF',ink:'#20303C',ac:'#0E3A63',sub:'#B8892E'},layout:'info'},
+  {id:'shop',L:'E',file:'shop.html',style:'ネットショップ',name:'hitotsu 工房',who:'作家／食品／アパレル／産直',
+   desc:'商品を並べて、その場で買っていただくタイプ。ここに載せた中でいちばん機能が多い見本です。',
+   tags:['商品の絞り込み・並べ替え','商品詳細','特定商取引法の表記'],srv:['カートと決済','在庫の管理','会員・注文履歴','クーポン','レビュー'],
+   pal:{bg:'#FAF8F4',ink:'#2A2724',ac:'#4A6B52',sub:'#B5503C'},layout:'grid'},
+  {id:'school',L:'F',file:'school.html',style:'ポップ・にぎやか',name:'くるくる教室',who:'習い事／学習塾／保育／地域のイベント',
+   desc:'丸みと原色で、親しみやすさを前に出したタイプ。お子さま向け・ご家族向けのサービスに。',
+   tags:['コース紹介','1日の流れ','先生紹介','よくある質問'],srv:['体験申込フォーム','空き枠の表示','保護者マイページ（出欠・請求）','チャット問い合わせ'],
+   pal:{bg:'#FFFBF2',ink:'#33302B',ac:'#FF7043',sub:'#3ABEDC'},layout:'pop'}
+];
+
+/* サムネイル（各見本の雰囲気を、色と組み方で表したミニ図） */
+function thumb(p){
+  const{bg,ink,ac,sub}=p.pal, L=p.layout;
+  const line=(x,y,w,h,c,o,r)=>`<rect x="${x}" y="${y}" width="${w}" height="${h}" rx="${r||1.5}" fill="${c}" opacity="${o||1}"/>`;
+  let s=`<svg viewBox="0 0 400 300" xmlns="http://www.w3.org/2000/svg"><rect width="400" height="300" fill="${bg}"/>`;
+  /* ヘッダー */
+  s+=line(0,0,400,26,ink,.06,0)+line(20,10,54,7,ink,.75)+line(250,11,26,5,ink,.4)+line(286,11,26,5,ink,.4)+line(324,7,56,13,ac,1,6);
+  if(L==='split'){
+    s+=line(24,58,150,11,ink,.85)+line(24,76,120,11,ink,.85)+line(24,94,90,11,ac,.9);
+    s+=line(24,122,150,5,ink,.3)+line(24,134,130,5,ink,.3);
+    s+=`<rect x="24" y="154" width="82" height="22" rx="11" fill="${ac}"/>`;
+    s+=`<path d="M225 44 h150 v130 a60 60 0 0 1 -150 0 z" fill="${ac}" opacity=".28"/>`;
+    s+=`<circle cx="300" cy="112" r="46" fill="${sub}" opacity=".3"/>`;
+    for(let i=0;i<3;i++) s+=line(24+i*118,216,100,58,ink,.06,6)+line(60+i*118,232,28,28,sub,.35,14)+line(46+i*118,268,56,4,ink,.22);
+  }
+  if(L==='full'){
+    s+=`<rect x="0" y="26" width="400" height="184" fill="${sub}" opacity=".16"/>`;
+    s+=line(120,86,160,9,ink,.85)+line(150,104,100,9,ink,.85)+line(140,124,120,4,ac,.8);
+    s+=`<rect x="163" y="146" width="74" height="22" rx="0" fill="none" stroke="${ac}" stroke-width="1.5"/>`;
+    for(let i=0;i<4;i++) s+=line(24+i*92,228,84,52,sub,.22,2);
+    s+=line(24,296,352,1,ac,.4);
+  }
+  if(L==='type'){
+    s+=line(20,50,360,26,ink,.9,2)+line(20,84,300,26,ink,.9,2)+line(20,118,200,26,ink,.9,2);
+    s+=line(20,156,360,1,ink,.15,0);
+    s+=line(20,168,60,4,sub,.7)+line(320,168,60,4,sub,.7);
+    s+=line(20,186,220,96,ink,.85,2)+line(252,186,128,96,ink,.18,2);
+  }
+  if(L==='info'){
+    s+=`<rect x="0" y="26" width="400" height="120" fill="${ac}" opacity=".08"/>`;
+    s+=line(24,48,42,12,ac,.85,6)+line(24,70,190,10,ink,.85)+line(24,88,150,10,ink,.85);
+    s+=line(24,110,110,5,ink,.32)+line(24,122,80,5,ink,.32);
+    s+=`<rect x="238" y="44" width="140" height="94" rx="4" fill="${ac}" opacity=".3"/>`;
+    s+=`<rect x="24" y="140" width="70" height="20" rx="4" fill="${sub}"/>`;
+    for(let i=0;i<3;i++) s+=line(24+i*118,176,100,44,ink,.05,5)+line(36+i*118,188,60,5,ink,.4)+line(36+i*118,200,76,4,ink,.2);
+    s+=line(24,232,352,50,ink,.05,5)+line(36,244,120,5,ac,.7)+line(36,258,300,4,ink,.18)+line(36,270,240,4,ink,.18);
+  }
+  if(L==='grid'){
+    s+=`<rect x="20" y="36" width="360" height="72" rx="6" fill="${ink}" opacity=".25"/>`;
+    s+=line(40,60,110,8,bg,.9)+line(40,76,70,5,bg,.6);
+    for(let r=0;r<2;r++)for(let i=0;i<4;i++){
+      const x=20+i*92,y=124+r*84;
+      s+=line(x,y,84,76,'#ffffff',1,5)+`<rect x="${x}" y="${y}" width="84" height="46" rx="5" fill="${[ac,sub,ink,ac][i]}" opacity=".22"/>`;
+      s+=line(x+8,y+54,50,4,ink,.4)+line(x+8,y+64,30,5,ink,.7);
+    }
+    s+=`<circle cx="360" cy="13" r="6" fill="${sub}"/>`;
+  }
+  if(L==='pop'){
+    s+=`<circle cx="360" cy="40" r="52" fill="${sub}" opacity=".3"/>`;
+    s+=`<circle cx="30" cy="270" r="40" fill="${ac}" opacity=".18"/>`;
+    s+=line(24,52,60,14,sub,.85,7)+line(24,76,180,13,ink,.85,3)+line(24,96,130,13,ac,.85,3);
+    s+=line(24,122,120,5,ink,.3);
+    s+=`<rect x="24" y="140" width="92" height="26" rx="13" fill="${ac}"/>`;
+    s+=`<rect x="238" y="44" width="130" height="130" rx="24" fill="${sub}" opacity=".45"/>`;
+    for(let i=0;i<3;i++) s+=line(24+i*118,196,100,84,'#ffffff',1,12)+line(40+i*118,210,32,32,[ac,sub,'#7BC96F'][i],.28,10)+line(40+i*118,252,60,5,ink,.5)+line(40+i*118,264,44,4,ink,.25);
+  }
+  return s+'</svg>';
+}
+
+/* ============================================================
+   できること一覧
+   ============================================================ */
+const FEATURES=[
+  ['見せ方','スマホ対応（レスポンシブ）','静的','画面の大きさに合わせて自動で組み替わります。今はスマホからの閲覧が大半なので、すべての見本で対応しています。','全見本'],
+  ['見せ方','スクロールに合わせた動き','静的','要素がふわっと現れる、背景が動くなど。やりすぎない範囲で印象を作ります。','見本A・B・C'],
+  ['見せ方','写真ギャラリー（拡大表示）','静的','写真をクリックすると大きく表示。並び順はこちらで設定します。','見本A・B'],
+  ['見せ方','絞り込み・並べ替え','静的','カテゴリや価格で表示を切り替えます。件数が多くなければサーバー不要です。','見本C・E'],
+  ['見せ方','アコーディオン（開閉）','静的','よくある質問など、長い情報をたたんで見せます。','見本D・F'],
+  ['見せ方','動画の埋め込み','静的','YouTubeなどの動画をページに埋め込めます。','—'],
+  ['見せ方','地図の表示','静的','Googleマップの埋め込み、または手描き風の地図イラスト。','見本A・B'],
+  ['見せ方','多言語切り替え','静的','英語ページなどを別に用意します。翻訳文はご用意いただく形が基本です。','—'],
+  ['見せ方','印刷用のレイアウト','静的','メニュー表や資料を、そのまま綺麗に印刷できるようにします。','—'],
+
+  ['お問い合わせ','お問い合わせフォーム','サーバー','送信内容を保存し、あなたに通知メール、お客さまに自動返信を送ります。','見本C・D'],
+  ['お問い合わせ','入力内容の確認画面','サーバー','送信前にもう一度確認していただく画面。入力ミスを減らせます。','見本D'],
+  ['お問い合わせ','ファイルの添付','サーバー','図面や写真を添えて送っていただけます。','見本C'],
+  ['お問い合わせ','迷惑メール（スパム）対策','サーバー','機械による大量送信をはじきます。フォームを置くなら実質必須です。','全フォーム'],
+  ['お問い合わせ','チャットでの相談','サーバー','LINE公式アカウントなどと連携し、スマホに通知を届けます。','見本F'],
+
+  ['予約','日時を選ぶ予約フォーム','サーバー','予約を保存し、確認メールを自動で送ります。','見本A'],
+  ['予約','空き状況のリアルタイム表示','サーバー','埋まった枠は選べなくなります。電話とWebの二重予約も防げます。','見本B・F'],
+  ['予約','スタッフ・メニュー別の予約','サーバー','担当者ごとに持ち時間が違う場合の枠管理まで含みます。','見本B'],
+  ['予約','予約のキャンセル・変更','サーバー','お客さま自身がURLから変更できるようにします。','—'],
+  ['予約','前日のリマインドメール','サーバー','無断キャンセルを減らす効果があります。','—'],
+
+  ['お知らせ・更新','お知らせ・ブログの投稿','サーバー','管理画面から、ご自身で記事を書いて公開できます。','見本A・D'],
+  ['お知らせ・更新','カテゴリ分け・記事の検索','サーバー','記事が増えても目的のものにたどり着けます。','見本D'],
+  ['お知らせ・更新','営業カレンダーの更新','サーバー','臨時休業やイベントを、その場で反映できます。','見本A'],
+  ['お知らせ・更新','写真・商品の入れ替え','サーバー','写真の差し替えや並べ替えを、ご自身で行えます。','見本B・E'],
+  ['お知らせ・更新','メールマガジンの配信','サーバー','登録された方へ一斉にお知らせを送れます。','見本A'],
+
+  ['販売','カート・購入手続き','サーバー','商品をまとめて購入していただく仕組みです。','見本E'],
+  ['販売','クレジットカード決済','サーバー','カード・コンビニ払い・スマホ決済に対応できます。決済会社の手数料が別途かかります。','見本E'],
+  ['販売','在庫の管理','サーバー','売れたら在庫が減り、ゼロになれば「売り切れ」表示に変わります。','見本E'],
+  ['販売','注文・配送の管理','サーバー','注文一覧、発送済みの記録、追跡番号のお知らせまで。','見本E'],
+  ['販売','クーポン・セール','サーバー','期間限定の割引コードを発行できます。','見本E'],
+  ['販売','定期購入・回数券','サーバー','毎月の自動決済や、回数券の残数管理もできます。','—'],
+
+  ['会員','会員登録・ログイン','サーバー','その人だけに見せる情報を用意できます。','見本B・E・F'],
+  ['会員','マイページ（履歴・ポイント）','サーバー','来店履歴、購入履歴、ポイント残高など。','見本B・E'],
+  ['会員','会員限定ページ','サーバー','パスワードを知っている方だけが見られるページ。','見本C'],
+  ['会員','出欠・請求の管理','サーバー','教室や塾での出席記録、月謝の請求と領収書の発行。','見本F'],
+  ['会員','レビュー・口コミの投稿','サーバー','購入者だけが書けるようにしたり、公開前に承認したりできます。','見本B・E'],
+
+  ['運用','アクセス解析','サーバー','何人が、どのページを、どこから見たかが分かります。改善の材料になります。','—'],
+  ['運用','検索エンジン対策（SEO）の基礎','静的','タイトル・説明文・構造の整備。すべての制作に含みます。','全見本'],
+  ['運用','SNSでの表示設定','静的','LINEやXでURLを送ったときに、画像つきで表示されます。','全見本'],
+  ['運用','独自ドメイン・SSL','サーバー','「◯◯◯.com」のような自分のURLと、鍵マーク（暗号化）。','必須'],
+  ['運用','バックアップ・保守','サーバー','定期的な複製と、不具合が起きたときの復旧。','推奨']
+];
+
+/* ============================================================
+   概算見積り（金額はサンプル値です。ご自身の料金表に書き換えてお使いください）
+   ============================================================ */
+const PRICE={
+  scale:[
+    ['lp','1ページ（縦長のランディングページ）',165000,2],
+    ['small','3〜5ページ（標準）',330000,4],
+    ['mid','6〜10ページ',495000,6],
+    ['ec','ネットショップ（商品30点まで）',660000,8]
+  ],
+  design:[
+    ['tmpl','見本をベースに色と写真を差し替え',0,0],
+    ['semi','見本をベースに、レイアウトも調整',55000,1],
+    ['full','ゼロからオリジナルで設計',165000,2]
+  ],
+  feat:[
+    ['form','お問い合わせフォーム',33000,0,1100],
+    ['reserve','予約システム（空き枠表示つき）',110000,2,3300],
+    ['blog','お知らせ・ブログの投稿機能',55000,1,1100],
+    ['cart','カート・カード決済',165000,3,5500],
+    ['member','会員登録・マイページ',132000,2,3300],
+    ['mail','メールマガジン配信',44000,1,2200],
+    ['multi','多言語（英語）対応',88000,2,0],
+    ['ana','アクセス解析の設置と月次レポート',22000,0,5500]
+  ],
+  asset:[
+    ['own','写真・文章はこちらで用意する（お客さま側）',0,0],
+    ['text','文章の作成をお願いする',66000,2],
+    ['photo','撮影をお願いする（半日）',44000,1],
+    ['logo','ロゴも作ってほしい',88000,2]
+  ],
+  base:{monthly:1650, note:'サーバー・ドメイン・保守の基本料'}
+};
+
+/* ============================================================
+   よくある質問
+   ============================================================ */
+const FAQ=[
+  ['この見本の中から選ばないといけませんか？','いいえ。見本は「言葉だけだと伝わりにくい部分」を見ていただくためのものです。「Aの写真の見せ方と、Dの料金表の並べ方を組み合わせたい」といったご要望も、そのまま形にできます。まったく別の雰囲気をご希望でしたら、参考にされているサイトのURLをいくつかお送りいただくのがいちばん早いです。'],
+  ['「サーバーが必要な機能」とは何ですか？','データを預かったり、メールを送ったりする仕組みのことです。たとえば予約フォームは、送信された内容をどこかに保存して、あなたに知らせる必要があります。この「どこか」がサーバーです。ページを見せるだけなら不要ですが、お客さまとやりとりする機能には基本的に必要になります。'],
+  ['月々の費用はどのくらいかかりますか？','サーバーとドメイン（URL）の維持だけなら、月に1,000〜2,000円ほどです。予約や決済など、機能を追加するとその分増えます。上の「概算の見積り」で、選んだ機能に応じた月額の目安が出ますのでご覧ください。'],
+  ['公開したあと、自分で更新できますか？','はい。「お知らせの投稿」「写真の入れ替え」「営業カレンダーの更新」などは、管理画面からご自身で行えるようにできます。お渡しのときに、実際に一度操作していただきながらご説明します。どうしても難しい部分は、更新代行としてお引き受けすることもできます。'],
+  ['写真がありません。どうすればいいですか？','見本の写真の枠は、いまはグレーの色面になっています。ここに実際のお写真が入ります。お手持ちのものでも十分なことが多いですが、なければ撮影も承ります。どうしても間に合わない場合は、有料の素材写真を使って公開し、あとから差し替えることもできます。'],
+  ['どのくらいの期間がかかりますか？','1ページのサイトで2〜3週間、5ページ前後で1〜2か月が目安です。いちばん時間がかかるのは原稿と写真のご用意なので、そこが早く揃うと全体も早く進みます。'],
+  ['スマホからの見え方も確認できますか？','はい。各見本の「プレビュー」を開くと、スマホ・タブレット・パソコンの表示を切り替えられます。実際にお手持ちのスマホから開いていただくこともできます。'],
+  ['公開したあとの相談は有料ですか？','軽微な修正やご質問は、保守の範囲でお引き受けしています。ページの追加や機能の新設など、まとまった作業になる場合はその都度お見積りをお出しします。']
+];
+
+/* ============================================================
+   描画
+   ============================================================ */
+const liked=new Set();
+const el=id=>document.getElementById(id);
+let tt;function toast(t,b){const e=el('toast');e.innerHTML='<b>'+t+'</b>'+(b||'');e.classList.add('on');
+  clearTimeout(tt);tt=setTimeout(()=>e.classList.remove('on'),3800);}
+
+/* 見本カード */
+el('pats').innerHTML=PATTERNS.map(p=>`
+  <article class="pat">
+    <div class="thumb" data-pv="${p.id}">
+      ${thumb(p)}
+      <span class="letter">${p.L}</span>
+      <button class="like" data-like="見本${p.L}：${p.style}（${p.name}）" aria-label="気になる">♥</button>
+      <div class="hoverbar">クリックでプレビュー</div>
+    </div>
+    <div class="bd">
+      <div class="style">見本 ${p.L} ／ ${p.style}</div>
+      <h3>${p.name}</h3>
+      <div class="who">向いている業種：${p.who}</div>
+      <p class="desc">${p.desc}</p>
+      <div class="tags">
+        ${p.tags.map(t=>`<span>${t}</span>`).join('')}
+        ${p.srv.map(t=>`<span class="srv">⚙ ${t}</span>`).join('')}
+      </div>
+      <div class="acts">
+        <button class="btn sm" data-pv="${p.id}">プレビュー</button>
+        <a class="btn out sm" href="${p.file}" target="_blank" rel="noopener">別タブで開く ↗</a>
+      </div>
+    </div>
+  </article>`).join('');
+
+/* できること */
+const CATS=['すべて',...new Set(FEATURES.map(f=>f[0]))];
+let ccat='すべて';
+el('canTabs').innerHTML=CATS.map(c=>`<button data-c="${c}" aria-pressed="${c===ccat}">${c}</button>`).join('');
+function drawCan(){
+  el('canGrid').innerHTML=FEATURES.filter(f=>ccat==='すべて'||f[0]===ccat).map(([cat,n,kind,d,ex])=>`
+    <div class="can-card">
+      <div class="top"><h4>${n}</h4><span class="badge ${kind==='静的'?'stat':'srv'}">${kind}</span></div>
+      <p>${d}</p>
+      <div class="ex">見られる見本：${ex}</div>
+      <button class="like lk" data-like="機能：${n}（${kind}）" style="position:absolute;top:14px;right:14px;display:none"></button>
+    </div>`).join('');
+  /* ♡ボタンを差し込む */
+  document.querySelectorAll('#canGrid .can-card').forEach((c,i)=>{
+    const list=FEATURES.filter(f=>ccat==='すべて'||f[0]===ccat);
+    const [ , n, kind]=list[i];
+    const key='機能：'+n+'（'+kind+'）';
+    const b=document.createElement('button');
+    b.className='btn gray sm'; b.dataset.like=key;
+    b.style.cssText='margin-top:12px;width:100%';
+    b.textContent=liked.has(key)?'♥ メモに入れました':'♡ 気になる';
+    c.appendChild(b);
+    c.querySelector('.lk').remove();
+  });
+}
+drawCan();
+el('canTabs').onclick=e=>{const b=e.target.closest('button');if(!b)return;
+  ccat=b.dataset.c;document.querySelectorAll('#canTabs button').forEach(x=>x.setAttribute('aria-pressed',x.dataset.c===ccat));drawCan();};
+
+/* FAQ */
+el('faqList').innerHTML=FAQ.map(([q,a])=>`<div class="faq-item"><button class="faq-q">${q}</button><div class="faq-a">${a}</div></div>`).join('');
+el('faqList').onclick=e=>{const b=e.target.closest('.faq-q');if(!b)return;b.parentElement.classList.toggle('open');};
+
+/* ♡ */
+document.addEventListener('click',e=>{
+  const b=e.target.closest('[data-like]'); if(!b) return;
+  const k=b.dataset.like;
+  if(liked.has(k)){ liked.delete(k); } else { liked.add(k); toast('メモに追加しました','ページ下部の「気になったもの メモ」にたまります。'); }
+  syncLikes();
+});
+function syncLikes(){
+  document.querySelectorAll('[data-like]').forEach(b=>{
+    const on=liked.has(b.dataset.like);
+    b.classList.toggle('on',on);
+    if(b.classList.contains('btn')) b.textContent=on?'♥ メモに入れました':'♡ 気になる';
+  });
+  el('likeCnt').textContent=liked.size;
+  drawSum();
+}
+function drawSum(){
+  const arr=[...liked];
+  el('sumList').innerHTML=arr.length?arr.map(x=>`<li>${x}</li>`).join(''):'<li class="sum-empty" style="display:block">まだ選ばれていません。上の「♡」を押すとここに集まります。</li>';
+  el('sumText').value=arr.length
+    ? 'Webサイトについて、気になったものをまとめました。\n\n'+arr.map(x=>'・'+x).join('\n')+'\n\n（Webサイト デザインカタログより）'
+    : '';
+}
+drawSum();
+
+el('likeBtn').onclick=()=>el('summary').scrollIntoView({behavior:'smooth'});
+el('copyBtn').onclick=async()=>{
+  const t=el('sumText').value;
+  if(!t){ toast('まだ何も選ばれていません','気になるデザインや機能の「♡」を押してみてください。'); return; }
+  try{ await navigator.clipboard.writeText(t); toast('コピーしました','メールやLINEに貼り付けてお送りください。'); }
+  catch(err){ el('sumText').select(); toast('テキストを選択しました','Ctrl+C（⌘+C）でコピーしてください。'); }
+};
+el('clearBtn').onclick=()=>{ liked.clear(); syncLikes(); toast('選択を消しました'); };
+
+/* ============================================================
+   プレビュー
+   ============================================================ */
+let pvW=1280, pvId=null;
+function openPv(id){
+  const p=PATTERNS.find(x=>x.id===id); pvId=id;
+  el('pvT').firstChild.textContent='見本 '+p.L+'：'+p.name;
+  el('pvS').textContent=p.style+' ／ '+p.who;
+  el('pvIframe').src=p.file;
+  el('pvOpen').href=p.file;
+  el('pv').classList.add('on');
+  document.body.style.overflow='hidden';
+  fitPv();
+}
+function fitPv(){
+  const stage=el('pvStage'), frame=el('pvFrame'), ifr=el('pvIframe');
+  const availW=stage.clientWidth-36, availH=stage.clientHeight-36;
+  const s=Math.min(1, availW/pvW);
+  let h=Math.round(availH/s);
+  if(pvW<500) h=Math.min(h,844);          /* スマホは端末らしい高さで止める */
+  frame.style.width=pvW+'px'; frame.style.height=h+'px';
+  ifr.style.width=pvW+'px'; ifr.style.height=h+'px';
+  frame.style.transform='scale('+s.toFixed(3)+')';
+  frame.style.marginBottom=Math.round(h*s-h)+'px';
+}
+document.addEventListener('click',e=>{
+  const t=e.target.closest('[data-pv]'); if(!t) return;
+  if(e.target.closest('[data-like]')) return;
+  openPv(t.dataset.pv);
+});
+el('pvX').onclick=()=>{ el('pv').classList.remove('on'); el('pvIframe').src='about:blank'; document.body.style.overflow=''; };
+document.addEventListener('keydown',e=>{ if(e.key==='Escape'&&el('pv').classList.contains('on')) el('pvX').click(); });
+el('devs').onclick=e=>{const b=e.target.closest('button');if(!b)return;
+  pvW=+b.dataset.w;
+  document.querySelectorAll('#devs button').forEach(x=>x.setAttribute('aria-pressed',+x.dataset.w===pvW));
+  fitPv();};
+addEventListener('resize',()=>{ if(el('pv').classList.contains('on')) fitPv(); });
+
+/* ============================================================
+   概算見積り
+   ============================================================ */
+const yen=n=>'¥'+n.toLocaleString();
+function radios(box,key,name){
+  el(box).innerHTML=PRICE[key].map(([id,label,price,w],i)=>`
+    <label class="opt"><input type="radio" name="${name}" value="${id}" ${i===0?'checked':''}>
+      <span><span class="nm">${label}</span><span class="pp">${price?'＋'+yen(price):'追加費用なし'}</span></span></label>`).join('');
+}
+radios('optScale','scale','scale'); radios('optDesign','design','design'); radios('optAsset','asset','asset');
+el('optFeat').innerHTML=PRICE.feat.map(([id,label,price,w,m])=>`
+  <label class="opt"><input type="checkbox" value="${id}">
+    <span><span class="nm">${label}</span><span class="pp">＋${yen(price)}${m?'／月額 +'+yen(m):''}</span></span></label>`).join('');
+
+function calc(){
+  const get=(key,name)=>{const v=document.querySelector(`input[name=${name}]:checked`).value;return PRICE[key].find(x=>x[0]===v);};
+  const sc=get('scale','scale'), de=get('design','design'), as=get('asset','asset');
+  const fs=[...document.querySelectorAll('#optFeat input:checked')].map(i=>PRICE.feat.find(f=>f[0]===i.value));
+  let total=sc[2]+de[2]+as[2], weeks=sc[3]+de[3]+as[3], monthly=PRICE.base.monthly;
+  fs.forEach(f=>{ total+=f[2]; weeks+=f[3]; monthly+=f[4]; });
+  const rows=[[sc[1],sc[2]],[de[1],de[2]],...fs.map(f=>[f[1],f[2]]),[as[1],as[2]]].filter(r=>r[1]>=0);
+  el('estRows').innerHTML=rows.map(([n,p])=>`<div class="row"><span>${n}</span><span>${p?yen(p):'—'}</span></div>`).join('');
+  el('estTotal').textContent=yen(total);
+  el('estMonth').textContent=yen(monthly);
+  el('estWeeks').textContent='約'+weeks+'〜'+(weeks+3)+'週間';
+  el('estNote').innerHTML='※ 金額はサンプルです。月額には'+PRICE.base.note+'（'+yen(PRICE.base.monthly)+'）を含みます。決済手数料など、外部サービスの費用は別途かかります。';
+  return {total,monthly,weeks,rows};
+}
+document.querySelectorAll('#optScale input,#optDesign input,#optFeat input,#optAsset input').forEach(i=>i.onchange=calc);
+calc();
+el('estCopy').onclick=()=>{
+  const r=calc();
+  const key='見積りの目安：初期 '+yen(r.total)+'／月額 '+yen(r.monthly)+'／約'+r.weeks+'週間（'+r.rows.map(x=>x[0]).join('、')+'）';
+  [...liked].forEach(k=>{ if(k.startsWith('見積りの目安：')) liked.delete(k); });
+  liked.add(key); syncLikes();
+  toast('見積りの目安をメモに追加しました','ページ下部でコピーできます。');
+  el('summary').scrollIntoView({behavior:'smooth'});
+};
+
+/* その他 */
+const nav=el('nav'),burger=el('burger');
+burger.onclick=()=>{nav.classList.toggle('open');burger.textContent=nav.classList.contains('open')?'×':'☰';};
+nav.querySelectorAll('a').forEach(a=>a.onclick=()=>{nav.classList.remove('open');burger.textContent='☰';});
+const io=new IntersectionObserver(es=>es.forEach(e=>{if(e.isIntersecting){e.target.classList.add('in');io.unobserve(e.target);}}),{threshold:.06});
+document.querySelectorAll('.reveal').forEach(x=>io.observe(x));
+</script>
+</body>
+</html>

@@ -1,0 +1,699 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>みなと社会保険労務士事務所 ｜ デザイン見本 D 信頼・実直</title>
+<meta name="description" content="Webサイトデザイン見本 D ― 情報量が多くても読みやすい、士業・クリニック向けの信頼感デザイン(架空の事務所)">
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+:root{
+  --navy:#0E3A63; --navy-d:#092845; --navy-l:#2E6BA8; --sky:#EAF3FA; --sky2:#F5F9FC;
+  --ink:#20303C; --dim:#5F7383; --line:#DCE6EE; --gold:#B8892E; --ok:#1B7A5A;
+  --sans:"Hiragino Kaku Gothic ProN","Yu Gothic","Noto Sans JP",system-ui,sans-serif;
+  --serif:"Hiragino Mincho ProN","Yu Mincho",serif;
+}
+html{scroll-behavior:smooth}
+body{font-family:var(--sans);color:var(--ink);background:#fff;line-height:1.95;overflow-x:hidden}
+a{color:inherit}svg{display:block}
+
+/* デモ共通 */
+.demo-bar{position:fixed;inset:0 0 auto 0;z-index:900;display:flex;gap:12px;align-items:center;flex-wrap:wrap;padding:8px 14px;background:#0B1E2E;color:#E7F0F7;font-size:12.5px}
+.demo-bar a.demo-back{text-decoration:none;background:rgba(255,255,255,.14);padding:5px 12px;border-radius:999px;white-space:nowrap}
+.demo-note{opacity:.8}.demo-note b{color:#9FD0F5}
+.demo-toggle{margin-left:auto;font:inherit;cursor:pointer;color:#0B1E2E;background:#9FD0F5;border:0;padding:6px 14px;border-radius:999px;white-space:nowrap}
+.demo-toggle[aria-pressed="true"]{background:#7EC8A9}
+body{padding-top:42px}
+html.embedded body{padding-top:0}
+html.embedded .demo-bar{display:none}
+@media(max-width:600px){.demo-note{display:none}}
+.hint-badge{display:none}
+body.hints .hint-badge{display:inline-flex;position:absolute;z-index:60;top:-13px;left:10px;background:#166B4F;color:#fff;font-size:11px;line-height:1.5;padding:3px 10px;border-radius:999px;box-shadow:0 4px 14px rgba(0,0,0,.18);max-width:calc(100% - 20px)}
+body.hints .has-hint{position:relative;outline:2px dashed #166B4F;outline-offset:6px;border-radius:4px}
+.toast{position:fixed;left:50%;bottom:26px;transform:translate(-50%,26px);z-index:950;opacity:0;pointer-events:none;background:#0B1E2E;color:#E7F0F7;padding:14px 20px;border-radius:8px;max-width:min(92vw,430px);box-shadow:0 18px 44px rgba(0,0,0,.3);transition:.3s;font-size:13px;line-height:1.75}
+.toast.on{opacity:1;transform:translate(-50%,0)}
+.toast b{display:block;color:#9FD0F5;margin-bottom:2px}
+.toast small{display:block;margin-top:6px;opacity:.6;font-size:11.5px}
+.spin{display:inline-block;width:13px;height:13px;border:2px solid rgba(255,255,255,.3);border-top-color:#fff;border-radius:50%;animation:sp .7s linear infinite;vertical-align:-2px;margin-right:6px}
+@keyframes sp{to{transform:rotate(360deg)}}
+.ph{position:relative;overflow:hidden;background:#DCE6EE}
+.ph::after{content:attr(data-label);position:absolute;right:9px;bottom:6px;font-size:9.5px;letter-spacing:.18em;color:rgba(32,48,60,.35)}
+.b1{background:linear-gradient(150deg,#CFE0EE,#8FB4D2)}
+.b2{background:radial-gradient(80% 70% at 30% 25%,#EAF3FA,#A9C6DD)}
+.b3{background:linear-gradient(30deg,#B7CFE2,#E7F0F7)}
+
+/* ヘッダー */
+.topbar{background:var(--navy-d);color:#CFE0EE;font-size:11.5px}
+.topbar .in{max-width:1180px;margin:0 auto;padding:6px 22px;display:flex;gap:18px;flex-wrap:wrap}
+.topbar .in span:last-child{margin-left:auto}
+header.site{position:sticky;top:42px;z-index:400;background:#fff;border-bottom:1px solid var(--line);box-shadow:0 2px 12px rgba(14,58,99,.05)}
+html.embedded header.site{top:0}
+.hd{max-width:1180px;margin:0 auto;padding:14px 22px;display:flex;align-items:center;gap:22px}
+.logo{text-decoration:none;display:flex;align-items:center;gap:11px}
+.logo .mk{width:38px;height:38px;background:var(--navy);color:#fff;display:grid;place-content:center;font-family:var(--serif);font-size:19px;border-radius:3px}
+.logo .tx{font-family:var(--serif);font-size:17px;letter-spacing:.06em;line-height:1.35}
+.logo .tx small{display:block;font-family:var(--sans);font-size:9.5px;letter-spacing:.16em;color:var(--dim)}
+nav.main{margin-left:auto;display:flex;gap:24px;font-size:13px}
+nav.main a{text-decoration:none;padding:6px 0;border-bottom:2px solid transparent;transition:.25s}
+nav.main a:hover{color:var(--navy-l);border-color:var(--navy-l)}
+.hd-cta{display:flex;gap:8px;align-items:center}
+.hd-tel{text-align:right;line-height:1.3}
+.hd-tel b{font-family:var(--serif);font-size:20px;color:var(--navy);letter-spacing:.03em;display:block}
+.hd-tel small{font-size:10px;color:var(--dim)}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;text-decoration:none;font:inherit;font-size:14px;font-weight:700;padding:14px 26px;border-radius:6px;cursor:pointer;border:2px solid transparent;transition:.25s;line-height:1.4}
+.btn.pri{background:var(--gold);color:#fff}
+.btn.pri:hover{background:#9E7526;transform:translateY(-1px);box-shadow:0 8px 20px rgba(184,137,46,.3)}
+.btn.sec{background:var(--navy);color:#fff}
+.btn.sec:hover{background:var(--navy-d)}
+.btn.out{border-color:var(--navy);color:var(--navy);background:#fff}
+.btn.out:hover{background:var(--sky)}
+.btn.sm{font-size:13px;padding:10px 18px}
+.burger{display:none;margin-left:auto;background:none;border:0;font-size:22px;cursor:pointer;color:var(--navy);z-index:600}
+@media(max-width:1000px){.hd-tel{display:none}}
+@media(max-width:860px){
+  nav.main{position:fixed;inset:0;background:#fff;flex-direction:column;justify-content:center;align-items:center;gap:22px;font-size:16px;clip-path:inset(0 0 0 100%);pointer-events:none;transition:clip-path .4s cubic-bezier(.4,0,.2,1);z-index:500;margin:0}
+  nav.main.open{clip-path:inset(0);pointer-events:auto}
+  .burger{display:block}.hd-cta{display:none}
+}
+
+/* ヒーロー */
+.hero{background:linear-gradient(180deg,var(--sky),#fff);position:relative;overflow:hidden}
+.hero .in{max-width:1180px;margin:0 auto;padding:56px 22px 60px;display:grid;grid-template-columns:1.1fr .9fr;gap:44px;align-items:center}
+.hero .tagline{display:inline-block;background:var(--navy);color:#fff;font-size:12px;padding:5px 16px;border-radius:999px;margin-bottom:20px;letter-spacing:.04em}
+.hero h1{font-family:var(--serif);font-size:clamp(26px,4.2vw,44px);line-height:1.55;letter-spacing:.03em;font-weight:600}
+.hero h1 mark{background:linear-gradient(transparent 62%,rgba(184,137,46,.32) 62%);color:inherit}
+.hero .lead{margin-top:22px;font-size:15px;color:var(--dim)}
+.hero .pts{margin-top:26px;display:flex;gap:10px;flex-wrap:wrap}
+.hero .pts span{background:#fff;border:1px solid var(--line);border-radius:999px;font-size:12.5px;padding:7px 15px;color:var(--navy)}
+.hero .pts span::before{content:"✓ ";color:var(--ok);font-weight:700}
+.hero .cta{margin-top:32px;display:flex;gap:12px;flex-wrap:wrap}
+.hero .visual{position:relative}
+.hero .visual .ph{aspect-ratio:4/3;border-radius:10px}
+.hero .stat{position:absolute;right:-10px;bottom:-22px;background:#fff;border-radius:10px;box-shadow:0 12px 34px rgba(14,58,99,.16);padding:16px 22px;text-align:center}
+.hero .stat b{font-family:var(--serif);font-size:30px;color:var(--navy);display:block;line-height:1.2}
+.hero .stat small{font-size:11px;color:var(--dim)}
+@media(max-width:900px){.hero .in{grid-template-columns:1fr;padding-bottom:40px}.hero .visual{order:-1}}
+
+section{padding:clamp(56px,7vw,90px) 22px}
+.inner{max-width:1180px;margin:0 auto}
+.sec-head{text-align:center;margin-bottom:44px}
+.sec-head .en{font-size:11px;letter-spacing:.28em;color:var(--navy-l);font-weight:700;margin-bottom:10px}
+.sec-head h2{font-family:var(--serif);font-size:clamp(22px,3.2vw,32px);letter-spacing:.06em;font-weight:600}
+.sec-head h2::after{content:"";display:block;width:44px;height:3px;background:var(--gold);margin:16px auto 0}
+.sec-head p{margin-top:16px;font-size:14px;color:var(--dim)}
+.reveal{opacity:0;transform:translateY(22px);transition:.8s cubic-bezier(.2,.8,.3,1)}
+.reveal.in{opacity:1;transform:none}
+
+/* 悩み */
+.trouble{background:var(--sky2)}
+.tr-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:18px}
+.tr-card{background:#fff;border:1px solid var(--line);border-radius:10px;padding:26px 22px;text-align:center;position:relative}
+.tr-card .q{width:38px;height:38px;margin:0 auto 14px;border-radius:50%;background:var(--sky);color:var(--navy);display:grid;place-content:center;font-family:var(--serif);font-size:18px}
+.tr-card p{font-size:13.5px}
+.tr-arrow{text-align:center;font-size:34px;color:var(--navy-l);margin:26px 0 6px}
+.tr-answer{background:var(--navy);color:#fff;border-radius:12px;padding:34px;text-align:center}
+.tr-answer h3{font-family:var(--serif);font-size:clamp(19px,2.6vw,26px);letter-spacing:.05em;font-weight:600}
+.tr-answer p{font-size:14px;opacity:.85;margin-top:14px}
+@media(max-width:900px){.tr-grid{grid-template-columns:1fr 1fr}}
+
+/* 業務 */
+.svc{display:grid;grid-template-columns:repeat(3,1fr);gap:22px}
+.svc-card{border:1px solid var(--line);border-radius:10px;overflow:hidden;transition:.3s;background:#fff}
+.svc-card:hover{box-shadow:0 14px 34px rgba(14,58,99,.1);transform:translateY(-3px)}
+.svc-card .ph{aspect-ratio:16/9}
+.svc-card .bd{padding:24px}
+.svc-card h3{font-family:var(--serif);font-size:18px;margin-bottom:10px;font-weight:600}
+.svc-card p{font-size:13px;color:var(--dim)}
+.svc-card ul{list-style:none;margin-top:14px;font-size:12.5px}
+.svc-card li{padding:5px 0 5px 20px;position:relative;border-top:1px dashed var(--line)}
+.svc-card li::before{content:"▶";position:absolute;left:2px;color:var(--navy-l);font-size:9px;top:9px}
+@media(max-width:900px){.svc{grid-template-columns:1fr}}
+
+/* 料金 */
+.price{background:var(--sky2)}
+.ptable{width:100%;border-collapse:collapse;background:#fff;font-size:13.5px;border:1px solid var(--line)}
+.ptable th,.ptable td{padding:15px 18px;border-bottom:1px solid var(--line);text-align:left}
+.ptable thead th{background:var(--navy);color:#fff;font-size:12.5px;letter-spacing:.05em;font-weight:600}
+.ptable tbody th{background:var(--sky2);font-weight:600;width:32%}
+.ptable td.pr{font-family:var(--serif);color:var(--navy);white-space:nowrap;font-size:15px}
+.ptable tr:hover td{background:#FAFCFE}
+.pnote{font-size:12px;color:var(--dim);margin-top:14px}
+@media(max-width:700px){.ptable,.ptable tbody,.ptable tr,.ptable th,.ptable td{display:block;width:auto}
+  .ptable thead{display:none}.ptable tr{border-bottom:2px solid var(--line);padding:6px 0}
+  .ptable tbody th{width:auto;background:#fff;padding-bottom:4px}.ptable td{border:0;padding-top:2px}}
+
+/* 流れ */
+.flow{display:grid;grid-template-columns:repeat(5,1fr);gap:14px;counter-reset:s}
+.flow-step{background:#fff;border:1px solid var(--line);border-radius:10px;padding:24px 18px;text-align:center;position:relative}
+.flow-step::before{counter-increment:s;content:"STEP " counter(s);display:block;font-size:10.5px;letter-spacing:.16em;color:var(--navy-l);font-weight:700;margin-bottom:12px}
+.flow-step .ic{width:46px;height:46px;margin:0 auto 12px;border-radius:50%;background:var(--sky);color:var(--navy);display:grid;place-content:center}
+.flow-step h4{font-size:14.5px;margin-bottom:8px}
+.flow-step p{font-size:12px;color:var(--dim)}
+@media(max-width:900px){.flow{grid-template-columns:1fr 1fr}}
+
+/* FAQ */
+.faq-search{max-width:560px;margin:0 auto 30px;position:relative}
+.faq-search input{width:100%;font:inherit;font-size:15px;padding:15px 20px 15px 48px;border:2px solid var(--line);border-radius:999px;transition:.25s}
+.faq-search input:focus{outline:none;border-color:var(--navy-l);box-shadow:0 0 0 4px rgba(46,107,168,.1)}
+.faq-search svg{position:absolute;left:18px;top:50%;transform:translateY(-50%);color:var(--dim)}
+.faq-cats{display:flex;justify-content:center;gap:8px;flex-wrap:wrap;margin-bottom:26px}
+.faq-cats button{font:inherit;font-size:12.5px;background:#fff;border:1px solid var(--line);border-radius:999px;padding:7px 18px;cursor:pointer;transition:.25s;color:var(--dim)}
+.faq-cats button[aria-pressed="true"]{background:var(--navy);color:#fff;border-color:var(--navy)}
+.faq-list{max-width:820px;margin:0 auto}
+.faq-item{border:1px solid var(--line);border-radius:8px;margin-bottom:10px;overflow:hidden;background:#fff}
+.faq-q{width:100%;text-align:left;font:inherit;font-size:14.5px;background:#fff;border:0;padding:18px 52px 18px 54px;cursor:pointer;position:relative;line-height:1.7}
+.faq-q::before{content:"Q";position:absolute;left:18px;top:16px;width:24px;height:24px;background:var(--navy);color:#fff;border-radius:50%;display:grid;place-content:center;font-size:12px;font-family:var(--serif)}
+.faq-q::after{content:"＋";position:absolute;right:20px;top:17px;color:var(--navy-l);font-size:17px;transition:.3s}
+.faq-item.open .faq-q::after{content:"−"}
+.faq-q:hover{background:var(--sky2)}
+.faq-a{display:none;padding:0 24px 22px 54px;font-size:13.5px;color:var(--dim);position:relative;border-top:1px solid var(--line);padding-top:18px}
+.faq-a::before{content:"A";position:absolute;left:18px;top:16px;width:24px;height:24px;background:var(--gold);color:#fff;border-radius:50%;display:grid;place-content:center;font-size:12px;font-family:var(--serif)}
+.faq-item.open .faq-a{display:block}
+.faq-cat{display:inline-block;font-size:10.5px;background:var(--sky);color:var(--navy);padding:2px 10px;border-radius:999px;margin-right:8px;vertical-align:2px}
+.faq-none{text-align:center;color:var(--dim);font-size:13.5px;padding:30px}
+.hl{background:#FFF0B3;font-weight:700}
+
+/* コラム */
+.col{background:var(--sky2)}
+.col-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:20px}
+.col-card{background:#fff;border:1px solid var(--line);border-radius:10px;overflow:hidden;text-decoration:none;transition:.3s;display:block}
+.col-card:hover{box-shadow:0 12px 30px rgba(14,58,99,.1);transform:translateY(-3px)}
+.col-card .ph{aspect-ratio:16/9}
+.col-card .bd{padding:20px}
+.col-card time{font-size:11.5px;color:var(--dim)}
+.col-card .cat{font-size:10.5px;background:var(--sky);color:var(--navy);padding:2px 10px;border-radius:999px;margin-left:8px}
+.col-card h3{font-size:15px;margin:10px 0 8px;line-height:1.65}
+.col-card p{font-size:12.5px;color:var(--dim)}
+@media(max-width:900px){.col-grid{grid-template-columns:1fr}}
+
+/* 資料DL */
+.dl{background:var(--navy);color:#fff}
+.dl .box{max-width:900px;margin:0 auto;display:grid;grid-template-columns:1fr 1fr;gap:40px;align-items:center}
+.dl h2{font-family:var(--serif);font-size:clamp(20px,2.8vw,28px);font-weight:600;line-height:1.6}
+.dl p{font-size:13.5px;opacity:.85;margin-top:16px}
+.dl ul{list-style:none;margin-top:18px;font-size:13px}
+.dl li{padding:4px 0 4px 22px;position:relative}
+.dl li::before{content:"✓";position:absolute;left:0;color:#7FD3B0}
+.dl form{background:#fff;border-radius:12px;padding:28px;color:var(--ink)}
+.dl form h3{font-size:16px;margin-bottom:6px}
+.dl form .sub{font-size:12px;color:var(--dim);margin-bottom:18px}
+@media(max-width:820px){.dl .box{grid-template-columns:1fr}}
+
+/* フォーム */
+.field{margin-bottom:20px}
+.field label{display:block;font-size:13px;font-weight:700;margin-bottom:8px}
+.field .req{background:#C0392B;color:#fff;font-size:10px;padding:2px 8px;border-radius:3px;margin-left:8px;font-weight:400;vertical-align:2px}
+.field .opt{background:#EEF2F5;color:var(--dim);font-size:10px;padding:2px 8px;border-radius:3px;margin-left:8px;font-weight:400;vertical-align:2px}
+.field input,.field select,.field textarea{width:100%;font:inherit;font-size:15px;padding:13px 15px;border:1px solid var(--line);border-radius:6px;background:#FBFDFE;transition:.25s}
+.field input:focus,.field select:focus,.field textarea:focus{outline:none;border-color:var(--navy-l);background:#fff;box-shadow:0 0 0 3px rgba(46,107,168,.12)}
+.field.bad input,.field.bad select,.field.bad textarea{border-color:#C0392B;background:#FDF4F3}
+.field .err{display:none;color:#C0392B;font-size:12px;margin-top:6px}
+.field.bad .err{display:block}
+.field .hint{font-size:11.5px;color:var(--dim);margin-top:6px}
+.row2{display:grid;grid-template-columns:1fr 1fr;gap:18px}
+@media(max-width:600px){.row2{grid-template-columns:1fr;gap:0}}
+.radios{display:flex;gap:10px;flex-wrap:wrap}
+.radios label{display:flex;align-items:center;gap:7px;border:1px solid var(--line);border-radius:6px;padding:11px 16px;cursor:pointer;font-size:13.5px;font-weight:400;margin:0;transition:.2s}
+.radios label:has(input:checked){border-color:var(--navy);background:var(--sky)}
+.radios input{width:auto}
+.form-card{max-width:760px;margin:0 auto;background:#fff;border:1px solid var(--line);border-radius:12px;padding:clamp(24px,4vw,40px);box-shadow:0 12px 34px rgba(14,58,99,.07)}
+.confirm{display:none}.confirm.on{display:block}
+.confirm table{width:100%;font-size:14px;border-top:1px solid var(--line)}
+.confirm th{text-align:left;width:34%;padding:14px 10px 14px 0;border-bottom:1px solid var(--line);font-size:12.5px;color:var(--dim);vertical-align:top}
+.confirm td{padding:14px 0;border-bottom:1px solid var(--line)}
+.privacy{background:var(--sky2);border:1px solid var(--line);border-radius:8px;padding:16px;font-size:12px;color:var(--dim);max-height:110px;overflow-y:auto;margin-bottom:16px}
+
+/* 事務所 */
+.prof{display:grid;grid-template-columns:.8fr 1.2fr;gap:44px;align-items:start}
+.prof .ph{aspect-ratio:3/4;border-radius:10px}
+.prof h3{font-family:var(--serif);font-size:22px;font-weight:600}
+.prof .role{font-size:12.5px;color:var(--navy-l);margin-bottom:16px}
+.prof p{font-size:13.5px;color:var(--dim);margin-bottom:18px}
+.prof table{width:100%;font-size:13px}
+.prof th{text-align:left;width:7em;color:var(--dim);font-weight:400;font-size:12.5px;padding:11px 0;border-bottom:1px solid var(--line);vertical-align:top}
+.prof td{padding:11px 0;border-bottom:1px solid var(--line)}
+@media(max-width:820px){.prof{grid-template-columns:1fr}}
+
+footer.site{background:var(--navy-d);color:#C3D6E5;padding:56px 22px 26px;font-size:13px}
+.ft{max-width:1180px;margin:0 auto;display:grid;grid-template-columns:1.4fr 1fr 1fr 1fr;gap:34px}
+.ft h4{font-size:11px;letter-spacing:.18em;color:#7FB1DC;margin-bottom:14px;font-weight:700}
+.ft ul{list-style:none}.ft li{margin-bottom:8px}
+.ft a{text-decoration:none;opacity:.85}.ft a:hover{opacity:1;text-decoration:underline}
+.ft p{font-size:12px;opacity:.7;margin-top:12px}
+.ft-btm{max-width:1180px;margin:36px auto 0;padding-top:18px;border-top:1px solid rgba(255,255,255,.12);display:flex;justify-content:space-between;gap:14px;flex-wrap:wrap;font-size:11.5px;opacity:.6}
+@media(max-width:860px){.ft{grid-template-columns:1fr 1fr}}
+.sticky-cta{position:fixed;left:0;right:0;bottom:0;z-index:500;display:none;gap:8px;padding:9px 10px;background:rgba(255,255,255,.96);border-top:1px solid var(--line);box-shadow:0 -4px 16px rgba(14,58,99,.1)}
+.sticky-cta a{flex:1}
+@media(max-width:860px){.sticky-cta{display:flex}body{padding-bottom:66px}}
+</style>
+</head>
+<body>
+
+<div class="demo-bar">
+  <a class="demo-back" href="index.html">← カタログへ戻る</a>
+  <span class="demo-note">デザイン見本 D ／ 信頼・実直 ― <b>みなと社会保険労務士事務所</b>（架空の事務所です）</span>
+  <button class="demo-toggle" id="hintBtn" aria-pressed="false">⚙ サーバーが要る機能を示す</button>
+</div>
+
+<div class="topbar">
+  <div class="in">
+    <span>○○県○○市の社会保険労務士事務所</span>
+    <span>受付 平日 9:00–18:00</span>
+    <span>初回相談 無料</span>
+  </div>
+</div>
+
+<header class="site">
+  <div class="hd">
+    <a class="logo" href="#top">
+      <span class="mk">港</span>
+      <span class="tx">みなと社会保険労務士事務所<small>MINATO LABOR &amp; SOCIAL SECURITY OFFICE</small></span>
+    </a>
+    <button class="burger" id="burger" aria-label="メニュー">☰</button>
+    <nav class="main" id="nav">
+      <a href="#trouble">お悩み</a><a href="#service">業務内容</a><a href="#price">料金</a>
+      <a href="#flow">ご相談の流れ</a><a href="#faq">よくある質問</a><a href="#column">コラム</a><a href="#profile">事務所案内</a>
+    </nav>
+    <div class="hd-cta">
+      <div class="hd-tel"><b>000-000-0000</b><small>平日 9:00–18:00</small></div>
+      <a class="btn pri sm" href="#contact">無料相談する</a>
+    </div>
+  </div>
+</header>
+
+<div class="hero" id="top">
+  <div class="in">
+    <div>
+      <span class="tagline">従業員10名前後の会社さま・個人事業主さま向け</span>
+      <h1>人を雇うと出てくる<br><mark>「これ、どうすれば？」</mark>を、<br>まるごと引き受けます。</h1>
+      <p class="lead">給与計算、社会保険の手続き、就業規則、助成金。本業に集中していただくために、労務まわりの面倒はこちらへ。初回のご相談は無料です。</p>
+      <div class="pts"><span>設立20年・顧問先180社</span><span>初回相談 無料</span><span>オンライン面談可</span><span>助成金の申請実績多数</span></div>
+      <div class="cta">
+        <a class="btn pri" href="#contact">無料相談を申し込む</a>
+        <a class="btn out" href="#price">料金を見る</a>
+      </div>
+    </div>
+    <div class="visual">
+      <div class="ph b1" data-label="PHOTO"></div>
+      <div class="stat"><b>180</b><small>社の顧問実績</small></div>
+    </div>
+  </div>
+</div>
+
+<section class="trouble" id="trouble">
+  <div class="inner">
+    <div class="sec-head reveal">
+      <div class="en">TROUBLE</div>
+      <h2>こんなお悩みはありませんか</h2>
+    </div>
+    <div class="tr-grid reveal">
+      <div class="tr-card"><div class="q">Q</div><p>初めて人を雇うが、何の手続きが要るのか分からない</p></div>
+      <div class="tr-card"><div class="q">Q</div><p>給与計算に毎月まる二日かかっている</p></div>
+      <div class="tr-card"><div class="q">Q</div><p>就業規則が10年前のままになっている</p></div>
+      <div class="tr-card"><div class="q">Q</div><p>使える助成金があるのか調べる時間がない</p></div>
+    </div>
+    <div class="tr-arrow reveal">▼</div>
+    <div class="tr-answer reveal">
+      <h3>その一つひとつを、月々の顧問料の中で。</h3>
+      <p>手続きの代行はもちろん、「これは相談していいことなのか」という段階からお気軽にどうぞ。<br>電話・メール・チャットでのご相談は回数無制限です。</p>
+    </div>
+  </div>
+</section>
+
+<section id="service">
+  <div class="inner">
+    <div class="sec-head reveal">
+      <div class="en">SERVICE</div>
+      <h2>業務内容</h2>
+      <p>ご契約は必要なものだけを選べます。</p>
+    </div>
+    <div class="svc reveal">
+      <div class="svc-card">
+        <div class="ph b2" data-label="PHOTO"></div>
+        <div class="bd">
+          <h3>労務顧問</h3>
+          <p>いつでも相談できる窓口として、労務まわり全般をお引き受けします。</p>
+          <ul><li>労働・社会保険の手続き代行</li><li>入退社の手続き</li><li>労務相談（回数無制限）</li><li>法改正のお知らせ</li></ul>
+        </div>
+      </div>
+      <div class="svc-card">
+        <div class="ph b3" data-label="PHOTO"></div>
+        <div class="bd">
+          <h3>給与計算</h3>
+          <p>勤怠データをお預かりして、給与明細の発行までを代行します。</p>
+          <ul><li>月次の給与計算・明細発行</li><li>賞与計算</li><li>年末調整</li><li>住民税の管理</li></ul>
+        </div>
+      </div>
+      <div class="svc-card">
+        <div class="ph b1" data-label="PHOTO"></div>
+        <div class="bd">
+          <h3>就業規則・助成金</h3>
+          <p>会社の実態に合った規則づくりと、使える助成金のご提案。</p>
+          <ul><li>就業規則の新規作成・見直し</li><li>各種規程の整備</li><li>助成金の診断・申請代行</li><li>労務監査</li></ul>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="price" id="price">
+  <div class="inner">
+    <div class="sec-head reveal">
+      <div class="en">PRICE</div>
+      <h2>料金のご案内</h2>
+      <p>すべて税込表示です。従業員数によって変わります。</p>
+    </div>
+    <div class="reveal">
+      <table class="ptable">
+        <thead><tr><th>サービス</th><th>内容</th><th>料金</th></tr></thead>
+        <tbody>
+          <tr><th>労務顧問（〜5名）</th><td>手続き代行・相談無制限</td><td class="pr">月額 22,000円</td></tr>
+          <tr><th>労務顧問（6〜10名）</th><td>手続き代行・相談無制限</td><td class="pr">月額 33,000円</td></tr>
+          <tr><th>労務顧問（11〜20名）</th><td>手続き代行・相談無制限</td><td class="pr">月額 44,000円</td></tr>
+          <tr><th>給与計算</th><td>基本料＋従業員1名あたり</td><td class="pr">月額 11,000円＋1,100円／名</td></tr>
+          <tr><th>就業規則の新規作成</th><td>本則＋関連規程3種</td><td class="pr">220,000円〜</td></tr>
+          <tr><th>就業規則の見直し</th><td>現行規則の点検・改定</td><td class="pr">110,000円〜</td></tr>
+          <tr><th>助成金の申請代行</th><td>着手金なし・成功報酬制</td><td class="pr">受給額の 15%</td></tr>
+          <tr><th>スポット相談</th><td>1時間・オンライン可</td><td class="pr">11,000円</td></tr>
+        </tbody>
+      </table>
+      <p class="pnote">※ 初回のご相談（60分）は無料です。※ 顧問契約中のスポット相談は無料です。※ 記載のない業務もお見積りいたします。</p>
+    </div>
+  </div>
+</section>
+
+<section id="flow">
+  <div class="inner">
+    <div class="sec-head reveal">
+      <div class="en">FLOW</div>
+      <h2>ご相談の流れ</h2>
+      <p>お申し込みから契約までは、おおむね2週間ほどです。</p>
+    </div>
+    <div class="flow reveal">
+      <div class="flow-step"><div class="ic">✉</div><h4>お問い合わせ</h4><p>フォームかお電話で。24時間受け付けています。</p></div>
+      <div class="flow-step"><div class="ic">☎</div><h4>日程調整</h4><p>2営業日以内にご連絡し、面談の日を決めます。</p></div>
+      <div class="flow-step"><div class="ic">💬</div><h4>無料相談（60分）</h4><p>訪問・来所・オンラインからお選びください。</p></div>
+      <div class="flow-step"><div class="ic">📄</div><h4>お見積り</h4><p>必要な業務だけを組んだ見積書をお出しします。</p></div>
+      <div class="flow-step"><div class="ic">✓</div><h4>ご契約・開始</h4><p>翌月1日から業務を開始します。</p></div>
+    </div>
+  </div>
+</section>
+
+<section class="trouble" id="faq">
+  <div class="inner">
+    <div class="sec-head reveal">
+      <div class="en">FAQ</div>
+      <h2>よくある質問</h2>
+      <p>キーワードで検索できます。</p>
+    </div>
+    <div class="faq-search reveal has-hint" data-hint="⚙ 全文検索（件数が増えるとサーバー側の検索が必要）">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
+      <input type="search" id="faqQ" placeholder="例）助成金、就業規則、オンライン">
+    </div>
+    <div class="faq-cats reveal" id="faqCats"></div>
+    <div class="faq-list reveal" id="faqList"></div>
+  </div>
+</section>
+
+<section class="col" id="column">
+  <div class="inner">
+    <div class="sec-head reveal">
+      <div class="en">COLUMN</div>
+      <h2>労務コラム</h2>
+      <p>法改正や、よくご質問いただくことを書いています。</p>
+    </div>
+    <div class="faq-cats reveal" id="colCats"></div>
+    <div class="col-grid reveal has-hint" data-hint="⚙ 記事の投稿・編集をブログ管理画面から（要サーバー）" id="colGrid"></div>
+    <div style="text-align:center;margin-top:34px" class="reveal">
+      <button class="btn out" id="colMore">記事をもっと読み込む</button>
+    </div>
+  </div>
+</section>
+
+<section class="dl">
+  <div class="inner">
+    <div class="box">
+      <div class="reveal">
+        <h2>『はじめて人を雇うときの<br>チェックリスト』を差し上げます</h2>
+        <p>採用の前後で必要な手続きを、順番どおりに並べたA4・12ページの資料です。</p>
+        <ul><li>雇用前に決めておくこと 8項目</li><li>入社日までの手続き一覧</li><li>労働条件通知書のひな形</li><li>よくある間違い 5つ</li></ul>
+      </div>
+      <form class="reveal has-hint" data-hint="⚙ メールアドレスの登録・自動でPDF送付（要サーバー）" id="dlForm">
+        <h3>無料ダウンロード</h3>
+        <div class="sub">メールアドレス宛にPDFをお送りします。</div>
+        <div class="field"><label>お名前 <span class="req">必須</span></label><input type="text" id="dName" placeholder="山田 太郎"><div class="err">入力してください</div></div>
+        <div class="field"><label>メールアドレス <span class="req">必須</span></label><input type="email" id="dMail" placeholder="taro@example.com"><div class="err">形式をご確認ください</div></div>
+        <button class="btn pri" type="submit" style="width:100%">資料を受け取る</button>
+      </form>
+    </div>
+  </div>
+</section>
+
+<section id="profile">
+  <div class="inner">
+    <div class="sec-head reveal">
+      <div class="en">PROFILE</div>
+      <h2>事務所案内</h2>
+    </div>
+    <div class="prof">
+      <div class="ph b2 reveal" data-label="PHOTO"></div>
+      <div class="reveal">
+        <h3>港 誠一郎</h3>
+        <div class="role">特定社会保険労務士／代表</div>
+        <p>大学卒業後、製造業の人事部で12年勤務。現場で「制度が机上のままだと守られない」ことを痛感し、2006年に独立しました。<br><br>就業規則は配ってからが本番だと考えています。作ったあとに社員のみなさまへ説明する場までを、ひとつの仕事としてお引き受けしています。</p>
+        <table>
+          <tr><th>事務所名</th><td>みなと社会保険労務士事務所</td></tr>
+          <tr><th>所在地</th><td>〒000-0000 ○○県○○市港町1-1-1 みなとビル 5F</td></tr>
+          <tr><th>電話</th><td>000-000-0000（平日 9:00–18:00）</td></tr>
+          <tr><th>FAX</th><td>000-000-0001</td></tr>
+          <tr><th>設立</th><td>2006年4月</td></tr>
+          <tr><th>登録番号</th><td>第00000000号</td></tr>
+          <tr><th>所属</th><td>○○県社会保険労務士会</td></tr>
+          <tr><th>対応地域</th><td>○○県全域（オンラインは全国対応）</td></tr>
+        </table>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="price" id="contact">
+  <div class="inner">
+    <div class="sec-head reveal">
+      <div class="en">CONTACT</div>
+      <h2>無料相談のお申し込み</h2>
+      <p>2営業日以内にご連絡いたします。お電話（000-000-0000）でも承ります。</p>
+    </div>
+    <div class="form-card reveal has-hint" data-hint="⚙ 送信内容の保存・通知メール・自動返信・迷惑送信対策（要サーバー）">
+      <form id="cForm">
+        <div class="row2">
+          <div class="field"><label>お名前 <span class="req">必須</span></label><input type="text" id="oName" placeholder="山田 太郎"><div class="err">お名前を入力してください</div></div>
+          <div class="field"><label>会社名・屋号 <span class="opt">任意</span></label><input type="text" id="oCorp" placeholder="株式会社○○"></div>
+        </div>
+        <div class="row2">
+          <div class="field"><label>メールアドレス <span class="req">必須</span></label><input type="email" id="oMail" placeholder="taro@example.com"><div class="err">メールアドレスの形式をご確認ください</div></div>
+          <div class="field"><label>電話番号 <span class="req">必須</span></label><input type="tel" id="oTel" placeholder="000-0000-0000"><div class="err">電話番号を入力してください</div></div>
+        </div>
+        <div class="field">
+          <label>従業員数 <span class="opt">任意</span></label>
+          <select id="oNum"><option>1〜5名</option><option>6〜10名</option><option>11〜20名</option><option>21〜50名</option><option>51名以上</option><option>これから雇う予定</option></select>
+        </div>
+        <div class="field">
+          <label>ご希望の相談方法 <span class="req">必須</span></label>
+          <div class="radios">
+            <label><input type="radio" name="way" value="オンライン" checked>オンライン</label>
+            <label><input type="radio" name="way" value="来所">来所</label>
+            <label><input type="radio" name="way" value="訪問">訪問</label>
+            <label><input type="radio" name="way" value="お電話">お電話</label>
+          </div>
+        </div>
+        <div class="field">
+          <label>ご相談内容 <span class="req">必須</span></label>
+          <textarea id="oText" rows="5" placeholder="来月からアルバイトを2名雇う予定です。必要な手続きを教えてください。"></textarea>
+          <div class="err">ご相談内容を入力してください</div>
+          <div class="hint">箇条書きでかまいません。詳しくお書きいただくほど、面談がスムーズです。</div>
+        </div>
+        <div class="privacy">
+          【個人情報の取り扱いについて】<br>
+          当事務所は、お預かりした個人情報をご相談への対応および関連するご連絡の目的にのみ利用し、ご本人の同意なく第三者へ提供いたしません。ご請求により開示・訂正・削除に応じます。（※これはデザイン見本用の文面です）
+        </div>
+        <div class="field">
+          <label style="font-weight:400;font-size:13.5px;display:flex;gap:9px;align-items:center;cursor:pointer">
+            <input type="checkbox" id="oAgree" style="width:auto">個人情報の取り扱いに同意する <span class="req">必須</span>
+          </label>
+          <div class="err" style="margin-left:0">同意のうえ送信してください</div>
+        </div>
+        <button class="btn sec" type="submit" style="width:100%;font-size:16px;padding:17px">入力内容を確認する</button>
+      </form>
+
+      <div class="confirm" id="confirmBox">
+        <h3 style="font-family:var(--serif);font-size:20px;margin-bottom:18px">この内容で送信します</h3>
+        <table id="confirmTable"></table>
+        <div style="display:flex;gap:12px;margin-top:26px">
+          <button class="btn out" id="cBack" style="flex:1">修正する</button>
+          <button class="btn pri" id="cSend" style="flex:2">送信する</button>
+        </div>
+      </div>
+
+      <div class="confirm" id="doneBox" style="text-align:center">
+        <div style="width:64px;height:64px;margin:10px auto 20px;border-radius:50%;background:rgba(27,122,90,.12);color:var(--ok);display:grid;place-content:center;font-size:30px">✓</div>
+        <h3 style="font-family:var(--serif);font-size:22px;margin-bottom:14px">送信が完了しました</h3>
+        <p style="font-size:13.5px;color:var(--dim)">ご入力のメールアドレス宛に、受付完了のメールをお送りしました。<br>2営業日以内に担当よりご連絡いたします。<br><br>お急ぎの場合は 000-000-0000 までお電話ください。</p>
+        <div style="margin-top:26px"><button class="btn out" id="dAgain">もう一度ためす</button></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<footer class="site">
+  <div class="ft">
+    <div>
+      <div style="font-family:var(--serif);font-size:17px;color:#fff">みなと社会保険労務士事務所</div>
+      <p>〒000-0000 ○○県○○市港町1-1-1 みなとビル 5F<br>TEL 000-000-0000／平日 9:00–18:00</p>
+    </div>
+    <div><h4>業務内容</h4><ul><li><a href="#service">労務顧問</a></li><li><a href="#service">給与計算</a></li><li><a href="#service">就業規則</a></li><li><a href="#service">助成金</a></li></ul></div>
+    <div><h4>ご利用案内</h4><ul><li><a href="#price">料金</a></li><li><a href="#flow">ご相談の流れ</a></li><li><a href="#faq">よくある質問</a></li><li><a href="#column">労務コラム</a></li></ul></div>
+    <div><h4>事務所について</h4><ul><li><a href="#profile">事務所案内</a></li><li><a href="#contact">お問い合わせ</a></li><li><a href="#" onclick="return false">個人情報保護方針</a></li></ul></div>
+  </div>
+  <div class="ft-btm">
+    <span>© 2026 みなと社会保険労務士事務所（架空の事務所です）</span>
+    <span>デザイン見本 D ／ 信頼・実直</span>
+  </div>
+</footer>
+
+<div class="sticky-cta">
+  <a class="btn out sm" href="tel:0000000000">☎ 電話で相談</a>
+  <a class="btn pri sm" href="#contact">無料相談を申し込む</a>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+/* デモ共通 */
+if(window.self!==window.top) document.documentElement.classList.add('embedded');
+document.querySelectorAll('[data-hint]').forEach(el=>{const b=document.createElement('span');b.className='hint-badge';b.textContent=el.dataset.hint;el.appendChild(b);});
+const hintBtn=document.getElementById('hintBtn');
+hintBtn.onclick=()=>{const on=document.body.classList.toggle('hints');
+  hintBtn.setAttribute('aria-pressed',on);
+  hintBtn.textContent=on?'⚙ 表示中（クリックで戻す）':'⚙ サーバーが要る機能を示す';
+  if(on) toast('サーバー（バックエンド）が要る箇所','緑の点線で囲まれた部分は、フォーム送信・記事の投稿・資料の自動送付などをサーバー側で行う機能です。');};
+let tt;function toast(t,b){const e=document.getElementById('toast');
+  e.innerHTML='<b>'+t+'</b>'+(b||'')+'<small>※これはデザイン見本です。実際の動作はしません。</small>';
+  e.classList.add('on');clearTimeout(tt);tt=setTimeout(()=>e.classList.remove('on'),5400);}
+function serverCall(ms){return new Promise(r=>setTimeout(r,ms||(600+Math.random()*500)));}
+const io=new IntersectionObserver(es=>es.forEach(e=>{if(e.isIntersecting){e.target.classList.add('in');io.unobserve(e.target);}}),{threshold:.08});
+document.querySelectorAll('.reveal').forEach(el=>io.observe(el));
+
+const nav=document.getElementById('nav'),burger=document.getElementById('burger');
+burger.onclick=()=>{nav.classList.toggle('open');burger.textContent=nav.classList.contains('open')?'×':'☰';};
+nav.querySelectorAll('a').forEach(a=>a.onclick=()=>{nav.classList.remove('open');burger.textContent='☰';});
+
+/* FAQ */
+const FAQ=[
+  ['顧問契約','相談は何回でもできますか？','はい。顧問契約中は、電話・メール・チャットでのご相談は回数無制限です。「これは相談していいことなのか」という段階からお気軽にどうぞ。'],
+  ['顧問契約','契約期間の縛りはありますか？','1か月単位です。最低契約期間は設けておりません。解約は前月末までにご連絡ください。'],
+  ['顧問契約','スポットだけの依頼もできますか？','できます。就業規則の作成だけ、助成金の申請だけ、といったご依頼も承っています。'],
+  ['料金','初回相談は本当に無料ですか？','はい。60分の初回相談は無料です。その場で契約をお願いすることはありません。'],
+  ['料金','助成金の費用はいつ払うのですか？','完全成功報酬制です。受給が決まったあと、受給額の15%をお支払いいただきます。着手金はいただきません。'],
+  ['手続き','従業員を初めて雇います。何から始めれば？','労働条件通知書の作成、労働保険の成立届、社会保険の新規適用届などが必要です。順番に沿ってご案内しますので、雇用が決まった時点でご連絡ください。'],
+  ['手続き','給与計算をお願いする場合、何を渡せばよいですか？','勤怠のデータ（タイムカードの写しやExcelでも可）と、変更事項のご連絡だけで結構です。'],
+  ['就業規則','就業規則は従業員が何人から必要ですか？','常時10人以上の従業員を使用する事業場では、作成と労働基準監督署への届出が義務づけられています。10人未満でも、トラブル防止のため作成をおすすめしています。'],
+  ['就業規則','古い就業規則をそのまま使っています。問題ありますか？','法改正に追いついていない可能性が高いです。無料相談で現行のものを拝見し、直すべき箇所をお伝えします。'],
+  ['その他','オンラインだけで契約できますか？','できます。面談・書類のやりとり・押印まで、すべてオンラインで完結します。遠方のお客さまも多くいらっしゃいます。'],
+  ['その他','対応できる地域はどこまでですか？','訪問は○○県全域、オンラインでのご対応は全国どこでも可能です。']
+];
+const FCATS=['すべて','顧問契約','料金','手続き','就業規則','その他'];
+let fcat='すべて',fq='';
+document.getElementById('faqCats').innerHTML=FCATS.map(c=>`<button data-c="${c}" aria-pressed="${c===fcat}">${c}</button>`).join('');
+function esc(s){return s.replace(/[&<>]/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;'}[m]));}
+function mark(s,q){ if(!q) return esc(s);
+  const i=s.toLowerCase().indexOf(q.toLowerCase()); if(i<0) return esc(s);
+  return esc(s.slice(0,i))+'<span class="hl">'+esc(s.slice(i,i+q.length))+'</span>'+esc(s.slice(i+q.length)); }
+function drawFaq(){
+  const list=FAQ.filter(([c,q,a])=>(fcat==='すべて'||c===fcat)&&(!fq||q.includes(fq)||a.includes(fq)||c.includes(fq)));
+  const el=document.getElementById('faqList');
+  if(!list.length){ el.innerHTML='<div class="faq-none">該当する質問が見つかりませんでした。<br>お手数ですが、お問い合わせフォームからお尋ねください。</div>'; return; }
+  el.innerHTML=list.map(([c,q,a])=>`
+    <div class="faq-item"><button class="faq-q"><span class="faq-cat">${c}</span>${mark(q,fq)}</button>
+    <div class="faq-a">${mark(a,fq)}</div></div>`).join('');
+}
+drawFaq();
+document.getElementById('faqCats').onclick=e=>{const b=e.target.closest('button');if(!b)return;
+  fcat=b.dataset.c;document.querySelectorAll('#faqCats button').forEach(x=>x.setAttribute('aria-pressed',x.dataset.c===fcat));drawFaq();};
+document.getElementById('faqQ').oninput=e=>{fq=e.target.value.trim();drawFaq();};
+document.getElementById('faqList').onclick=e=>{const b=e.target.closest('.faq-q');if(!b)return;
+  b.parentElement.classList.toggle('open');};
+
+/* コラム */
+const COLS=[
+  ['2026.08.10','法改正','2026年10月からの社会保険の適用拡大でどう変わるか','従業員数の要件が下がります。対象になりそうな会社の見分け方をまとめました。','b1'],
+  ['2026.07.28','助成金','今年度の「キャリアアップ助成金」で押さえておく3つの条件','申請してから気づくと間に合わない要件があります。','b2'],
+  ['2026.07.14','就業規則','副業を認めるときに、就業規則へ書いておくこと','届出制にするか許可制にするか。実務での分かれ目を解説します。','b3'],
+  ['2026.06.30','手続き','入社日までに終わらせたい手続きチェックリスト','入社日から逆算した進め方を、日数つきで並べました。','b2'],
+  ['2026.06.16','労務相談','有給休暇の「年5日取得義務」を守れているか確かめる方法','管理簿の作り方と、抜けやすいパターンを紹介します。','b1'],
+  ['2026.06.02','法改正','パートタイマーにも適用される法律のまとめ','短時間勤務の方が増えている会社さま向けの整理です。','b3']
+];
+const CCATS=['すべて','法改正','助成金','就業規則','手続き','労務相談'];
+let ccat='すべて',cshow=3;
+document.getElementById('colCats').innerHTML=CCATS.map(c=>`<button data-c="${c}" aria-pressed="${c===ccat}">${c}</button>`).join('');
+function drawCol(){
+  const list=COLS.filter(c=>ccat==='すべて'||c[1]===ccat).slice(0,cshow);
+  document.getElementById('colGrid').innerHTML=list.map(([d,c,t,s,g])=>`
+    <a class="col-card" href="#column" onclick="return false"><div class="ph ${g}" data-label="PHOTO"></div>
+    <div class="bd"><time>${d}</time><span class="cat">${c}</span><h3>${t}</h3><p>${s}</p></div></a>`).join('');
+  const total=COLS.filter(c=>ccat==='すべて'||c[1]===ccat).length;
+  document.getElementById('colMore').style.display= cshow>=total ? 'none':'';
+}
+drawCol();
+document.getElementById('colCats').onclick=e=>{const b=e.target.closest('button');if(!b)return;
+  ccat=b.dataset.c;cshow=3;document.querySelectorAll('#colCats button').forEach(x=>x.setAttribute('aria-pressed',x.dataset.c===ccat));drawCol();};
+document.getElementById('colMore').onclick=async e=>{
+  const b=e.currentTarget,old=b.textContent;b.innerHTML='<span class="spin" style="border-color:rgba(14,58,99,.25);border-top-color:#0E3A63"></span>読み込み中';
+  await serverCall(800); b.textContent=old; cshow=COLS.length; drawCol();
+};
+
+/* 資料DL */
+document.getElementById('dlForm').onsubmit=async e=>{
+  e.preventDefault(); let ok=true;
+  [['dName',v=>v.trim()],['dMail',v=>/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(v)]].forEach(([id,t])=>{
+    const el=document.getElementById(id),bad=!t(el.value);el.closest('.field').classList.toggle('bad',bad);if(bad)ok=false;});
+  if(!ok)return;
+  const btn=e.target.querySelector('button'),old=btn.textContent;
+  btn.innerHTML='<span class="spin"></span>送信中…';btn.disabled=true;
+  await serverCall(1000);btn.textContent=old;btn.disabled=false;e.target.reset();
+  toast('資料をお送りしました','本番ではサーバーが登録を受け付け、PDFのダウンロードリンクを自動でメール送信します。誰がいつ資料を請求したかも一覧で確認できます。');
+};
+
+/* お問い合わせ(確認画面つき) */
+const cForm=document.getElementById('cForm'),confirmBox=document.getElementById('confirmBox'),doneBox=document.getElementById('doneBox');
+cForm.onsubmit=e=>{
+  e.preventDefault(); let ok=true;
+  [['oName',v=>v.trim()],['oMail',v=>/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(v)],['oTel',v=>v.trim().length>=8],['oText',v=>v.trim()]].forEach(([id,t])=>{
+    const el=document.getElementById(id),bad=!t(el.value);el.closest('.field').classList.toggle('bad',bad);if(bad)ok=false;});
+  const ag=document.getElementById('oAgree'); const agBad=!ag.checked;
+  ag.closest('.field').classList.toggle('bad',agBad); if(agBad)ok=false;
+  if(!ok){ document.querySelector('.field.bad').scrollIntoView({behavior:'smooth',block:'center'}); return; }
+  const way=document.querySelector('input[name=way]:checked').value;
+  document.getElementById('confirmTable').innerHTML=[
+    ['お名前',document.getElementById('oName').value],
+    ['会社名・屋号',document.getElementById('oCorp').value||'（未入力）'],
+    ['メールアドレス',document.getElementById('oMail').value],
+    ['電話番号',document.getElementById('oTel').value],
+    ['従業員数',document.getElementById('oNum').value],
+    ['ご希望の相談方法',way],
+    ['ご相談内容',esc(document.getElementById('oText').value).replace(/\n/g,'<br>')]
+  ].map(([k,v])=>`<tr><th>${k}</th><td>${v}</td></tr>`).join('');
+  cForm.style.display='none'; confirmBox.classList.add('on');
+  document.getElementById('contact').scrollIntoView({behavior:'smooth',block:'start'});
+};
+document.getElementById('cBack').onclick=()=>{confirmBox.classList.remove('on');cForm.style.display='';};
+document.getElementById('cSend').onclick=async e=>{
+  const b=e.currentTarget,old=b.textContent;b.innerHTML='<span class="spin"></span>送信中…';b.disabled=true;
+  await serverCall(1300);b.textContent=old;b.disabled=false;
+  confirmBox.classList.remove('on'); doneBox.classList.add('on');
+  document.getElementById('contact').scrollIntoView({behavior:'smooth',block:'start'});
+  toast('お問い合わせを送信しました','本番ではサーバーに保存され、事務所へ通知メール、お客さまへ自動返信メールが届きます。迷惑送信（スパム）対策もサーバー側で行います。');
+};
+document.getElementById('dAgain').onclick=()=>{doneBox.classList.remove('on');cForm.style.display='';};
+</script>
+</body>
+</html>
