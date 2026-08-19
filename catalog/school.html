@@ -44,24 +44,43 @@ body.hints .has-hint{position:relative;outline:2px dashed #166B4F;outline-offset
 .p4{background:linear-gradient(140deg,#FFD5E2,#F2789F)}
 .p5{background:linear-gradient(140deg,#FFE9A8,#FFC93C)}
 
-/* ヘッダー */
+/* ヘッダー（ロゴと申込ボタンだけの細いバー） */
 header.site{position:sticky;top:42px;z-index:400;border-bottom:3px solid var(--yellow)}
 header.site::before{content:"";position:absolute;inset:0;z-index:-1;background:rgba(255,251,242,.94);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px)}
 html.embedded header.site{top:0}
-.hd{max-width:1160px;margin:0 auto;padding:12px 20px;display:flex;align-items:center;gap:18px}
+.hd{max-width:1160px;margin:0 auto;padding:10px 20px;display:flex;align-items:center;gap:18px}
 .logo{display:flex;align-items:center;gap:10px;text-decoration:none}
-.logo .mk{width:44px;height:44px;border-radius:50%;background:var(--orange);display:grid;place-content:center;color:#fff;font-size:22px;font-weight:800;box-shadow:0 4px 0 #D9532E}
-.logo .tx{font-size:19px;font-weight:800;letter-spacing:.04em;line-height:1.25}
+.logo .mk{width:40px;height:40px;border-radius:50%;background:var(--orange);display:grid;place-content:center;color:#fff;font-size:20px;font-weight:800;box-shadow:0 4px 0 #D9532E}
+.logo .tx{font-size:18px;font-weight:800;letter-spacing:.04em;line-height:1.25}
 .logo .tx small{display:block;font-size:9.5px;color:var(--dim);font-weight:400;letter-spacing:.1em}
-nav.main{margin-left:auto;display:flex;gap:20px;font-size:13.5px;font-weight:700}
-nav.main a{text-decoration:none;padding:4px 2px;border-bottom:3px solid transparent;transition:.2s}
-nav.main a:hover{border-color:var(--blue);color:var(--blue)}
-.burger{display:none;margin-left:auto;background:none;border:0;font-size:22px;cursor:pointer;z-index:600}
-@media(max-width:940px){
-  nav.main{position:fixed;inset:0;background:var(--bg);flex-direction:column;justify-content:center;align-items:center;gap:24px;font-size:17px;clip-path:inset(0 0 0 100%);pointer-events:none;transition:clip-path .4s cubic-bezier(.4,0,.2,1);z-index:500;margin:0}
-  nav.main.open{clip-path:inset(0);pointer-events:auto}
-  .burger{display:block}.hd .btn{display:none}
+.hd .tel{margin-left:auto;font-size:12.5px;color:var(--dim);text-align:right;line-height:1.4}
+.hd .tel b{display:block;font-size:17px;color:var(--ink)}
+@media(max-width:700px){.hd .tel{display:none}.logo .tx small{display:none}}
+
+/* ▼ 構造のポイント：ナビゲーションは画面下のタブバー（スマホアプリのような形） */
+.tabbar{position:fixed;left:0;right:0;bottom:0;z-index:520;display:flex;justify-content:center;pointer-events:none;padding:0 0 env(safe-area-inset-bottom)}
+.tabbar ul{list-style:none;display:flex;pointer-events:auto;background:rgba(255,255,255,.97);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);
+  box-shadow:0 -2px 24px rgba(51,48,43,.14);width:100%;border-top:1px solid var(--line)}
+.tabbar li{flex:1}
+.tabbar a{display:flex;flex-direction:column;align-items:center;gap:3px;padding:9px 2px 8px;text-decoration:none;color:#A79C8C;font-size:10.5px;font-weight:700;transition:.2s;position:relative;white-space:nowrap}
+.tabbar a svg{width:23px;height:23px;stroke-width:1.8}
+.tabbar a[aria-current="true"]{color:var(--orange)}
+.tabbar a[aria-current="true"]::before{content:"";position:absolute;top:0;left:50%;transform:translateX(-50%);width:34px;height:3px;border-radius:0 0 4px 4px;background:var(--orange)}
+.tabbar a.cta{color:#fff;background:var(--orange);margin:6px;border-radius:16px;padding:7px 2px 6px}
+.tabbar a.cta[aria-current="true"]::before{display:none}
+@media(min-width:781px){
+  /* パソコンでは中央に浮かせたピル型に */
+  .tabbar{bottom:20px}
+  .tabbar ul{width:auto;border-radius:999px;border:1px solid var(--line);padding:5px;box-shadow:0 10px 34px rgba(51,48,43,.16)}
+  .tabbar a{flex-direction:row;gap:7px;font-size:13px;padding:10px 20px;border-radius:999px}
+  .tabbar a svg{width:19px;height:19px}
+  .tabbar a[aria-current="true"]{background:rgba(255,112,67,.12)}
+  .tabbar a[aria-current="true"]::before{display:none}
+  .tabbar a.cta{margin:0 0 0 4px;border-radius:999px;padding:10px 22px}
 }
+body{padding-bottom:78px}
+@media(min-width:781px){body{padding-bottom:96px}}
+
 .btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;font:inherit;font-weight:800;font-size:15px;padding:15px 30px;border-radius:999px;border:0;background:var(--orange);color:#fff;cursor:pointer;text-decoration:none;box-shadow:0 5px 0 #D9532E;transition:.15s}
 .btn:hover{transform:translateY(2px);box-shadow:0 3px 0 #D9532E}
 .btn:active{transform:translateY(5px);box-shadow:none}
@@ -133,7 +152,7 @@ section{padding:clamp(52px,7vw,84px) 20px;position:relative}
 .tl:nth-child(3n) .t{background:var(--green)}
 .tl h4{font-size:16px;font-weight:800}
 .tl p{font-size:13.5px;color:var(--dim)}
-@media(max-width:600px){.timeline{padding-left:56px}.timeline::before{left:20px}.tl .t{left:-56px;width:44px;height:44px;font-size:11px}}
+@media(max-width:600px){.timeline{padding-left:60px}.timeline::before{left:22px}.tl .t{left:-60px;width:48px;height:48px;font-size:9.5px;letter-spacing:-.02em}}
 
 /* 先生 */
 .teachers{display:grid;grid-template-columns:repeat(3,1fr);gap:22px}
@@ -211,7 +230,8 @@ section{padding:clamp(52px,7vw,84px) 20px;position:relative}
 .faq-item.open .faq-a{display:block}
 
 /* チャット */
-.chat{position:fixed;right:18px;bottom:18px;z-index:600}
+.chat{position:fixed;right:18px;bottom:88px;z-index:600}
+@media(min-width:781px){.chat{bottom:100px}}
 .chat-btn{width:60px;height:60px;border-radius:50%;background:var(--green);color:#fff;border:0;font-size:26px;cursor:pointer;box-shadow:0 6px 18px rgba(0,0,0,.2)}
 .chat-win{position:absolute;right:0;bottom:72px;width:min(320px,calc(100vw - 36px));background:#fff;border-radius:20px;box-shadow:0 18px 44px rgba(0,0,0,.2);overflow:hidden;display:none}
 .chat-win.on{display:block;animation:pop2 .3s ease both}
@@ -250,14 +270,20 @@ footer.site{background:#2B2823;color:#EDE4D4;padding:52px 20px 26px;font-size:13
       <span class="mk">く</span>
       <span class="tx">くるくる教室<small>こどもプログラミング・ロボット</small></span>
     </a>
-    <button class="burger" id="burger" aria-label="メニュー">☰</button>
-    <nav class="main" id="nav">
-      <a href="#course">コース</a><a href="#day">1日の流れ</a><a href="#teacher">先生</a>
-      <a href="#slots">空き枠</a><a href="#mypage">マイページ</a><a href="#faq">よくある質問</a>
-    </nav>
-    <a class="btn sm" href="#apply">体験に申し込む</a>
+    <div class="tel"><b>000-000-0000</b>平日 13:00–20:00</div>
   </div>
 </header>
+
+<!-- ▼ ナビゲーションは画面下のタブバー（スマホアプリのような構造） -->
+<nav class="tabbar" id="tabbar" aria-label="メインメニュー">
+  <ul>
+    <li><a href="#top" data-sec="top"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="m3 10.5 9-7 9 7V20a1 1 0 0 1-1 1h-5v-6H9v6H4a1 1 0 0 1-1-1z"/></svg>ホーム</a></li>
+    <li><a href="#course" data-sec="course"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M4 5.5A1.5 1.5 0 0 1 5.5 4H11v16H5.5A1.5 1.5 0 0 1 4 18.5z"/><path d="M20 5.5A1.5 1.5 0 0 0 18.5 4H13v16h5.5a1.5 1.5 0 0 0 1.5-1.5z"/></svg>コース</a></li>
+    <li><a href="#slots" data-sec="slots"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><rect x="3.5" y="5" width="17" height="15" rx="2"/><path d="M3.5 10h17M8 3v4M16 3v4"/></svg>空き枠</a></li>
+    <li><a href="#mypage" data-sec="mypage"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><circle cx="12" cy="8.5" r="3.5"/><path d="M4.5 20a7.5 7.5 0 0 1 15 0"/></svg>マイページ</a></li>
+    <li><a href="#apply" class="cta" data-sec="apply"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M12 5v14M5 12h14"/></svg>体験申込</a></li>
+  </ul>
+</nav>
 
 <div class="hero" id="top">
   <div class="blob a"></div><div class="blob b"></div>
@@ -440,6 +466,9 @@ footer.site{background:#2B2823;color:#EDE4D4;padding:52px 20px 26px;font-size:13
           <div class="msg"><div class="h"><span>2026年8月分</span></div><h4>12,100円　お支払い済み</h4><p>8月5日にクレジットカードで決済されました。領収書はこちらから発行できます。</p></div>
           <div class="msg"><div class="h"><span>2026年9月分</span></div><h4>12,100円　9月5日に引き落とし予定</h4><p>兄弟割引 −1,000円が適用されています。</p></div>
           <button class="btn blue sm" id="receipt">領収書を発行する</button>
+          <p style="margin-top:14px;background:#FFF4E2;border:1px solid #EBD7B4;color:#8A5A14;border-radius:14px;padding:12px 14px;font-size:12px;line-height:1.8">
+            ⚠ このうち<b>お月謝の請求・決済にあたる部分は「要相談」</b>です。作れないわけではありませんが、お金のやりとりが絡むため、責任の切り分けを決めたうえで個別にご相談させてください。<a href="index.html#scope" style="color:#7A4C0F">→ 理由</a>
+          </p>
         </div>
       </div>
     </div>
@@ -503,9 +532,16 @@ function serverCall(ms){return new Promise(r=>setTimeout(r,ms||(600+Math.random(
 const io=new IntersectionObserver(es=>es.forEach(e=>{if(e.isIntersecting){e.target.classList.add('in');io.unobserve(e.target);}}),{threshold:.08});
 document.querySelectorAll('.reveal').forEach(el=>io.observe(el));
 
-const nav=document.getElementById('nav'),burger=document.getElementById('burger');
-burger.onclick=()=>{nav.classList.toggle('open');burger.textContent=nav.classList.contains('open')?'×':'☰';};
-nav.querySelectorAll('a').forEach(a=>a.onclick=()=>{nav.classList.remove('open');burger.textContent='☰';});
+/* 下部タブバー：いま見ているセクションに印をつける */
+const tabs=[...document.querySelectorAll('#tabbar a')];
+const secs=tabs.map(a=>document.getElementById(a.dataset.sec)).filter(Boolean);
+function syncTabs(){
+  const y=scrollY+innerHeight*0.35;
+  let cur=secs[0];
+  secs.forEach(s=>{ if(s.offsetTop<=y) cur=s; });
+  tabs.forEach(a=>a.setAttribute('aria-current', a.dataset.sec===cur.id));
+}
+addEventListener('scroll',syncTabs,{passive:true}); addEventListener('resize',syncTabs); syncTabs();
 
 /* 空き枠 */
 const W=['日','月','火','水','木','金','土'];
