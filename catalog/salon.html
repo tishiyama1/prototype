@@ -1,0 +1,678 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>LUNE hair &amp; spa ｜ デザイン見本 B エレガント</title>
+<meta name="description" content="Webサイトデザイン見本 B ― 落ち着いた高級感のあるサロン向けデザイン(架空の店舗)">
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+:root{
+  --bg:#12100E; --bg2:#1A1714; --paper:#F6F2EA; --gold:#C6A96B; --gold-d:#8E7541;
+  --tx:#EAE3D6; --tx-dim:#9C9284; --line:rgba(198,169,107,.24);
+  --serif:"Hiragino Mincho ProN","Yu Mincho",YuMincho,"Noto Serif JP",serif;
+  --sans:"Hiragino Kaku Gothic ProN","Yu Gothic",system-ui,sans-serif;
+}
+html{scroll-behavior:smooth}
+body{font-family:var(--sans);background:var(--bg);color:var(--tx);line-height:1.95;overflow-x:hidden;-webkit-font-smoothing:antialiased}
+a{color:inherit}
+svg{display:block}
+
+/* デモ共通 */
+.demo-bar{position:fixed;inset:0 0 auto 0;z-index:900;display:flex;gap:12px;align-items:center;flex-wrap:wrap;padding:8px 14px;background:#000;color:#EFE7DA;font-size:12.5px}
+.demo-bar a.demo-back{text-decoration:none;background:rgba(255,255,255,.12);padding:5px 12px;border-radius:999px;white-space:nowrap}
+.demo-bar a.demo-back:hover{background:rgba(255,255,255,.22)}
+.demo-note{opacity:.8}.demo-note b{color:var(--gold)}
+.demo-toggle{margin-left:auto;font:inherit;cursor:pointer;color:#12100E;background:var(--gold);border:0;padding:6px 14px;border-radius:999px;white-space:nowrap}
+.demo-toggle[aria-pressed="true"]{background:#7EC8A9}
+body{padding-top:42px}
+html.embedded body{padding-top:0}
+html.embedded .demo-bar{display:none}
+@media(max-width:600px){.demo-note{display:none}}
+.hint-badge{display:none}
+body.hints .hint-badge{display:inline-flex;position:absolute;z-index:60;top:-13px;left:10px;background:#2C9E77;color:#04150F;font-weight:700;font-size:11px;line-height:1.5;padding:3px 10px;border-radius:999px;box-shadow:0 4px 14px rgba(0,0,0,.4);max-width:calc(100% - 20px)}
+body.hints .has-hint{position:relative;outline:2px dashed #2C9E77;outline-offset:6px}
+.toast{position:fixed;left:50%;bottom:26px;transform:translate(-50%,26px);z-index:950;opacity:0;pointer-events:none;background:#000;border:1px solid var(--line);color:var(--tx);padding:14px 20px;border-radius:6px;max-width:min(92vw,420px);box-shadow:0 18px 44px rgba(0,0,0,.55);transition:.3s;font-size:13.5px;line-height:1.75}
+.toast.on{opacity:1;transform:translate(-50%,0)}
+.toast b{display:block;color:var(--gold);margin-bottom:2px}
+.toast small{display:block;margin-top:6px;opacity:.55;font-size:11.5px}
+.spin{display:inline-block;width:13px;height:13px;border:2px solid rgba(255,255,255,.25);border-top-color:var(--gold);border-radius:50%;animation:sp .7s linear infinite;vertical-align:-2px;margin-right:6px}
+@keyframes sp{to{transform:rotate(360deg)}}
+
+/* 写真プレースホルダ */
+.ph{position:relative;overflow:hidden;background:#241F19}
+.ph::after{content:attr(data-label);position:absolute;right:10px;bottom:8px;font-size:9.5px;letter-spacing:.2em;color:rgba(234,227,214,.3)}
+.ph-1{background:radial-gradient(90% 80% at 30% 20%,#4A4036 0%,transparent 60%),linear-gradient(160deg,#2E2822,#15120F)}
+.ph-2{background:radial-gradient(80% 70% at 70% 30%,#5C4B33 0%,transparent 60%),linear-gradient(200deg,#332A1E,#14110D)}
+.ph-3{background:radial-gradient(70% 90% at 50% 80%,#3E4A48 0%,transparent 60%),linear-gradient(20deg,#242B2A,#111413)}
+.ph-4{background:radial-gradient(90% 70% at 20% 70%,#574438 0%,transparent 60%),linear-gradient(140deg,#39302A,#17130F)}
+
+/* ヘッダー */
+header.site{position:fixed;top:42px;left:0;right:0;z-index:400;transition:.4s}
+html.embedded header.site{top:0}
+header.site.solid{border-bottom:1px solid var(--line)}
+header.site::before{content:"";position:absolute;inset:0;z-index:-1;background:rgba(18,16,14,.92);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);opacity:0;transition:opacity .4s}
+header.site.solid::before{opacity:1}
+.hd{max-width:1240px;margin:0 auto;padding:22px 26px;display:flex;align-items:center;gap:26px;transition:.4s}
+header.site.solid .hd{padding:13px 26px}
+.logo{font-family:var(--serif);font-size:22px;letter-spacing:.4em;text-decoration:none;text-indent:.4em}
+.logo small{display:block;font-family:var(--sans);font-size:8.5px;letter-spacing:.34em;color:var(--gold);text-indent:.34em;margin-top:2px}
+nav.main{margin-left:auto;display:flex;gap:30px;font-size:12px;letter-spacing:.18em}
+nav.main a{text-decoration:none;color:var(--tx-dim);transition:.3s;position:relative;padding-bottom:4px}
+nav.main a::after{content:"";position:absolute;left:0;right:100%;bottom:0;height:1px;background:var(--gold);transition:.35s}
+nav.main a:hover{color:var(--tx)}nav.main a:hover::after{right:0}
+.hd .cta{border:1px solid var(--gold);color:var(--gold);text-decoration:none;font-size:11.5px;letter-spacing:.2em;padding:11px 24px;transition:.3s}
+.hd .cta:hover{background:var(--gold);color:#12100E}
+.burger{display:none;margin-left:auto;background:none;border:0;color:var(--tx);font-size:20px;cursor:pointer;z-index:600}
+@media(max-width:940px){
+  nav.main{position:fixed;inset:0;background:var(--bg);flex-direction:column;justify-content:center;align-items:center;gap:30px;font-size:15px;clip-path:inset(0 0 0 100%);pointer-events:none;transition:clip-path .4s cubic-bezier(.4,0,.2,1);z-index:500;margin:0}
+  nav.main.open{clip-path:inset(0);pointer-events:auto}
+  .burger{display:block}.hd .cta{display:none}
+}
+
+/* ヒーロー */
+.hero{position:relative;min-height:100svh;display:grid;place-items:center;overflow:hidden}
+.hero .bgph{position:absolute;inset:0;background:radial-gradient(70% 60% at 62% 38%,#4E4133 0%,transparent 62%),linear-gradient(165deg,#241E18 0%,#100E0C 70%);transform:scale(1.06);animation:kb 22s ease-in-out infinite alternate}
+@keyframes kb{to{transform:scale(1.16) translate(-1.5%,-1%)}}
+.hero::after{content:"";position:absolute;inset:0;background:linear-gradient(180deg,rgba(18,16,14,.55),rgba(18,16,14,.25) 45%,rgba(18,16,14,.95))}
+.hero-in{position:relative;z-index:2;text-align:center;padding:0 24px}
+.hero-in .en{font-size:10px;letter-spacing:.5em;text-indent:.5em;color:var(--gold);margin-bottom:34px;opacity:0;animation:up 1.2s .3s ease both}
+.hero-in h1{font-family:var(--serif);font-weight:300;font-size:clamp(28px,5.4vw,58px);line-height:1.7;letter-spacing:.22em;text-indent:.22em;opacity:0;animation:up 1.4s .55s ease both}
+.hero-in p{margin-top:30px;font-size:12.5px;letter-spacing:.16em;color:var(--tx-dim);opacity:0;animation:up 1.4s .85s ease both}
+.hero-in .btn{margin-top:44px;opacity:0;animation:up 1.4s 1.1s ease both}
+@keyframes up{from{opacity:0;transform:translateY(24px)}to{opacity:1;transform:none}}
+.scrolldown{position:absolute;bottom:26px;left:50%;transform:translateX(-50%);z-index:2;font-size:9px;letter-spacing:.35em;color:var(--tx-dim);writing-mode:vertical-rl}
+.scrolldown::after{content:"";display:block;width:1px;height:52px;background:linear-gradient(var(--gold),transparent);margin:12px auto 0}
+
+.btn{display:inline-block;text-decoration:none;font-size:12px;letter-spacing:.22em;text-indent:.22em;padding:17px 44px;border:1px solid var(--gold);color:var(--gold);background:transparent;cursor:pointer;font-family:inherit;transition:.35s;position:relative;overflow:hidden}
+.btn::before{content:"";position:absolute;inset:0;background:var(--gold);transform:scaleX(0);transform-origin:right;transition:transform .4s cubic-bezier(.4,0,.2,1);z-index:-1}
+.btn:hover{color:#12100E}.btn:hover::before{transform:scaleX(1);transform-origin:left}
+.btn{z-index:0;isolation:isolate}
+.btn.fill{background:var(--gold);color:#12100E}
+.btn.fill:hover{background:transparent;color:var(--gold)}
+.btn.fill::before{display:none}
+
+/* セクション */
+section{padding:clamp(80px,11vw,150px) 26px;position:relative}
+.inner{max-width:1180px;margin:0 auto}
+.sec-head{text-align:center;margin-bottom:64px}
+.sec-head .en{font-size:9.5px;letter-spacing:.46em;text-indent:.46em;color:var(--gold);margin-bottom:18px}
+.sec-head h2{font-family:var(--serif);font-weight:300;font-size:clamp(21px,3vw,30px);letter-spacing:.24em;text-indent:.24em}
+.sec-head p{margin-top:20px;font-size:13px;color:var(--tx-dim);letter-spacing:.1em}
+.reveal{opacity:0;transform:translateY(30px);transition:opacity 1s cubic-bezier(.2,.8,.3,1),transform 1s cubic-bezier(.2,.8,.3,1)}
+.reveal.in{opacity:1;transform:none}
+.rule{width:1px;height:60px;background:linear-gradient(var(--gold),transparent);margin:0 auto 44px}
+
+/* コンセプト */
+.concept{display:grid;grid-template-columns:1fr 1fr;gap:70px;align-items:center}
+.concept .ph{aspect-ratio:3/4}
+.concept .vtxt{font-family:var(--serif);writing-mode:vertical-rl;font-size:clamp(17px,2.2vw,22px);letter-spacing:.4em;line-height:2.3;font-weight:300;height:340px;margin:0 auto}
+.concept p{font-size:13.5px;color:var(--tx-dim);letter-spacing:.08em;margin-top:34px}
+@media(max-width:900px){.concept{grid-template-columns:1fr;gap:44px}.concept .vtxt{height:280px}}
+
+/* メニュー・料金 */
+.price{background:var(--bg2)}
+.price-tabs{display:flex;justify-content:center;gap:0;margin-bottom:50px;border-bottom:1px solid var(--line);flex-wrap:wrap}
+.price-tab{font:inherit;font-size:12px;letter-spacing:.18em;color:var(--tx-dim);background:none;border:0;border-bottom:1px solid transparent;padding:14px 28px;cursor:pointer;transition:.3s;margin-bottom:-1px}
+.price-tab[aria-selected="true"]{color:var(--gold);border-color:var(--gold)}
+.price-list{max-width:820px;margin:0 auto}
+.price-row{display:flex;align-items:flex-end;gap:16px;padding:22px 4px;border-bottom:1px solid rgba(255,255,255,.07)}
+.price-row .nm{font-family:var(--serif);font-size:16.5px;letter-spacing:.1em}
+.price-row .ds{font-size:11.5px;color:var(--tx-dim);letter-spacing:.06em;margin-top:5px}
+.price-row .dots{flex:1;border-bottom:1px dotted rgba(255,255,255,.15)}
+.price-row .pr{font-family:var(--serif);font-size:16px;color:var(--gold);white-space:nowrap}
+.price-row .tm{font-size:10.5px;color:var(--tx-dim);margin-left:10px}
+
+/* スタイリスト */
+.staff{display:grid;grid-template-columns:repeat(4,1fr);gap:26px}
+.staff-card{cursor:pointer;transition:.4s}
+.staff-card .ph{aspect-ratio:3/4;margin-bottom:18px;transition:.5s}
+.staff-card:hover .ph{filter:brightness(1.15)}
+.staff-card h3{font-family:var(--serif);font-size:16px;letter-spacing:.14em;font-weight:300}
+.staff-card .rank{font-size:9.5px;letter-spacing:.24em;color:var(--gold);margin-bottom:8px}
+.staff-card .bio{font-size:11.5px;color:var(--tx-dim);line-height:1.9;margin-top:8px}
+.staff-card .tags{margin-top:12px;display:flex;gap:6px;flex-wrap:wrap}
+.staff-card .tags span{font-size:10px;border:1px solid var(--line);color:var(--tx-dim);padding:2px 9px}
+@media(max-width:900px){.staff{grid-template-columns:repeat(2,1fr)}}
+
+/* ギャラリー */
+.gal-filter{display:flex;justify-content:center;gap:8px;flex-wrap:wrap;margin-bottom:36px}
+.gal-filter button{font:inherit;font-size:11px;letter-spacing:.16em;color:var(--tx-dim);background:none;border:1px solid var(--line);padding:8px 20px;cursor:pointer;transition:.3s}
+.gal-filter button[aria-pressed="true"]{background:var(--gold);color:#12100E;border-color:var(--gold)}
+.gal{display:grid;grid-template-columns:repeat(4,1fr);gap:14px}
+.gal figure{position:relative;overflow:hidden;cursor:pointer}
+.gal .ph{aspect-ratio:3/4;transition:.6s}
+.gal figure:hover .ph{transform:scale(1.06)}
+.gal figcaption{position:absolute;inset:auto 0 0 0;padding:26px 14px 12px;background:linear-gradient(transparent,rgba(0,0,0,.8));font-size:11px;letter-spacing:.1em;opacity:0;transition:.4s}
+.gal figure:hover figcaption{opacity:1}
+.gal .like{position:absolute;top:10px;right:10px;background:rgba(0,0,0,.45);border:0;color:var(--tx);font-size:11px;padding:5px 10px;border-radius:999px;cursor:pointer;backdrop-filter:blur(4px)}
+.gal .like.on{color:#E8A0A0}
+@media(max-width:900px){.gal{grid-template-columns:repeat(2,1fr)}}
+
+/* 口コミ */
+.voice{background:var(--bg2)}
+.voice-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:22px}
+.voice-card{border:1px solid var(--line);padding:30px 26px}
+.voice-card .stars{color:var(--gold);letter-spacing:.2em;font-size:13px}
+.voice-card p{font-size:13px;color:var(--tx);margin:16px 0 20px;letter-spacing:.04em}
+.voice-card .who{font-size:11px;color:var(--tx-dim);letter-spacing:.1em}
+@media(max-width:860px){.voice-grid{grid-template-columns:1fr}}
+.voice-form{max-width:640px;margin:44px auto 0;border:1px solid var(--line);padding:30px}
+.voice-form h3{font-family:var(--serif);font-weight:300;font-size:16px;letter-spacing:.18em;margin-bottom:20px;text-align:center}
+.stars-in{display:flex;justify-content:center;gap:6px;margin-bottom:20px}
+.stars-in button{background:none;border:0;font-size:24px;color:rgba(198,169,107,.28);cursor:pointer;transition:.2s;padding:0}
+.stars-in button.on{color:var(--gold);transform:scale(1.1)}
+
+/* 予約 */
+.res-card{max-width:900px;margin:0 auto;border:1px solid var(--line);background:var(--bg2);padding:clamp(26px,4vw,48px)}
+.res-steps{display:flex;margin-bottom:36px}
+.res-steps div{flex:1;text-align:center;font-size:10.5px;letter-spacing:.16em;color:var(--tx-dim);padding-bottom:12px;border-bottom:1px solid rgba(255,255,255,.1)}
+.res-steps div.on{color:var(--gold);border-color:var(--gold)}
+.opt-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(190px,1fr));gap:12px}
+.opt{text-align:left;font:inherit;background:transparent;border:1px solid var(--line);color:var(--tx);padding:18px;cursor:pointer;transition:.3s}
+.opt:hover{border-color:var(--gold)}
+.opt[aria-pressed="true"]{background:rgba(198,169,107,.12);border-color:var(--gold)}
+.opt .t{font-family:var(--serif);font-size:15px;letter-spacing:.08em}
+.opt .s{font-size:11px;color:var(--tx-dim);margin-top:6px}
+.opt .p{font-size:12.5px;color:var(--gold);margin-top:10px}
+.wk{display:grid;grid-template-columns:76px repeat(7,1fr);gap:4px;font-size:11px;overflow-x:auto}
+.wk .hd2{text-align:center;padding:8px 0;color:var(--tx-dim);font-size:10.5px;line-height:1.5}
+.wk .hd2 b{display:block;font-size:13px;color:var(--tx);font-weight:400}
+.wk .tlabel{display:flex;align-items:center;color:var(--tx-dim);font-size:11px}
+.wk button{background:transparent;border:1px solid rgba(255,255,255,.09);color:var(--gold);font:inherit;font-size:13px;padding:9px 0;cursor:pointer;transition:.25s}
+.wk button:hover:not(:disabled){background:rgba(198,169,107,.15);border-color:var(--gold)}
+.wk button[aria-pressed="true"]{background:var(--gold);color:#12100E;border-color:var(--gold)}
+.wk button:disabled{color:rgba(255,255,255,.16);cursor:not-allowed}
+.field{margin-bottom:20px}
+.field label{display:block;font-size:11px;letter-spacing:.16em;color:var(--tx-dim);margin-bottom:9px}
+.field input,.field textarea,.field select{width:100%;font:inherit;font-size:14px;background:rgba(255,255,255,.04);border:1px solid var(--line);color:var(--tx);padding:13px 15px;transition:.25s}
+.field input:focus,.field textarea:focus,.field select:focus{outline:none;border-color:var(--gold);background:rgba(255,255,255,.07)}
+.field.bad input{border-color:#C87070}
+.field .err{display:none;color:#C87070;font-size:11.5px;margin-top:6px}
+.field.bad .err{display:block}
+.row2{display:grid;grid-template-columns:1fr 1fr;gap:18px}
+@media(max-width:600px){.row2{grid-template-columns:1fr;gap:0}}
+.recap{border:1px solid var(--line);padding:24px;margin:26px 0;font-size:13px}
+.recap div{display:flex;justify-content:space-between;gap:14px;padding:9px 0;border-bottom:1px solid rgba(255,255,255,.07)}
+.recap div:last-child{border:0}
+.recap span:first-child{color:var(--tx-dim);font-size:11.5px;letter-spacing:.12em}
+.recap span:last-child{text-align:right}
+
+/* 会員 */
+.member{display:grid;grid-template-columns:1fr 1fr;gap:60px;align-items:center}
+.member-box{border:1px solid var(--line);padding:34px}
+.member-box h3{font-family:var(--serif);font-weight:300;font-size:18px;letter-spacing:.18em;margin-bottom:8px}
+.member-box .lead{font-size:12px;color:var(--tx-dim);margin-bottom:24px}
+.mypage{display:none}
+.mypage.on{display:block;animation:up .6s ease both}
+.mypage .row{display:flex;justify-content:space-between;padding:11px 0;border-bottom:1px solid rgba(255,255,255,.07);font-size:12.5px}
+.mypage .pt{font-family:var(--serif);font-size:34px;color:var(--gold);letter-spacing:.05em}
+@media(max-width:900px){.member{grid-template-columns:1fr;gap:36px}}
+
+/* アクセス */
+.acc{display:grid;grid-template-columns:1.1fr .9fr;gap:56px;align-items:center}
+.acc table{width:100%;font-size:13px}
+.acc th{text-align:left;font-weight:400;color:var(--tx-dim);font-size:11px;letter-spacing:.16em;width:7em;padding:14px 0;border-bottom:1px solid rgba(255,255,255,.08);vertical-align:top}
+.acc td{padding:14px 0;border-bottom:1px solid rgba(255,255,255,.08)}
+@media(max-width:900px){.acc{grid-template-columns:1fr;gap:36px}}
+
+footer.site{border-top:1px solid var(--line);padding:70px 26px 32px;background:var(--bg2)}
+.ft{max-width:1180px;margin:0 auto;display:grid;grid-template-columns:1.4fr 1fr 1fr 1fr;gap:36px}
+.ft h4{font-size:9.5px;letter-spacing:.3em;color:var(--gold);margin-bottom:16px;font-weight:400}
+.ft ul{list-style:none;font-size:12.5px}
+.ft li{margin-bottom:10px}.ft a{text-decoration:none;color:var(--tx-dim);transition:.3s}
+.ft a:hover{color:var(--gold)}
+.ft p{font-size:11.5px;color:var(--tx-dim);margin-top:16px;letter-spacing:.06em}
+.ft-btm{max-width:1180px;margin:46px auto 0;padding-top:22px;border-top:1px solid rgba(255,255,255,.07);display:flex;justify-content:space-between;gap:14px;flex-wrap:wrap;font-size:10.5px;color:var(--tx-dim);letter-spacing:.14em}
+@media(max-width:860px){.ft{grid-template-columns:1fr 1fr;gap:30px}}
+</style>
+</head>
+<body>
+
+<div class="demo-bar">
+  <a class="demo-back" href="index.html">← カタログへ戻る</a>
+  <span class="demo-note">デザイン見本 B ／ エレガント ― <b>LUNE hair &amp; spa</b>（架空の店舗です）</span>
+  <button class="demo-toggle" id="hintBtn" aria-pressed="false">⚙ サーバーが要る機能を示す</button>
+</div>
+
+<header class="site" id="hdr">
+  <div class="hd">
+    <a class="logo" href="#top">LUNE<small>HAIR &amp; SPA</small></a>
+    <button class="burger" id="burger" aria-label="メニュー">☰</button>
+    <nav class="main" id="nav">
+      <a href="#concept">CONCEPT</a>
+      <a href="#price">MENU</a>
+      <a href="#staff">STYLIST</a>
+      <a href="#gallery">STYLE</a>
+      <a href="#voice">VOICE</a>
+      <a href="#access">ACCESS</a>
+    </nav>
+    <a class="cta" href="#reserve">RESERVE</a>
+  </div>
+</header>
+
+<div class="hero" id="top">
+  <div class="bgph"></div>
+  <div class="hero-in">
+    <div class="en">HAIR &amp; SPA SALON — SINCE 2011</div>
+    <h1>髪は、<br>いちばん近い<br>装い。</h1>
+    <p>ひと組ずつ、時間をかけて。完全予約制のプライベートサロン。</p>
+    <div><a class="btn" href="#reserve">ご予約はこちら</a></div>
+  </div>
+  <div class="scrolldown">SCROLL</div>
+</div>
+
+<section id="concept">
+  <div class="inner">
+    <div class="concept">
+      <div class="ph ph-1 reveal" data-label="PHOTO"></div>
+      <div class="reveal">
+        <div class="vtxt">急がないこと、<br>削らないこと。<br>その人の時間に、<br>合わせること。</div>
+        <p>一日にお迎えするのは八組まで。カウンセリングに二十分、仕上がりの説明に十分。ご自宅で再現できるところまでを、ひとつの施術と考えています。<br><br>薬剤は頭皮への刺激を抑えたものを基本に、髪の状態を見てその日ごとに調合します。</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="price" id="price">
+  <div class="inner">
+    <div class="sec-head reveal">
+      <div class="en">MENU &amp; PRICE</div>
+      <h2>メニューと料金</h2>
+      <p>表示は税込価格です。カットにはシャンプー・ブローが含まれます。</p>
+    </div>
+    <div class="price-tabs reveal" role="tablist">
+      <button class="price-tab" role="tab" aria-selected="true" data-tab="cut">CUT / COLOR</button>
+      <button class="price-tab" role="tab" aria-selected="false" data-tab="perm">PERM / TREATMENT</button>
+      <button class="price-tab" role="tab" aria-selected="false" data-tab="spa">HEAD SPA</button>
+    </div>
+    <div class="price-list reveal" id="priceList"></div>
+  </div>
+</section>
+
+<section id="staff">
+  <div class="inner">
+    <div class="sec-head reveal">
+      <div class="en">STYLIST</div>
+      <h2>スタイリスト</h2>
+      <p>ご予約時にご指名いただけます。</p>
+    </div>
+    <div class="staff reveal" id="staffGrid"></div>
+  </div>
+</section>
+
+<section class="price" id="gallery">
+  <div class="inner">
+    <div class="sec-head reveal">
+      <div class="en">STYLE GALLERY</div>
+      <h2>スタイル集</h2>
+      <p>長さ・イメージで絞り込めます。</p>
+    </div>
+    <div class="gal-filter reveal" id="galFilter"></div>
+    <div class="gal reveal has-hint" data-hint="⚙ スタイル写真の追加・「いいね」数の保存（要サーバー）" id="gal"></div>
+  </div>
+</section>
+
+<section class="voice" id="voice">
+  <div class="inner">
+    <div class="sec-head reveal">
+      <div class="en">VOICE</div>
+      <h2>お客さまの声</h2>
+      <p>ご来店後にいただいた感想です。</p>
+    </div>
+    <div class="voice-grid reveal" id="voiceGrid"></div>
+    <div class="voice-form reveal has-hint" data-hint="⚙ 口コミの投稿・承認・掲載（要サーバー）">
+      <h3>感想を投稿する</h3>
+      <div class="stars-in" id="starsIn">
+        <button data-v="1">★</button><button data-v="2">★</button><button data-v="3">★</button><button data-v="4">★</button><button data-v="5">★</button>
+      </div>
+      <div class="field"><label>お名前（イニシャル可）</label><input type="text" id="vName" placeholder="M.K"></div>
+      <div class="field"><label>ご感想</label><textarea id="vText" rows="3" placeholder="担当してくださった方が…"></textarea></div>
+      <div style="text-align:center"><button class="btn fill" id="vSend">投稿する</button></div>
+    </div>
+  </div>
+</section>
+
+<section id="reserve">
+  <div class="inner">
+    <div class="sec-head reveal">
+      <div class="en">RESERVATION</div>
+      <h2>ご予約</h2>
+      <p>メニュー・スタイリスト・日時をお選びください。</p>
+    </div>
+    <div class="res-card reveal has-hint" data-hint="⚙ 予約枠の管理・ダブルブッキング防止・確認メール（要サーバー）">
+      <div class="res-steps">
+        <div class="on" data-s="1">01　MENU</div>
+        <div data-s="2">02　STYLIST</div>
+        <div data-s="3">03　DATE</div>
+        <div data-s="4">04　CONFIRM</div>
+      </div>
+      <div id="s1">
+        <div class="opt-grid" id="menuOpts"></div>
+        <div style="margin-top:30px;text-align:right"><button class="btn" id="n1">次へ　→</button></div>
+      </div>
+      <div id="s2" hidden>
+        <div class="opt-grid" id="staffOpts"></div>
+        <div style="margin-top:30px;display:flex;justify-content:space-between"><button class="btn" id="b2">←　戻る</button><button class="btn" id="n2">次へ　→</button></div>
+      </div>
+      <div id="s3" hidden>
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:18px">
+          <button class="btn" style="padding:9px 18px;font-size:11px" id="wPrev">← 前の週</button>
+          <span style="font-size:12px;letter-spacing:.16em;color:var(--tx-dim)" id="wLabel"></span>
+          <button class="btn" style="padding:9px 18px;font-size:11px" id="wNext">次の週 →</button>
+        </div>
+        <div class="wk" id="wk"></div>
+        <p style="font-size:11px;color:var(--tx-dim);margin-top:14px">◯ = 空きあり　／　△ = 残りわずか　／　× = 満席（空き状況はサーバーから取得します）</p>
+        <div style="margin-top:30px;display:flex;justify-content:space-between"><button class="btn" id="b3">←　戻る</button><button class="btn" id="n3">次へ　→</button></div>
+      </div>
+      <div id="s4" hidden>
+        <div class="recap" id="recap"></div>
+        <div class="row2">
+          <div class="field"><label>お名前</label><input type="text" id="cName" placeholder="山田 花子"><div class="err">お名前を入力してください</div></div>
+          <div class="field"><label>電話番号</label><input type="tel" id="cTel" placeholder="090-1234-5678"><div class="err">電話番号を入力してください</div></div>
+        </div>
+        <div class="field"><label>メールアドレス</label><input type="email" id="cMail" placeholder="hanako@example.com"><div class="err">形式をご確認ください</div></div>
+        <div class="field"><label>ご要望</label><textarea id="cMemo" rows="2" placeholder="前回より少し短めにお願いします"></textarea></div>
+        <div style="display:flex;justify-content:space-between;gap:14px"><button class="btn" id="b4">←　戻る</button><button class="btn fill" id="send">この内容で予約する</button></div>
+      </div>
+      <div id="s5" hidden style="text-align:center;padding:20px 0">
+        <div style="font-size:38px;color:var(--gold);margin-bottom:18px">✓</div>
+        <h3 style="font-family:var(--serif);font-weight:300;font-size:22px;letter-spacing:.2em;margin-bottom:14px">ご予約を承りました</h3>
+        <p style="font-size:12.5px;color:var(--tx-dim)">確認のメールをお送りしました。当日お待ちしております。</p>
+        <div class="recap" id="recap2" style="text-align:left"></div>
+        <button class="btn" id="again">もう一度ためす</button>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="price" id="member">
+  <div class="inner">
+    <div class="member">
+      <div class="reveal">
+        <div class="sec-head" style="text-align:left;margin-bottom:24px">
+          <div class="en">MEMBERS</div>
+          <h2 style="text-indent:0">会員のお客さまへ</h2>
+        </div>
+        <p style="font-size:13px;color:var(--tx-dim)">ご来店履歴、前回の薬剤とレシピ、たまったポイント、次回のご予約。ログインするとマイページでご確認いただけます。<br><br>ポイントは1,000円につき10ポイント。500ポイントからトリートメントに交換できます。</p>
+      </div>
+      <div class="member-box reveal has-hint" data-hint="⚙ ログイン認証・来店履歴・ポイント残高（要サーバー）">
+        <div id="loginBox">
+          <h3>MEMBER LOGIN</h3>
+          <div class="lead">デモです。そのまま「ログイン」を押せます。</div>
+          <div class="field"><label>会員ID / メールアドレス</label><input type="text" id="mid" value="hanako@example.com"></div>
+          <div class="field"><label>パスワード</label><input type="password" id="mpw" value="password"></div>
+          <button class="btn fill" id="loginBtn" style="width:100%">ログイン</button>
+        </div>
+        <div class="mypage" id="mypage">
+          <h3>MY PAGE</h3>
+          <div class="lead">山田 花子 さま（会員番号 L-0421）</div>
+          <div style="text-align:center;padding:14px 0 18px">
+            <div class="pt">1,240 <span style="font-size:12px;color:var(--tx-dim);letter-spacing:.2em">POINT</span></div>
+          </div>
+          <div class="row"><span>次回のご予約</span><span>8/29（土）14:00 ／ 森</span></div>
+          <div class="row"><span>前回ご来店</span><span>7/12 カット＋カラー</span></div>
+          <div class="row"><span>前回のカラー</span><span>9トーン ベージュ（No.7B+8G 1:1）</span></div>
+          <div class="row"><span>ご来店回数</span><span>通算 27 回</span></div>
+          <button class="btn" id="logoutBtn" style="width:100%;margin-top:22px">ログアウト</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="access">
+  <div class="inner">
+    <div class="sec-head reveal">
+      <div class="en">ACCESS</div>
+      <h2>アクセス</h2>
+    </div>
+    <div class="acc">
+      <div class="reveal" style="border:1px solid var(--line)">
+        <svg viewBox="0 0 460 300" width="100%">
+          <rect width="460" height="300" fill="#1A1714"/>
+          <path d="M0 190 H460 M180 0 V300 M0 70 H460" stroke="#262119" stroke-width="16"/>
+          <path d="M0 190 H460 M180 0 V300" stroke="#2E2820" stroke-width="9"/>
+          <rect x="40" y="95" width="90" height="66" fill="#221D17"/>
+          <rect x="240" y="100" width="140" height="60" fill="#221D17"/>
+          <rect x="240" y="220" width="90" height="55" fill="#221D17"/>
+          <circle cx="180" cy="190" r="12" fill="#C6A96B"/>
+          <circle cx="180" cy="190" r="26" fill="#C6A96B" opacity=".15"/>
+          <text x="204" y="186" font-size="14" fill="#EAE3D6" font-family="serif" letter-spacing="2">LUNE</text>
+          <text x="204" y="203" font-size="10" fill="#9C9284">中央駅 西口 徒歩4分</text>
+          <rect x="46" y="30" width="52" height="24" rx="2" fill="#3A4E6E"/>
+          <text x="57" y="47" font-size="11" fill="#EAE3D6">駅</text>
+        </svg>
+      </div>
+      <div class="reveal">
+        <table>
+          <tr><th>店名</th><td>LUNE hair &amp; spa</td></tr>
+          <tr><th>住所</th><td>〒000-0000 ○○県○○市中央3-4-5 ルーチェビル 4F</td></tr>
+          <tr><th>電話</th><td>000-000-0000</td></tr>
+          <tr><th>営業時間</th><td>10:00 – 19:00（最終受付 17:30）</td></tr>
+          <tr><th>定休日</th><td>毎週月曜・第3火曜</td></tr>
+          <tr><th>ご予約</th><td>完全予約制</td></tr>
+        </table>
+        <div style="margin-top:30px"><a class="btn fill" href="#reserve">ご予約はこちら</a></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<footer class="site">
+  <div class="ft">
+    <div>
+      <div class="logo" style="font-size:20px">LUNE<small>HAIR &amp; SPA</small></div>
+      <p>〒000-0000 ○○県○○市中央3-4-5<br>10:00 – 19:00／月曜・第3火曜 定休</p>
+    </div>
+    <div><h4>MENU</h4><ul><li><a href="#concept">コンセプト</a></li><li><a href="#price">料金</a></li><li><a href="#staff">スタイリスト</a></li></ul></div>
+    <div><h4>GUIDE</h4><ul><li><a href="#gallery">スタイル集</a></li><li><a href="#voice">お客さまの声</a></li><li><a href="#member">会員ページ</a></li></ul></div>
+    <div><h4>CONTACT</h4><ul><li><a href="#reserve">オンライン予約</a></li><li><a href="tel:0000000000">000-000-0000</a></li><li><a href="#" onclick="return false">Instagram</a></li></ul></div>
+  </div>
+  <div class="ft-btm">
+    <span>© 2026 LUNE hair &amp; spa（架空の店舗です）</span>
+    <span>デザイン見本 B ／ エレガント</span>
+  </div>
+</footer>
+
+<div class="toast" id="toast"></div>
+
+<script>
+/* デモ共通 */
+if (window.self !== window.top) document.documentElement.classList.add('embedded');
+document.querySelectorAll('[data-hint]').forEach(el=>{ const b=document.createElement('span'); b.className='hint-badge'; b.textContent=el.dataset.hint; el.appendChild(b); });
+const hintBtn=document.getElementById('hintBtn');
+hintBtn.addEventListener('click',()=>{
+  const on=document.body.classList.toggle('hints');
+  hintBtn.setAttribute('aria-pressed',on);
+  hintBtn.textContent = on ? '⚙ 表示中（クリックで戻す）' : '⚙ サーバーが要る機能を示す';
+  if(on) toast('サーバー（バックエンド）が要る箇所','緑の点線で囲まれた部分は、予約枠の管理・会員認証・口コミの保存などをサーバー側で行う機能です。');
+});
+let tt; function toast(t,b){ const e=document.getElementById('toast');
+  e.innerHTML='<b>'+t+'</b>'+(b||'')+'<small>※これはデザイン見本です。実際の動作はしません。</small>';
+  e.classList.add('on'); clearTimeout(tt); tt=setTimeout(()=>e.classList.remove('on'),5200); }
+function serverCall(ms){ return new Promise(r=>setTimeout(r, ms||(600+Math.random()*500))); }
+const io=new IntersectionObserver(es=>es.forEach(e=>{ if(e.isIntersecting){e.target.classList.add('in');io.unobserve(e.target);} }),{threshold:.1});
+document.querySelectorAll('.reveal').forEach(el=>io.observe(el));
+
+/* ヘッダー */
+const hdr=document.getElementById('hdr');
+addEventListener('scroll',()=>hdr.classList.toggle('solid',scrollY>60));
+const nav=document.getElementById('nav'),burger=document.getElementById('burger');
+burger.onclick=()=>{ nav.classList.toggle('open'); burger.textContent=nav.classList.contains('open')?'×':'☰'; };
+nav.querySelectorAll('a').forEach(a=>a.onclick=()=>{nav.classList.remove('open');burger.textContent='☰';});
+
+/* 料金 */
+const PRICE={
+  cut:[['カット','シャンプー・ブロー込み','¥6,600','60分'],['前髪カット','','¥1,100','15分'],
+    ['カラー（リタッチ）','根元3cmまで','¥7,700','90分'],['カラー（フル）','ロング料金なし','¥9,900','120分'],
+    ['ハイライト','デザイン提案込み','¥13,200','150分'],['白髪ぼかしハイライト','','¥14,300','150分']],
+  perm:[['デジタルパーマ','','¥13,200','150分'],['やわらかストレート','髪質改善','¥16,500','180分'],
+    ['髪質改善トリートメント','4回コースあり','¥8,800','60分'],['集中補修トリートメント','','¥4,400','30分'],
+    ['ヘッドスパ＋トリートメント','','¥11,000','80分']],
+  spa:[['クイックスパ','20分','¥3,300','20分'],['ディープリラックススパ','炭酸泉＋肩まわり','¥6,600','45分'],
+    ['スカルプケアスパ','頭皮診断つき','¥8,800','60分'],['よもぎ蒸しスパ','女性限定','¥9,900','70分']]
+};
+function drawPrice(k){
+  document.getElementById('priceList').innerHTML=PRICE[k].map(([n,d,p,t])=>`
+    <div class="price-row"><div><div class="nm">${n}</div>${d?`<div class="ds">${d}</div>`:''}</div>
+    <div class="dots"></div><div class="pr">${p}<span class="tm">${t}</span></div></div>`).join('');
+}
+drawPrice('cut');
+document.querySelectorAll('.price-tab').forEach(t=>t.onclick=()=>{
+  document.querySelectorAll('.price-tab').forEach(x=>x.setAttribute('aria-selected','false'));
+  t.setAttribute('aria-selected','true'); drawPrice(t.dataset.tab);
+});
+
+/* スタイリスト */
+const STAFF=[
+  {n:'森 かなえ',r:'DIRECTOR',ph:'ph-1',b:'骨格に合わせた「切らないデザイン」が得意。ショートのご相談が多いです。',t:['ショート','ボブ','白髪ぼかし']},
+  {n:'高梨 湊',r:'TOP STYLIST',ph:'ph-2',b:'透明感のあるカラー設計。ブリーチを使わないデザインカラーを研究中。',t:['カラー','ハイライト','メンズ']},
+  {n:'和泉 由',r:'STYLIST',ph:'ph-4',b:'くせ毛とうまく付き合う髪型を。朝の再現性を第一に考えます。',t:['くせ毛','ロング','パーマ']},
+  {n:'久保 あき',r:'SPA THERAPIST',ph:'ph-3',b:'頭皮診断からのスパ設計。肩まわりまでほぐします。',t:['ヘッドスパ','スカルプ']}
+];
+document.getElementById('staffGrid').innerHTML=STAFF.map(s=>`
+  <div class="staff-card"><div class="ph ${s.ph}" data-label="PHOTO"></div>
+  <div class="rank">${s.r}</div><h3>${s.n}</h3><div class="bio">${s.b}</div>
+  <div class="tags">${s.t.map(x=>`<span>${x}</span>`).join('')}</div></div>`).join('');
+
+/* スタイルギャラリー */
+const STYLES=[
+  ['ショート','ph-1','丸みショート／9トーンベージュ'],['ボブ','ph-2','切りっぱなしボブ'],
+  ['ミディアム','ph-4','ゆるふわミディ'],['ロング','ph-3','艶ロング／インナーカラー'],
+  ['ショート','ph-3','ハンサムショート'],['ボブ','ph-4','外ハネボブ'],
+  ['ロング','ph-1','ローレイヤーロング'],['ミディアム','ph-2','くびれミディ']
+];
+const CATS=['すべて','ショート','ボブ','ミディアム','ロング'];
+let cat='すべて';
+document.getElementById('galFilter').innerHTML=CATS.map(c=>`<button data-c="${c}" aria-pressed="${c===cat}">${c}</button>`).join('');
+const likes={};
+function drawGal(){
+  document.getElementById('gal').innerHTML=STYLES.map((s,i)=>(cat==='すべて'||s[0]===cat)?`
+    <figure><div class="ph ${s[1]}" data-label="PHOTO"></div>
+    <button class="like ${likes[i]?'on':''}" data-i="${i}">♥ ${12+i*7+(likes[i]?1:0)}</button>
+    <figcaption>${s[2]}</figcaption></figure>`:'').join('');
+}
+drawGal();
+document.getElementById('galFilter').onclick=e=>{ const b=e.target.closest('button'); if(!b)return;
+  cat=b.dataset.c; document.querySelectorAll('#galFilter button').forEach(x=>x.setAttribute('aria-pressed',x.dataset.c===cat)); drawGal(); };
+document.getElementById('gal').onclick=async e=>{ const b=e.target.closest('.like'); if(!b)return;
+  const i=b.dataset.i; likes[i]=!likes[i]; drawGal();
+  if(likes[i]) toast('「いいね」を保存しました','本番では誰がどのスタイルを気に入ったかがサーバーに記録され、人気順の並べ替えに使えます。'); };
+
+/* 口コミ */
+const VOICE=[
+  [5,'カウンセリングでこちらの言葉にならない希望まで拾ってもらえました。翌朝のセットがとても楽です。','30代・M.K さま'],
+  [5,'白髪をぼかす提案をいただき、染める回数が減りました。頭皮の負担も少なくなった気がします。','50代・T.S さま'],
+  [4,'ヘッドスパが本当に気持ちよく、途中で眠ってしまいました。次は長いコースにします。','40代・A.N さま']
+];
+function drawVoice(){
+  document.getElementById('voiceGrid').innerHTML=VOICE.map(([s,t,w])=>`
+    <div class="voice-card"><div class="stars">${'★'.repeat(s)}${'☆'.repeat(5-s)}</div><p>${t}</p><div class="who">${w}</div></div>`).join('');
+}
+drawVoice();
+let star=5;
+document.getElementById('starsIn').onclick=e=>{ const b=e.target.closest('button'); if(!b)return; star=+b.dataset.v;
+  document.querySelectorAll('#starsIn button').forEach(x=>x.classList.toggle('on',+x.dataset.v<=star)); };
+document.querySelectorAll('#starsIn button').forEach(x=>x.classList.add('on'));
+document.getElementById('vSend').onclick=async e=>{
+  const n=document.getElementById('vName').value.trim()||'匿名', t=document.getElementById('vText').value.trim();
+  if(!t){ toast('ご感想を入力してください'); return; }
+  const btn=e.currentTarget, old=btn.textContent; btn.innerHTML='<span class="spin"></span>送信中'; 
+  await serverCall(900); btn.textContent=old;
+  VOICE.unshift([star,t,n+' さま']); drawVoice();
+  document.getElementById('vText').value='';
+  toast('口コミを受け付けました','本番ではサーバーに保存され、お店が内容を確認して「承認」したものだけがサイトに載ります。');
+};
+
+/* 予約 */
+const RMENU=[['カット','シャンプー・ブロー込み','¥6,600',60],['カット＋カラー','人気のメニュー','¥14,300',150],
+  ['カラーのみ','リタッチ','¥7,700',90],['髪質改善トリートメント','','¥8,800',60],
+  ['ヘッドスパ 45分','炭酸泉つき','¥6,600',45],['カット＋スパ','','¥11,000',105]];
+let pick={menu:null,staff:null,day:null,time:null};
+document.getElementById('menuOpts').innerHTML=RMENU.map((m,i)=>`
+  <button class="opt" data-i="${i}" aria-pressed="false"><div class="t">${m[0]}</div><div class="s">${m[1]||'&nbsp;'}</div><div class="p">${m[2]}／約${m[3]}分</div></button>`).join('');
+document.getElementById('staffOpts').innerHTML=[{n:'指名なし',r:'空いているスタッフが担当',ph:''}].concat(STAFF).map((s,i)=>`
+  <button class="opt" data-i="${i}" aria-pressed="false"><div class="t">${s.n}</div><div class="s">${s.r}</div>${i?'<div class="p">指名料 ¥550</div>':'<div class="p">指名料なし</div>'}</button>`).join('');
+function bindOpts(id,key){
+  document.getElementById(id).onclick=e=>{ const b=e.target.closest('.opt'); if(!b)return;
+    document.querySelectorAll('#'+id+' .opt').forEach(o=>o.setAttribute('aria-pressed','false'));
+    b.setAttribute('aria-pressed','true'); pick[key]=+b.dataset.i; };
+}
+bindOpts('menuOpts','menu'); bindOpts('staffOpts','staff');
+function setStep(n){ [1,2,3,4,5].forEach(i=>document.getElementById('s'+i).hidden=(i!==n));
+  document.querySelectorAll('.res-steps div').forEach(d=>d.classList.toggle('on',+d.dataset.s<=Math.min(n,4)));
+  document.getElementById('reserve').scrollIntoView({behavior:'smooth',block:'start'}); }
+document.getElementById('n1').onclick=()=>{ if(pick.menu===null){toast('メニューをお選びください');return;} setStep(2); };
+document.getElementById('b2').onclick=()=>setStep(1);
+document.getElementById('n2').onclick=()=>{ if(pick.staff===null){toast('スタイリストをお選びください');return;} drawWeek(); setStep(3); };
+document.getElementById('b3').onclick=()=>setStep(2);
+const WT=['10:00','11:30','13:00','14:30','16:00','17:30'];
+let weekOff=0;
+function avail(d,t){ let h=0; const s=d.toDateString()+t+pick.staff;
+  for(let i=0;i<s.length;i++) h=(h*33+s.charCodeAt(i))%9967; const n=h%10;
+  if(d.getDay()===1) return 'x'; return n<4?'◯':n<7?'△':'×'; }
+function drawWeek(){
+  const base=new Date(); base.setDate(base.getDate()+1+weekOff*7);
+  const days=[...Array(7)].map((_,i)=>{ const d=new Date(base); d.setDate(base.getDate()+i); return d; });
+  document.getElementById('wLabel').textContent=`${days[0].getMonth()+1}/${days[0].getDate()} 〜 ${days[6].getMonth()+1}/${days[6].getDate()}`;
+  const W=['日','月','火','水','木','金','土'];
+  let h='<div></div>'+days.map(d=>`<div class="hd2">${W[d.getDay()]}<b>${d.getDate()}</b></div>`).join('');
+  WT.forEach(t=>{ h+=`<div class="tlabel">${t}</div>`+days.map((d,i)=>{
+    const a=avail(d,t); const dis=(a==='×'||a==='x');
+    return `<button ${dis?'disabled':''} data-d="${i}" data-t="${t}" aria-pressed="false">${a==='x'?'−':a}</button>`;
+  }).join(''); });
+  document.getElementById('wk').innerHTML=h;
+  document.getElementById('wk').dataset.base=days[0].toISOString();
+}
+document.getElementById('wPrev').onclick=()=>{ if(weekOff>0){weekOff--;drawWeek();} };
+document.getElementById('wNext').onclick=()=>{ weekOff++; drawWeek(); };
+document.getElementById('wk').onclick=e=>{ const b=e.target.closest('button'); if(!b||b.disabled)return;
+  document.querySelectorAll('#wk button').forEach(x=>x.setAttribute('aria-pressed','false'));
+  b.setAttribute('aria-pressed','true');
+  const base=new Date(document.getElementById('wk').dataset.base); base.setDate(base.getDate()+ +b.dataset.d);
+  pick.day=base; pick.time=b.dataset.t; };
+document.getElementById('n3').onclick=()=>{
+  if(!pick.time){ toast('日時をお選びください'); return; }
+  const st=[{n:'指名なし'}].concat(STAFF)[pick.staff];
+  const W=['日','月','火','水','木','金','土'];
+  document.getElementById('recap').innerHTML=[
+    ['メニュー',RMENU[pick.menu][0]+'（'+RMENU[pick.menu][2]+'）'],
+    ['スタイリスト',st.n],
+    ['ご来店日時',`${pick.day.getMonth()+1}月${pick.day.getDate()}日（${W[pick.day.getDay()]}）${pick.time}`],
+    ['所要時間','約'+RMENU[pick.menu][3]+'分'],
+    ['お会計目安',RMENU[pick.menu][2]+(pick.staff?'＋指名料 ¥550':'')]
+  ].map(([k,v])=>`<div><span>${k}</span><span>${v}</span></div>`).join('');
+  setStep(4);
+};
+document.getElementById('b4').onclick=()=>setStep(3);
+document.getElementById('send').onclick=async e=>{
+  let ok=true;
+  [['cName',v=>v.trim()],['cTel',v=>v.trim().length>=8],['cMail',v=>/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(v)]].forEach(([id,t])=>{
+    const el=document.getElementById(id), bad=!t(el.value); el.closest('.field').classList.toggle('bad',bad); if(bad)ok=false; });
+  if(!ok) return;
+  const btn=e.currentTarget, old=btn.textContent; btn.innerHTML='<span class="spin"></span>送信中…'; btn.disabled=true;
+  await serverCall(1200); btn.textContent=old; btn.disabled=false;
+  document.getElementById('recap2').innerHTML=document.getElementById('recap').innerHTML
+    +`<div><span>予約番号</span><span>LN-${Math.random().toString(36).slice(2,7).toUpperCase()}</span></div>`;
+  setStep(5);
+  toast('予約データを送信しました','本番では予約枠が即座に埋まり、他のお客さまは同じ時間を選べなくなります。確認メールも自動送信されます。');
+};
+document.getElementById('again').onclick=()=>{ pick={menu:null,staff:null,day:null,time:null};
+  document.querySelectorAll('.opt').forEach(o=>o.setAttribute('aria-pressed','false')); setStep(1); };
+
+/* 会員 */
+document.getElementById('loginBtn').onclick=async e=>{
+  const btn=e.currentTarget, old=btn.textContent; btn.innerHTML='<span class="spin"></span>認証中…';
+  await serverCall(900); btn.textContent=old;
+  document.getElementById('loginBox').style.display='none';
+  document.getElementById('mypage').classList.add('on');
+  toast('ログインしました','本番ではID・パスワードをサーバーで照合し、その人だけの来店履歴やポイントを表示します。');
+};
+document.getElementById('logoutBtn').onclick=()=>{
+  document.getElementById('mypage').classList.remove('on');
+  document.getElementById('loginBox').style.display='';
+};
+</script>
+</body>
+</html>

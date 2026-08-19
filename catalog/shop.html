@@ -1,0 +1,682 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>hitotsu 工房 ｜ デザイン見本 E ネットショップ</title>
+<meta name="description" content="Webサイトデザイン見本 E ― 商品を売るネットショップ型デザイン(架空の器の工房)">
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+:root{
+  --bg:#FAF8F4; --card:#FFFFFF; --ink:#2A2724; --dim:#7C736A; --line:#E6E0D6;
+  --moss:#4A6B52; --moss-d:#39543F; --sale:#B5503C;
+  --sans:"Hiragino Kaku Gothic ProN","Yu Gothic","Noto Sans JP",system-ui,sans-serif;
+  --serif:"Hiragino Mincho ProN","Yu Mincho",serif;
+}
+html{scroll-behavior:smooth}
+body{font-family:var(--sans);background:var(--bg);color:var(--ink);line-height:1.9;overflow-x:hidden}
+a{color:inherit}svg{display:block}button{font-family:inherit}
+
+/* デモ共通 */
+.demo-bar{position:fixed;inset:0 0 auto 0;z-index:1000;display:flex;gap:12px;align-items:center;flex-wrap:wrap;padding:8px 14px;background:#231F1B;color:#F2EDE4;font-size:12.5px}
+.demo-bar a.demo-back{text-decoration:none;background:rgba(255,255,255,.13);padding:5px 12px;border-radius:999px;white-space:nowrap}
+.demo-note{opacity:.8}.demo-note b{color:#B6D3BC}
+.demo-toggle{margin-left:auto;font:inherit;cursor:pointer;color:#231F1B;background:#B6D3BC;border:0;padding:6px 14px;border-radius:999px;white-space:nowrap}
+.demo-toggle[aria-pressed="true"]{background:#7EC8A9}
+body{padding-top:42px}
+html.embedded body{padding-top:0}
+html.embedded .demo-bar{display:none}
+@media(max-width:600px){.demo-note{display:none}}
+.hint-badge{display:none}
+body.hints .hint-badge{display:inline-flex;position:absolute;z-index:60;top:-13px;left:10px;background:#166B4F;color:#fff;font-size:11px;line-height:1.5;padding:3px 10px;border-radius:999px;box-shadow:0 4px 14px rgba(0,0,0,.2);max-width:calc(100% - 20px)}
+body.hints .has-hint{position:relative;outline:2px dashed #166B4F;outline-offset:6px;border-radius:4px}
+.toast{position:fixed;left:50%;bottom:26px;transform:translate(-50%,26px);z-index:1100;opacity:0;pointer-events:none;background:#231F1B;color:#F2EDE4;padding:14px 20px;border-radius:10px;max-width:min(92vw,430px);box-shadow:0 18px 44px rgba(0,0,0,.28);transition:.3s;font-size:13px;line-height:1.75}
+.toast.on{opacity:1;transform:translate(-50%,0)}
+.toast b{display:block;color:#B6D3BC;margin-bottom:2px}
+.toast small{display:block;margin-top:6px;opacity:.6;font-size:11.5px}
+.spin{display:inline-block;width:13px;height:13px;border:2px solid rgba(255,255,255,.3);border-top-color:#fff;border-radius:50%;animation:sp .7s linear infinite;vertical-align:-2px;margin-right:6px}
+@keyframes sp{to{transform:rotate(360deg)}}
+
+.ph{position:relative;overflow:hidden;background:#EDE7DC}
+.ph::after{content:attr(data-label);position:absolute;right:8px;bottom:6px;font-size:9px;letter-spacing:.16em;color:rgba(42,39,36,.3)}
+.c1{background:radial-gradient(70% 70% at 40% 35%,#F3EFE6,#C9BFAE)}
+.c2{background:radial-gradient(70% 70% at 40% 35%,#E7EAE2,#9AA894)}
+.c3{background:radial-gradient(70% 70% at 40% 35%,#F0E3D6,#C2A288)}
+.c4{background:radial-gradient(70% 70% at 40% 35%,#E3E6EC,#9CA6B4)}
+.c5{background:radial-gradient(70% 70% at 40% 35%,#EFE6E6,#C0A0A0)}
+.c6{background:radial-gradient(70% 70% at 40% 35%,#F2EDDF,#B9A87E)}
+
+/* ヘッダー */
+.notice{background:var(--moss);color:#fff;text-align:center;font-size:12px;padding:7px 14px;letter-spacing:.03em}
+header.site{position:sticky;top:42px;z-index:500;border-bottom:1px solid var(--line)}
+header.site::before{content:"";position:absolute;inset:0;z-index:-1;background:rgba(250,248,244,.94);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px)}
+html.embedded header.site{top:0}
+.hd{max-width:1220px;margin:0 auto;padding:14px 20px;display:flex;align-items:center;gap:20px}
+.logo{text-decoration:none;font-family:var(--serif);font-size:22px;letter-spacing:.2em}
+.logo small{display:block;font-family:var(--sans);font-size:9px;letter-spacing:.24em;color:var(--dim)}
+nav.main{margin-left:auto;display:flex;gap:24px;font-size:13px}
+nav.main a{text-decoration:none;transition:.2s}
+nav.main a:hover{color:var(--moss)}
+.icons{display:flex;gap:6px;align-items:center}
+.iconbtn{position:relative;background:none;border:0;cursor:pointer;padding:9px;border-radius:8px;color:var(--ink);transition:.2s}
+.iconbtn:hover{background:rgba(74,107,82,.1)}
+.iconbtn .cnt{position:absolute;top:2px;right:2px;background:var(--sale);color:#fff;font-size:10px;min-width:17px;height:17px;border-radius:999px;display:grid;place-content:center;padding:0 4px}
+.iconbtn .cnt:empty,.iconbtn .cnt[data-n="0"]{display:none}
+.burger{display:none;background:none;border:0;font-size:20px;cursor:pointer;z-index:600;color:var(--ink)}
+@media(max-width:900px){
+  nav.main{position:fixed;inset:0;background:var(--bg);flex-direction:column;justify-content:center;align-items:center;gap:24px;font-size:16px;clip-path:inset(0 0 0 100%);pointer-events:none;transition:clip-path .4s cubic-bezier(.4,0,.2,1);z-index:550;margin:0}
+  nav.main.open{clip-path:inset(0);pointer-events:auto}
+  .burger{display:block;margin-left:auto}
+}
+
+/* ヒーロー */
+.hero{position:relative;max-width:1220px;margin:0 auto;padding:0 20px}
+.hero .box{position:relative;border-radius:18px;overflow:hidden;aspect-ratio:21/9;background:linear-gradient(110deg,#DDD5C6,#B6AC98 60%,#8E8877);display:grid;align-items:center}
+.hero .cp{position:relative;z-index:2;padding:0 clamp(24px,6vw,80px);color:#fff;max-width:720px}
+.hero .cp .en{font-size:10.5px;letter-spacing:.34em;opacity:.85;margin-bottom:16px}
+.hero .cp h1{font-family:var(--serif);font-size:clamp(22px,3.6vw,42px);font-weight:400;letter-spacing:.1em;line-height:1.6;text-shadow:0 2px 20px rgba(0,0,0,.25)}
+.hero .cp p{font-size:13.5px;margin-top:16px;opacity:.9;text-shadow:0 2px 12px rgba(0,0,0,.3)}
+.hero .cp .btn{margin-top:26px}
+@media(max-width:760px){.hero .box{aspect-ratio:4/5}}
+.feat3{max-width:1220px;margin:22px auto 0;padding:0 20px;display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
+.feat3 div{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:16px;text-align:center;font-size:12.5px}
+.feat3 b{display:block;font-family:var(--serif);font-size:15px;margin-bottom:2px}
+@media(max-width:700px){.feat3{grid-template-columns:1fr;gap:8px}.feat3 div{display:flex;gap:10px;justify-content:center;padding:11px}.feat3 b{margin:0}}
+
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;font:inherit;font-size:14px;padding:14px 28px;border-radius:999px;border:1px solid var(--moss);background:var(--moss);color:#fff;cursor:pointer;text-decoration:none;transition:.25s}
+.btn:hover{background:var(--moss-d);border-color:var(--moss-d)}
+.btn.out{background:transparent;color:var(--moss)}
+.btn.out:hover{background:rgba(74,107,82,.1);color:var(--moss)}
+.btn.wht{background:#fff;color:var(--ink);border-color:#fff}
+.btn.wht:hover{background:#F0EBE1;border-color:#F0EBE1}
+.btn.sm{font-size:12.5px;padding:9px 18px}
+.btn:disabled{opacity:.45;cursor:not-allowed}
+
+section{padding:clamp(50px,7vw,86px) 20px}
+.inner{max-width:1220px;margin:0 auto}
+.sec-head{display:flex;align-items:flex-end;gap:20px;margin-bottom:30px;flex-wrap:wrap}
+.sec-head h2{font-family:var(--serif);font-size:clamp(20px,2.8vw,28px);font-weight:400;letter-spacing:.12em}
+.sec-head .en{font-size:10.5px;letter-spacing:.28em;color:var(--moss);margin-bottom:6px}
+.sec-head .r{margin-left:auto;font-size:12.5px;color:var(--dim)}
+
+/* 商品 */
+.shop-bar{display:flex;gap:12px;align-items:center;flex-wrap:wrap;margin-bottom:26px;padding:14px 16px;background:var(--card);border:1px solid var(--line);border-radius:12px}
+.shop-bar .sr{position:relative;flex:1;min-width:180px}
+.shop-bar .sr input{width:100%;font:inherit;font-size:13.5px;padding:10px 12px 10px 36px;border:1px solid var(--line);border-radius:8px;background:var(--bg)}
+.shop-bar .sr input:focus{outline:none;border-color:var(--moss)}
+.shop-bar .sr svg{position:absolute;left:12px;top:50%;transform:translateY(-50%);color:var(--dim)}
+.shop-bar select{font:inherit;font-size:13px;padding:10px 12px;border:1px solid var(--line);border-radius:8px;background:var(--bg)}
+.cats{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:22px}
+.cats button{font:inherit;font-size:12.5px;background:var(--card);border:1px solid var(--line);border-radius:999px;padding:8px 18px;cursor:pointer;color:var(--dim);transition:.2s}
+.cats button[aria-pressed="true"]{background:var(--ink);color:#fff;border-color:var(--ink)}
+.grid{display:grid;grid-template-columns:repeat(4,1fr);gap:20px}
+@media(max-width:1000px){.grid{grid-template-columns:repeat(3,1fr)}}
+@media(max-width:760px){.grid{grid-template-columns:repeat(2,1fr);gap:12px}}
+.card{background:var(--card);border:1px solid var(--line);border-radius:14px;overflow:hidden;cursor:pointer;transition:.3s;display:flex;flex-direction:column}
+.card:hover{transform:translateY(-4px);box-shadow:0 16px 34px rgba(42,39,36,.1)}
+.card .imgwrap{position:relative}
+.card .ph{aspect-ratio:1}
+.card .badge{position:absolute;top:10px;left:10px;font-size:10.5px;padding:3px 10px;border-radius:999px;background:var(--sale);color:#fff}
+.card .badge.new{background:var(--moss)}
+.card .badge.soldout{background:#8A8177}
+.card .fav{position:absolute;top:8px;right:8px;background:rgba(255,255,255,.9);border:0;width:32px;height:32px;border-radius:50%;cursor:pointer;color:#B9AFA3;font-size:15px;transition:.2s}
+.card .fav.on{color:var(--sale)}
+.card .bd{padding:14px;flex:1;display:flex;flex-direction:column}
+.card .cat{font-size:10.5px;color:var(--dim);letter-spacing:.1em}
+.card h3{font-size:14px;font-weight:400;margin:5px 0 8px;line-height:1.6;font-family:var(--serif)}
+.card .stars{font-size:11px;color:#C79A3C;letter-spacing:.06em}
+.card .stars span{color:var(--dim);margin-left:5px}
+.card .pr{margin-top:auto;padding-top:10px;font-family:var(--serif);font-size:17px}
+.card .pr small{font-size:11px;color:var(--dim);font-family:var(--sans)}
+.card .pr .was{font-size:12px;color:var(--dim);text-decoration:line-through;margin-right:7px}
+.card .stock{font-size:11px;color:var(--sale);margin-top:4px}
+
+/* 商品詳細 */
+.modal{position:fixed;inset:0;z-index:900;background:rgba(35,31,27,.55);display:grid;place-items:center;padding:20px;opacity:0;pointer-events:none;transition:.3s;overflow-y:auto}
+.modal.on{opacity:1;pointer-events:auto}
+.modal-in{background:var(--card);border-radius:16px;max-width:900px;width:100%;max-height:88vh;overflow-y:auto;display:grid;grid-template-columns:1fr 1fr;position:relative}
+.modal .x{position:absolute;top:12px;right:14px;background:rgba(255,255,255,.9);border:0;width:34px;height:34px;border-radius:50%;font-size:20px;cursor:pointer;z-index:3}
+.modal .imgs .ph{aspect-ratio:1}
+.modal .thumbs{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;padding:6px}
+.modal .thumbs .ph{aspect-ratio:1;border-radius:6px;cursor:pointer;opacity:.6}
+.modal .thumbs .ph.on{opacity:1;outline:2px solid var(--moss)}
+.modal .info{padding:30px}
+.modal .info .cat{font-size:11px;color:var(--dim);letter-spacing:.14em}
+.modal .info h3{font-family:var(--serif);font-size:23px;font-weight:400;margin:8px 0 12px}
+.modal .info .pr{font-family:var(--serif);font-size:26px;margin-bottom:6px}
+.modal .info .pr small{font-size:12px;color:var(--dim);font-family:var(--sans)}
+.modal .info .desc{font-size:13px;color:var(--dim);margin:16px 0;padding:16px 0;border-top:1px solid var(--line);border-bottom:1px solid var(--line)}
+.opt-row{margin-bottom:16px}
+.opt-row .lb{font-size:12px;margin-bottom:8px;color:var(--dim)}
+.opt-row .opts{display:flex;gap:7px;flex-wrap:wrap}
+.opt-row .opts button{font:inherit;font-size:12.5px;padding:8px 15px;border:1px solid var(--line);border-radius:8px;background:var(--bg);cursor:pointer;transition:.2s}
+.opt-row .opts button[aria-pressed="true"]{border-color:var(--moss);background:rgba(74,107,82,.1);color:var(--moss)}
+.opt-row .opts button:disabled{opacity:.35;text-decoration:line-through;cursor:not-allowed}
+.qty{display:flex;align-items:center;gap:0;border:1px solid var(--line);border-radius:8px;width:fit-content;overflow:hidden}
+.qty button{background:var(--bg);border:0;width:38px;height:38px;font-size:16px;cursor:pointer}
+.qty span{width:44px;text-align:center;font-size:14px}
+.stock-line{font-size:12px;margin:14px 0;padding:10px 14px;background:rgba(74,107,82,.08);border-radius:8px;color:var(--moss)}
+.stock-line.low{background:rgba(181,80,60,.09);color:var(--sale)}
+.ship-note{font-size:11.5px;color:var(--dim);margin-top:14px;line-height:1.8}
+@media(max-width:800px){.modal-in{grid-template-columns:1fr}.modal .info{padding:22px}}
+
+/* カート */
+.cart{position:fixed;top:42px;right:0;bottom:0;width:min(420px,100vw);background:var(--card);z-index:950;clip-path:inset(0 0 0 100%);pointer-events:none;transition:clip-path .45s cubic-bezier(.3,.8,.3,1);display:flex;flex-direction:column;box-shadow:-10px 0 40px rgba(0,0,0,.2)}
+.cart.on{clip-path:inset(0);pointer-events:auto}
+html.embedded .cart{top:0}
+.cart-hd{padding:20px;border-bottom:1px solid var(--line);display:flex;align-items:center;gap:12px}
+.cart-hd h3{font-family:var(--serif);font-size:18px;font-weight:400;letter-spacing:.1em}
+.cart-hd button{margin-left:auto;background:none;border:0;font-size:22px;cursor:pointer}
+.cart-body{flex:1;overflow-y:auto;padding:16px 20px}
+.cart-empty{text-align:center;color:var(--dim);font-size:13.5px;padding:60px 0}
+.ci{display:grid;grid-template-columns:66px 1fr auto;gap:12px;padding:14px 0;border-bottom:1px solid var(--line)}
+.ci .ph{aspect-ratio:1;border-radius:8px}
+.ci h4{font-size:13px;font-weight:400;font-family:var(--serif)}
+.ci .op{font-size:11px;color:var(--dim)}
+.ci .qty{margin-top:8px;transform:scale(.85);transform-origin:left}
+.ci .rm{background:none;border:0;color:var(--dim);font-size:11px;cursor:pointer;text-decoration:underline;padding:0;margin-top:6px}
+.ci .p{font-family:var(--serif);font-size:14px;white-space:nowrap}
+.cart-ft{border-top:1px solid var(--line);padding:18px 20px 22px;background:var(--bg)}
+.coupon{display:flex;gap:6px;margin-bottom:14px}
+.coupon input{flex:1;min-width:0;font:inherit;font-size:13px;padding:9px 12px;border:1px solid var(--line);border-radius:8px}
+.sumrow{display:flex;justify-content:space-between;font-size:13px;padding:4px 0}
+.sumrow.total{font-family:var(--serif);font-size:19px;border-top:1px solid var(--line);margin-top:8px;padding-top:12px}
+.sumrow.disc{color:var(--sale)}
+.freeship{font-size:11.5px;color:var(--moss);background:rgba(74,107,82,.1);border-radius:8px;padding:8px 12px;margin-bottom:12px;text-align:center}
+.bar{height:5px;background:var(--line);border-radius:999px;overflow:hidden;margin-top:6px}
+.bar i{display:block;height:100%;background:var(--moss);transition:.5s}
+.overlay{position:fixed;inset:42px 0 0 0;background:rgba(35,31,27,.45);z-index:940;opacity:0;pointer-events:none;transition:.35s}
+.overlay.on{opacity:1;pointer-events:auto}
+html.embedded .overlay{inset:0}
+
+/* レビュー */
+.rev{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:26px}
+.rev-item{padding:18px 0;border-bottom:1px solid var(--line)}
+.rev-item:last-child{border:0;padding-bottom:0}
+.rev-item .top{display:flex;gap:12px;align-items:center;font-size:12px;color:var(--dim)}
+.rev-item .st{color:#C79A3C}
+.rev-item p{font-size:13.5px;margin-top:8px}
+.rev-sum{display:flex;gap:26px;align-items:center;padding-bottom:20px;border-bottom:1px solid var(--line);flex-wrap:wrap}
+.rev-sum .big{font-family:var(--serif);font-size:44px;line-height:1}
+.rev-sum .bars{flex:1;min-width:200px}
+.rev-sum .brow{display:flex;align-items:center;gap:8px;font-size:11.5px;color:var(--dim)}
+.rev-sum .brow .bar{flex:1;margin:0}
+
+/* 会員 */
+.mem{display:grid;grid-template-columns:1fr 1fr;gap:30px}
+.mem-box{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:28px}
+.mem-box h3{font-family:var(--serif);font-size:18px;font-weight:400;margin-bottom:6px}
+.mem-box .sub{font-size:12.5px;color:var(--dim);margin-bottom:20px}
+.field{margin-bottom:16px}
+.field label{display:block;font-size:12px;color:var(--dim);margin-bottom:7px}
+.field input{width:100%;font:inherit;font-size:14px;padding:12px 14px;border:1px solid var(--line);border-radius:8px;background:var(--bg)}
+.field input:focus{outline:none;border-color:var(--moss);background:#fff}
+.mypage{display:none}.mypage.on{display:block}
+.ord{border:1px solid var(--line);border-radius:10px;padding:14px;margin-bottom:10px;font-size:12.5px}
+.ord .h{display:flex;justify-content:space-between;color:var(--dim);font-size:11.5px;margin-bottom:6px}
+.ord .st{display:inline-block;font-size:10.5px;padding:2px 9px;border-radius:999px;background:rgba(74,107,82,.13);color:var(--moss)}
+.ord .st.ship{background:rgba(181,80,60,.13);color:var(--sale)}
+@media(max-width:820px){.mem{grid-template-columns:1fr}}
+
+/* 特商法 */
+.about2{display:grid;grid-template-columns:1fr 1fr;gap:44px;align-items:center}
+@media(max-width:820px){.about2{grid-template-columns:1fr;gap:28px}}
+.law{background:var(--card)}
+.law table{width:100%;font-size:12.5px;border-collapse:collapse}
+.law th{text-align:left;width:26%;padding:12px 14px;background:var(--bg);border:1px solid var(--line);font-weight:400;color:var(--dim);vertical-align:top}
+.law td{padding:12px 14px;border:1px solid var(--line)}
+@media(max-width:700px){.law th,.law td{display:block;width:auto;border-bottom:0}.law tr:last-child td{border-bottom:1px solid var(--line)}}
+
+footer.site{background:#231F1B;color:#DCD4C8;padding:52px 20px 26px;font-size:13px}
+.ft{max-width:1220px;margin:0 auto;display:grid;grid-template-columns:1.4fr 1fr 1fr 1fr;gap:32px}
+.ft h4{font-size:10.5px;letter-spacing:.22em;color:#B6D3BC;margin-bottom:14px;font-weight:400}
+.ft ul{list-style:none}.ft li{margin-bottom:8px}
+.ft a{text-decoration:none;opacity:.85}.ft a:hover{opacity:1}
+.ft p{font-size:12px;opacity:.65;margin-top:12px}
+.ft-btm{max-width:1220px;margin:34px auto 0;padding-top:18px;border-top:1px solid rgba(255,255,255,.12);display:flex;justify-content:space-between;gap:14px;flex-wrap:wrap;font-size:11.5px;opacity:.55}
+@media(max-width:860px){.ft{grid-template-columns:1fr 1fr}}
+</style>
+</head>
+<body>
+
+<div class="demo-bar">
+  <a class="demo-back" href="index.html">← カタログへ戻る</a>
+  <span class="demo-note">デザイン見本 E ／ ネットショップ ― <b>hitotsu 工房</b>（架空のお店です）</span>
+  <button class="demo-toggle" id="hintBtn" aria-pressed="false">⚙ サーバーが要る機能を示す</button>
+</div>
+
+<div class="notice">8,000円以上のお買い上げで送料無料　／　平日15時までのご注文で当日発送</div>
+
+<header class="site">
+  <div class="hd">
+    <a class="logo" href="#top">hitotsu<small>KOUBOU / SINCE 2016</small></a>
+    <button class="burger" id="burger" aria-label="メニュー">☰</button>
+    <nav class="main" id="nav">
+      <a href="#items">商品一覧</a><a href="#about">工房について</a><a href="#reviews">レビュー</a>
+      <a href="#member">マイページ</a><a href="#law">お買い物ガイド</a>
+    </nav>
+    <div class="icons">
+      <button class="iconbtn" id="favBtn" aria-label="お気に入り">
+        <svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M12 20.5s-7.5-4.7-7.5-10A4 4 0 0 1 12 7.5a4 4 0 0 1 7.5 3c0 5.3-7.5 10-7.5 10Z"/></svg>
+        <span class="cnt" id="favCnt" data-n="0"></span>
+      </button>
+      <button class="iconbtn" id="cartBtn" aria-label="カート">
+        <svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M3 4h2.2l2.3 11.2a2 2 0 0 0 2 1.6h7.8a2 2 0 0 0 2-1.55L21 8H6.2"/><circle cx="10" cy="20" r="1.3"/><circle cx="18" cy="20" r="1.3"/></svg>
+        <span class="cnt" id="cartCnt" data-n="0"></span>
+      </button>
+    </div>
+  </div>
+</header>
+
+<div class="hero" id="top" style="padding-top:24px">
+  <div class="box">
+    <div class="cp">
+      <div class="en">HANDMADE POTTERY</div>
+      <h1>毎日つかう、ひとつを。</h1>
+      <p>ろくろから焼成まで、ひとりの手で。使ううちに色が育つ器を、少しずつつくっています。</p>
+      <a class="btn wht" href="#items">商品を見る</a>
+    </div>
+  </div>
+</div>
+<div class="feat3">
+  <div><b>送料無料</b>8,000円以上のお買い上げで</div>
+  <div><b>当日発送</b>平日15時までのご注文</div>
+  <div><b>ギフト対応</b>包装・のし・メッセージカード無料</div>
+</div>
+
+<section id="items">
+  <div class="inner">
+    <div class="sec-head">
+      <div><div class="en">ITEMS</div><h2>商品一覧</h2></div>
+      <span class="r" id="itemCount"></span>
+    </div>
+    <div class="shop-bar has-hint" data-hint="⚙ 商品データ・在庫数・並べ替えはサーバーから取得">
+      <div class="sr">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
+        <input type="search" id="q" placeholder="商品名で検索（例：マグ、鉢）">
+      </div>
+      <select id="sort">
+        <option value="new">新着順</option>
+        <option value="low">価格の安い順</option>
+        <option value="high">価格の高い順</option>
+        <option value="pop">人気順</option>
+      </select>
+      <select id="price">
+        <option value="all">すべての価格</option>
+        <option value="0-3000">〜3,000円</option>
+        <option value="3000-6000">3,000〜6,000円</option>
+        <option value="6000-99999">6,000円〜</option>
+      </select>
+      <label style="font-size:12.5px;display:flex;align-items:center;gap:6px;cursor:pointer"><input type="checkbox" id="inStock">在庫ありのみ</label>
+    </div>
+    <div class="cats" id="cats"></div>
+    <div class="grid" id="grid"></div>
+  </div>
+</section>
+
+<section id="about" style="background:var(--card)">
+  <div class="inner about2">
+    <div class="ph c3" style="aspect-ratio:4/3;border-radius:16px" data-label="PHOTO"></div>
+    <div>
+      <div class="en" style="font-size:10.5px;letter-spacing:.28em;color:var(--moss);margin-bottom:8px">ABOUT</div>
+      <h2 style="font-family:var(--serif);font-size:clamp(20px,2.8vw,28px);font-weight:400;letter-spacing:.1em;margin-bottom:18px">工房について</h2>
+      <p style="font-size:13.5px;color:var(--dim)">山あいの小さな工房で、器をつくっています。土は地元の粘土に少しだけ砂を混ぜたもの。釉薬は灰と長石を自分で調合しています。<br><br>同じ形でも一つひとつ色の出方が違います。それを「不良」とせず、そのまま出しています。写真とまったく同じものは届きませんが、どれもきちんと使える器です。</p>
+      <div style="margin-top:24px;display:flex;gap:12px;flex-wrap:wrap">
+        <a class="btn out sm" href="#items">商品を見る</a>
+        <a class="btn out sm" href="#reviews">レビューを読む</a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="reviews">
+  <div class="inner">
+    <div class="sec-head">
+      <div><div class="en">REVIEWS</div><h2>お客さまのレビュー</h2></div>
+      <span class="r">全 128 件</span>
+    </div>
+    <div class="rev has-hint" data-hint="⚙ 購入者だけが投稿できるレビュー機能（要サーバー）">
+      <div class="rev-sum">
+        <div style="text-align:center">
+          <div class="big">4.7</div>
+          <div style="color:#C79A3C;font-size:14px">★★★★★</div>
+          <div style="font-size:11.5px;color:var(--dim)">128件の評価</div>
+        </div>
+        <div class="bars" id="revBars"></div>
+      </div>
+      <div id="revList"></div>
+    </div>
+  </div>
+</section>
+
+<section id="member" style="background:var(--card)">
+  <div class="inner">
+    <div class="sec-head"><div><div class="en">MY PAGE</div><h2>マイページ</h2></div></div>
+    <div class="mem">
+      <div class="mem-box has-hint" data-hint="⚙ 会員登録・ログイン認証（要サーバー）">
+        <div id="loginBox">
+          <h3>ログイン</h3>
+          <div class="sub">デモです。そのまま「ログイン」を押せます。</div>
+          <div class="field"><label>メールアドレス</label><input type="email" id="mid" value="hanako@example.com"></div>
+          <div class="field"><label>パスワード</label><input type="password" id="mpw" value="password"></div>
+          <button class="btn" id="loginBtn" style="width:100%">ログイン</button>
+          <div style="text-align:center;margin-top:14px;font-size:12px;color:var(--dim)">はじめての方は <a href="#member" onclick="return false" style="color:var(--moss)">会員登録（無料）</a></div>
+        </div>
+        <div class="mypage" id="mypage">
+          <h3>山田 花子 さま</h3>
+          <div class="sub">会員ランク：シルバー　／　保有ポイント 320pt</div>
+          <div class="field" style="margin:0"><label>ご登録の住所</label>
+            <div style="font-size:13px;padding:12px 14px;background:var(--bg);border-radius:8px">〒000-0000<br>○○県○○市さくら町4-5-6</div>
+          </div>
+          <button class="btn out" id="logoutBtn" style="width:100%;margin-top:18px">ログアウト</button>
+        </div>
+      </div>
+      <div class="mem-box has-hint" data-hint="⚙ 注文履歴・配送状況の照会（要サーバー）">
+        <h3>ご注文履歴</h3>
+        <div class="sub" id="ordSub">ログインすると表示されます。</div>
+        <div id="ordList" style="display:none">
+          <div class="ord"><div class="h"><span>注文番号 H-20260814-0031</span><span>2026/08/14</span></div>
+            <div>粉引マグカップ ×2、灰釉小皿 ×1</div>
+            <div style="margin-top:8px;display:flex;justify-content:space-between"><span class="st ship">発送済み（追跡番号 1234-5678-9012）</span><b style="font-family:var(--serif)">¥7,480</b></div></div>
+          <div class="ord"><div class="h"><span>注文番号 H-20260702-0018</span><span>2026/07/02</span></div>
+            <div>飴釉の鉢 ×1</div>
+            <div style="margin-top:8px;display:flex;justify-content:space-between"><span class="st">お届け済み</span><b style="font-family:var(--serif)">¥5,280</b></div></div>
+          <div class="ord"><div class="h"><span>注文番号 H-20260518-0009</span><span>2026/05/18</span></div>
+            <div>白磁の湯呑 ×2、ギフト包装</div>
+            <div style="margin-top:8px;display:flex;justify-content:space-between"><span class="st">お届け済み</span><b style="font-family:var(--serif)">¥6,600</b></div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="law" id="law">
+  <div class="inner">
+    <div class="sec-head"><div><div class="en">GUIDE</div><h2>お買い物ガイド・特定商取引法に基づく表記</h2></div></div>
+    <table>
+      <tr><th>販売業者</th><td>hitotsu 工房（架空）</td></tr>
+      <tr><th>運営責任者</th><td>一 つかさ</td></tr>
+      <tr><th>所在地</th><td>〒000-0000 ○○県○○市山あい町7-8</td></tr>
+      <tr><th>お支払い方法</th><td>クレジットカード／コンビニ払い／銀行振込／代金引換／各種スマホ決済</td></tr>
+      <tr><th>送料</th><td>全国一律 700円（8,000円以上のお買い上げで無料）</td></tr>
+      <tr><th>発送時期</th><td>平日15時までのご注文で当日発送。受注制作の商品は3〜4週間いただきます。</td></tr>
+      <tr><th>返品・交換</th><td>商品到着後7日以内にご連絡ください。破損・不良品は送料当店負担でお取り替えします。</td></tr>
+    </table>
+    <p style="font-size:12px;color:var(--dim);margin-top:14px">※ これはデザイン見本用の文面です。実際の記載内容は事業者さまごとに調整します。</p>
+  </div>
+</section>
+
+<footer class="site">
+  <div class="ft">
+    <div>
+      <div class="logo" style="color:#fff;font-size:20px">hitotsu<small style="color:#9C948A">KOUBOU / SINCE 2016</small></div>
+      <p>〒000-0000 ○○県○○市山あい町7-8<br>お問い合わせ：shop@example.com</p>
+    </div>
+    <div><h4>SHOP</h4><ul><li><a href="#items">商品一覧</a></li><li><a href="#items">新着</a></li><li><a href="#items">ギフト</a></li></ul></div>
+    <div><h4>GUIDE</h4><ul><li><a href="#law">お買い物ガイド</a></li><li><a href="#law">送料・お支払い</a></li><li><a href="#law">返品について</a></li></ul></div>
+    <div><h4>ABOUT</h4><ul><li><a href="#about">工房について</a></li><li><a href="#member">マイページ</a></li><li><a href="#" onclick="return false">Instagram</a></li></ul></div>
+  </div>
+  <div class="ft-btm">
+    <span>© 2026 hitotsu 工房（架空のお店です）</span>
+    <span>デザイン見本 E ／ ネットショップ</span>
+  </div>
+</footer>
+
+<div class="overlay" id="ov"></div>
+
+<aside class="cart" id="cart" aria-label="カート">
+  <div class="cart-hd"><h3>カート</h3><button id="cartX" aria-label="閉じる">×</button></div>
+  <div class="cart-body" id="cartBody"></div>
+  <div class="cart-ft has-hint" data-hint="⚙ 在庫の引き当て・クーポン・決済・注文の確定（要サーバー）">
+    <div class="freeship" id="freeship"></div>
+    <div class="coupon">
+      <input type="text" id="cpn" placeholder="クーポンコード（例：HITOTSU10）">
+      <button class="btn sm out" id="cpnBtn">適用</button>
+    </div>
+    <div class="sumrow"><span>小計</span><span id="sub">¥0</span></div>
+    <div class="sumrow disc" id="discRow" style="display:none"><span>クーポン割引</span><span id="disc">−¥0</span></div>
+    <div class="sumrow"><span>送料</span><span id="ship">¥0</span></div>
+    <div class="sumrow total"><span>合計</span><span id="total">¥0</span></div>
+    <button class="btn" id="checkout" style="width:100%;margin-top:14px">レジに進む</button>
+  </div>
+</aside>
+
+<div class="modal" id="modal">
+  <div class="modal-in" id="modalIn"></div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+/* デモ共通 */
+if(window.self!==window.top) document.documentElement.classList.add('embedded');
+document.querySelectorAll('[data-hint]').forEach(el=>{const b=document.createElement('span');b.className='hint-badge';b.textContent=el.dataset.hint;el.appendChild(b);});
+const hintBtn=document.getElementById('hintBtn');
+hintBtn.onclick=()=>{const on=document.body.classList.toggle('hints');
+  hintBtn.setAttribute('aria-pressed',on);
+  hintBtn.textContent=on?'⚙ 表示中（クリックで戻す）':'⚙ サーバーが要る機能を示す';
+  if(on) toast('サーバー（バックエンド）が要る箇所','ネットショップは大半の機能にサーバーが要ります。商品と在庫の管理、カート、決済、注文、会員、レビュー。緑の点線の箇所がそれにあたります。');};
+let tt;function toast(t,b){const e=document.getElementById('toast');
+  e.innerHTML='<b>'+t+'</b>'+(b||'')+'<small>※これはデザイン見本です。実際の決済は行われません。</small>';
+  e.classList.add('on');clearTimeout(tt);tt=setTimeout(()=>e.classList.remove('on'),5400);}
+function serverCall(ms){return new Promise(r=>setTimeout(r,ms||(600+Math.random()*500)));}
+
+const nav=document.getElementById('nav'),burger=document.getElementById('burger');
+burger.onclick=()=>{nav.classList.toggle('open');burger.textContent=nav.classList.contains('open')?'×':'☰';};
+nav.querySelectorAll('a').forEach(a=>a.onclick=()=>{nav.classList.remove('open');burger.textContent='☰';});
+
+/* 商品データ（本番はサーバーの商品マスタから取得します） */
+const ITEMS=[
+  {id:1,n:'粉引マグカップ',c:'マグ・湯呑',p:3080,was:0,g:'c1',s:12,new:1,pop:98,d:'白い化粧土をかけた、少しざらりとした手ざわりのマグ。使ううちに飲み物の色が少しずつ染みて景色になります。',sz:['S（200ml）','M（280ml）'],col:['白','生成り']},
+  {id:2,n:'灰釉の小皿',c:'皿・鉢',p:1980,was:2420,g:'c2',s:8,new:0,pop:76,d:'取り皿にちょうどよい直径13cm。重ねて収まりがよい形にしています。',sz:['13cm'],col:['青灰','うぐいす']},
+  {id:3,n:'飴釉の鉢',c:'皿・鉢',p:5280,was:0,g:'c3',s:3,new:0,pop:64,d:'煮物にも、サラダにも。飴色の釉薬が光の角度で表情を変えます。',sz:['18cm','22cm'],col:['飴']},
+  {id:4,n:'白磁の湯呑',c:'マグ・湯呑',p:2860,was:0,g:'c4',s:0,new:0,pop:88,d:'磁器土を薄く挽いた、軽い湯呑。手のひらにおさまる大きさです。',sz:['160ml'],col:['白']},
+  {id:5,n:'そばちょこ',c:'マグ・湯呑',p:2420,was:0,g:'c5',s:16,new:1,pop:54,d:'そば猪口としても、デザートカップやペン立てとしても。',sz:['標準'],col:['呉須','白']},
+  {id:6,n:'長方皿',c:'皿・鉢',p:4180,was:0,g:'c6',s:5,new:0,pop:47,d:'焼き魚や、いなり寿司を並べて。24×14cmの使いやすい寸法です。',sz:['24×14cm'],col:['粉引','黒釉']},
+  {id:7,n:'一輪挿し',c:'花器・その他',p:3520,was:0,g:'c2',s:7,new:0,pop:39,d:'口が小さく、庭の草花が一本でさまになります。',sz:['高さ12cm'],col:['青灰','飴']},
+  {id:8,n:'茶碗（大・小）',c:'皿・鉢',p:3300,was:0,g:'c1',s:9,new:0,pop:71,d:'ご飯茶碗。大は男性向け、小は女性向けの大きさです。',sz:['大','小'],col:['粉引','呉須']},
+  {id:9,n:'片口',c:'花器・その他',p:4620,was:0,g:'c3',s:2,new:0,pop:33,d:'ドレッシングや日本酒に。注ぎ口の切れがよいよう作っています。',sz:['300ml'],col:['飴','白']},
+  {id:10,n:'豆皿 3枚組',c:'ギフト',p:4400,was:5280,g:'c4',s:6,new:1,pop:82,d:'3種の釉薬を組み合わせた豆皿のセット。箱入りで贈り物にも。',sz:['3枚組'],col:['詰め合わせ']},
+  {id:11,n:'マグ＋小皿のギフト箱',c:'ギフト',p:5500,was:0,g:'c5',s:4,new:0,pop:69,d:'定番の組み合わせを桐箱に入れてお届けします。のし対応可。',sz:['1組'],col:['白','生成り']},
+  {id:12,n:'土鍋（受注制作）',c:'花器・その他',p:16500,was:0,g:'c6',s:1,new:0,pop:58,d:'ご注文をいただいてからお作りします。3〜4週間ほどお待ちください。',sz:['6号','8号'],col:['黒釉']}
+];
+const CATS=['すべて','マグ・湯呑','皿・鉢','花器・その他','ギフト'];
+let cat='すべて',q='',sort='new',prange='all',onlyStock=false;
+const favs=new Set(); const cart=[];
+let coupon=null;
+const yen=n=>'¥'+n.toLocaleString();
+
+document.getElementById('cats').innerHTML=CATS.map(c=>`<button data-c="${c}" aria-pressed="${c===cat}">${c}</button>`).join('');
+function filtered(){
+  let l=ITEMS.filter(i=>(cat==='すべて'||i.c===cat)&&(!q||i.n.includes(q))&&(!onlyStock||i.s>0));
+  if(prange!=='all'){const[a,b]=prange.split('-').map(Number);l=l.filter(i=>i.p>=a&&i.p<b);}
+  if(sort==='low')l=[...l].sort((a,b)=>a.p-b.p);
+  if(sort==='high')l=[...l].sort((a,b)=>b.p-a.p);
+  if(sort==='pop')l=[...l].sort((a,b)=>b.pop-a.pop);
+  if(sort==='new')l=[...l].sort((a,b)=>b.new-a.new||b.id-a.id);
+  return l;
+}
+function drawGrid(){
+  const l=filtered();
+  document.getElementById('itemCount').textContent=l.length+'件を表示中';
+  document.getElementById('grid').innerHTML=l.length? l.map(i=>`
+    <div class="card" data-id="${i.id}">
+      <div class="imgwrap">
+        <div class="ph ${i.g}" data-label="PHOTO"></div>
+        ${i.s===0?'<span class="badge soldout">売り切れ</span>':i.was?'<span class="badge">SALE</span>':i.new?'<span class="badge new">NEW</span>':''}
+        <button class="fav ${favs.has(i.id)?'on':''}" data-fav="${i.id}">♥</button>
+      </div>
+      <div class="bd">
+        <div class="cat">${i.c}</div>
+        <h3>${i.n}</h3>
+        <div class="stars">★★★★${i.pop>70?'★':'☆'}<span>(${Math.round(i.pop/4)})</span></div>
+        <div class="pr">${i.was?`<span class="was">${yen(i.was)}</span>`:''}${yen(i.p)}<small> 税込</small></div>
+        ${i.s===0?'<div class="stock">再入荷をお待ちください</div>':i.s<=3?`<div class="stock">残り${i.s}点</div>`:''}
+      </div>
+    </div>`).join('')
+    : '<div style="grid-column:1/-1;text-align:center;color:var(--dim);padding:50px 0;font-size:13.5px">条件に合う商品が見つかりませんでした。</div>';
+}
+drawGrid();
+document.getElementById('cats').onclick=e=>{const b=e.target.closest('button');if(!b)return;
+  cat=b.dataset.c;document.querySelectorAll('#cats button').forEach(x=>x.setAttribute('aria-pressed',x.dataset.c===cat));drawGrid();};
+document.getElementById('q').oninput=e=>{q=e.target.value.trim();drawGrid();};
+document.getElementById('sort').onchange=e=>{sort=e.target.value;drawGrid();};
+document.getElementById('price').onchange=e=>{prange=e.target.value;drawGrid();};
+document.getElementById('inStock').onchange=e=>{onlyStock=e.target.checked;drawGrid();};
+
+/* お気に入り */
+document.getElementById('grid').addEventListener('click',e=>{
+  const f=e.target.closest('[data-fav]');
+  if(f){ const id=+f.dataset.fav; favs.has(id)?favs.delete(id):favs.add(id);
+    document.getElementById('favCnt').textContent=favs.size;
+    document.getElementById('favCnt').dataset.n=favs.size;
+    drawGrid();
+    if(favs.has(id)) toast('お気に入りに追加しました','本番ではサーバーに保存され、別の端末でログインしても同じ一覧が見られます。');
+    return; }
+  const c=e.target.closest('.card'); if(c) openItem(+c.dataset.id);
+});
+document.getElementById('favBtn').onclick=()=>toast('お気に入り一覧','本番では会員ごとのお気に入り一覧ページを用意します。現在 '+favs.size+' 件。');
+
+/* 商品詳細 */
+let sel={size:0,color:0,qty:1,id:null};
+function openItem(id){
+  const i=ITEMS.find(x=>x.id===id); sel={size:0,color:0,qty:1,id};
+  document.getElementById('modalIn').innerHTML=`
+    <button class="x" id="mx">×</button>
+    <div class="imgs">
+      <div class="ph ${i.g}" data-label="PHOTO" id="mainImg"></div>
+      <div class="thumbs">
+        <div class="ph ${i.g} on" data-label=""></div><div class="ph c1" data-label=""></div>
+        <div class="ph c3" data-label=""></div><div class="ph c6" data-label=""></div>
+      </div>
+    </div>
+    <div class="info">
+      <div class="cat">${i.c}</div>
+      <h3>${i.n}</h3>
+      <div class="pr">${i.was?`<span style="font-size:15px;color:var(--dim);text-decoration:line-through;margin-right:8px">${yen(i.was)}</span>`:''}${yen(i.p)}<small> 税込</small></div>
+      <div class="stars" style="color:#C79A3C;font-size:12px">★★★★${i.pop>70?'★':'☆'} <span style="color:var(--dim)">(${Math.round(i.pop/4)}件のレビュー)</span></div>
+      <div class="desc">${i.d}</div>
+      <div class="opt-row"><div class="lb">サイズ</div><div class="opts" id="szOpts">${i.sz.map((s,k)=>`<button data-k="${k}" aria-pressed="${k===0}">${s}</button>`).join('')}</div></div>
+      <div class="opt-row"><div class="lb">色・釉薬</div><div class="opts" id="colOpts">${i.col.map((s,k)=>`<button data-k="${k}" aria-pressed="${k===0}">${s}</button>`).join('')}</div></div>
+      <div class="opt-row"><div class="lb">数量</div>
+        <div class="qty"><button id="qm">−</button><span id="qv">1</span><button id="qp">＋</button></div></div>
+      <div class="stock-line ${i.s<=3?'low':''}">${i.s===0?'ただいま売り切れです。再入荷のお知らせを受け取れます。':i.s<=3?`在庫が残りわずかです（残り${i.s}点）`:`在庫あり（${i.s}点）　平日15時までのご注文で当日発送`}</div>
+      <button class="btn" id="addCart" style="width:100%" ${i.s===0?'disabled':''}>${i.s===0?'売り切れ':'カートに入れる'}</button>
+      ${i.s===0?'<button class="btn out" id="restock" style="width:100%;margin-top:8px">再入荷のお知らせを受け取る</button>':''}
+      <div class="ship-note">・8,000円以上のお買い上げで送料無料（通常 全国一律700円）<br>・ギフト包装、のし、メッセージカードを無料でお付けできます<br>・一点ずつ手作りのため、色や大きさに個体差があります</div>
+    </div>`;
+  document.getElementById('modal').classList.add('on');
+  document.getElementById('mx').onclick=closeModal;
+  document.getElementById('qp').onclick=()=>{sel.qty=Math.min(sel.qty+1,Math.max(i.s,1));document.getElementById('qv').textContent=sel.qty;};
+  document.getElementById('qm').onclick=()=>{sel.qty=Math.max(1,sel.qty-1);document.getElementById('qv').textContent=sel.qty;};
+  ['szOpts','colOpts'].forEach((oid,n)=>{
+    document.getElementById(oid).onclick=e=>{const b=e.target.closest('button');if(!b)return;
+      document.querySelectorAll('#'+oid+' button').forEach(x=>x.setAttribute('aria-pressed','false'));
+      b.setAttribute('aria-pressed','true'); sel[n?'color':'size']=+b.dataset.k;};
+  });
+  const ac=document.getElementById('addCart');
+  if(ac&&i.s>0) ac.onclick=async e=>{
+    const b=e.currentTarget,old=b.textContent;b.innerHTML='<span class="spin"></span>追加中…';b.disabled=true;
+    await serverCall(700);b.textContent=old;b.disabled=false;
+    addToCart(i,i.sz[sel.size],i.col[sel.color],sel.qty);
+    closeModal(); openCart();
+  };
+  const rs=document.getElementById('restock');
+  if(rs) rs.onclick=()=>toast('再入荷のお知らせを登録しました','本番ではメールアドレスを登録しておき、在庫が戻った時点でサーバーが自動でお知らせを送ります。');
+}
+function closeModal(){document.getElementById('modal').classList.remove('on');}
+document.getElementById('modal').onclick=e=>{if(e.target.id==='modal')closeModal();};
+document.addEventListener('keydown',e=>{if(e.key==='Escape'){closeModal();closeCart();}});
+
+/* カート */
+function addToCart(i,size,color,qty){
+  const key=i.id+'/'+size+'/'+color;
+  const ex=cart.find(c=>c.key===key);
+  if(ex) ex.qty+=qty; else cart.push({key,id:i.id,n:i.n,p:i.p,g:i.g,size,color,qty});
+  drawCart();
+  toast('カートに追加しました',`${i.n}（${size}・${color}）を${qty}点。本番ではこの時点でサーバーが在庫を確保します。`);
+}
+function drawCart(){
+  const n=cart.reduce((a,c)=>a+c.qty,0);
+  const cc=document.getElementById('cartCnt'); cc.textContent=n; cc.dataset.n=n;
+  const body=document.getElementById('cartBody');
+  body.innerHTML=cart.length? cart.map(c=>`
+    <div class="ci" data-k="${c.key}">
+      <div class="ph ${c.g}" data-label=""></div>
+      <div><h4>${c.n}</h4><div class="op">${c.size}／${c.color}</div>
+        <div class="qty"><button data-m="-1">−</button><span>${c.qty}</span><button data-m="1">＋</button></div>
+        <button class="rm">削除</button></div>
+      <div class="p">${yen(c.p*c.qty)}</div>
+    </div>`).join('') : '<div class="cart-empty">カートは空です。<br>気になる器を入れてみてください。</div>';
+  const sub=cart.reduce((a,c)=>a+c.p*c.qty,0);
+  const disc=coupon? Math.floor(sub*coupon.rate) : 0;
+  const ship=(sub-disc)>=8000||sub===0?0:700;
+  document.getElementById('sub').textContent=yen(sub);
+  document.getElementById('disc').textContent='−'+yen(disc);
+  document.getElementById('discRow').style.display=disc?'flex':'none';
+  document.getElementById('ship').textContent=ship?yen(ship):'無料';
+  document.getElementById('total').textContent=yen(Math.max(0,sub-disc+ship));
+  const rest=Math.max(0,8000-(sub-disc));
+  document.getElementById('freeship').innerHTML= sub===0? 'ご購入金額8,000円以上で送料無料になります'
+    : rest>0? `あと <b>${yen(rest)}</b> で送料無料です<div class="bar"><i style="width:${Math.min(100,(sub-disc)/8000*100)}%"></i></div>`
+    : '送料無料の対象です<div class="bar"><i style="width:100%"></i></div>';
+  document.getElementById('checkout').disabled=!cart.length;
+}
+drawCart();
+document.getElementById('cartBody').onclick=e=>{
+  const row=e.target.closest('.ci'); if(!row) return;
+  const c=cart.find(x=>x.key===row.dataset.k);
+  if(e.target.classList.contains('rm')){ cart.splice(cart.indexOf(c),1); drawCart(); return; }
+  const m=e.target.dataset.m; if(m){ c.qty=Math.max(1,c.qty+ +m); drawCart(); }
+};
+function openCart(){document.getElementById('cart').classList.add('on');document.getElementById('ov').classList.add('on');}
+function closeCart(){document.getElementById('cart').classList.remove('on');document.getElementById('ov').classList.remove('on');}
+document.getElementById('cartBtn').onclick=openCart;
+document.getElementById('cartX').onclick=closeCart;
+document.getElementById('ov').onclick=closeCart;
+
+document.getElementById('cpnBtn').onclick=async e=>{
+  const code=document.getElementById('cpn').value.trim().toUpperCase();
+  const b=e.currentTarget,old=b.textContent;b.innerHTML='<span class="spin" style="border-color:rgba(74,107,82,.3);border-top-color:#4A6B52"></span>';
+  await serverCall(800); b.textContent=old;
+  if(code==='HITOTSU10'){ coupon={code,rate:.1}; drawCart();
+    toast('クーポンを適用しました','10%割引になりました。本番ではサーバーがコードの有効期限・利用回数・対象商品を判定します。'); }
+  else { toast('このクーポンは使えません','コードをご確認ください。（デモ用のコードは HITOTSU10 です）'); }
+};
+document.getElementById('checkout').onclick=async e=>{
+  const b=e.currentTarget,old=b.textContent;b.innerHTML='<span class="spin"></span>決済画面へ…';b.disabled=true;
+  await serverCall(1400); b.textContent=old; b.disabled=false;
+  toast('ここから決済に進みます','本番ではクレジットカード決済（Stripe など）や、コンビニ払い・代引きに接続します。決済が完了すると在庫が減り、注文番号が発行され、お客さまとお店に確認メールが届きます。');
+};
+
+/* レビュー */
+const REVS=[
+  [5,'山田 花子','2026/08/12','粉引マグカップ','手にしたときの軽さに驚きました。毎朝これで珈琲を飲んでいます。二つ目を買い足すつもりです。'],
+  [5,'K.T','2026/08/03','豆皿 3枚組','贈り物にしました。桐箱がしっかりしていて、そのまま渡せるのがありがたかったです。'],
+  [4,'匿名','2026/07/26','灰釉の小皿','写真より少し青が強めでしたが、料理を乗せると馴染みます。重ねやすい形も気に入りました。'],
+  [5,'M.S','2026/07/11','飴釉の鉢','煮物を入れると色がとても映えます。少し重いですが、その重さが安心感になっています。']
+];
+document.getElementById('revList').innerHTML=REVS.map(([s,w,d,item,t])=>`
+  <div class="rev-item"><div class="top"><span class="st">${'★'.repeat(s)}${'☆'.repeat(5-s)}</span><span>${w} さま</span><span>${d}</span><span style="margin-left:auto">購入商品：${item}</span></div><p>${t}</p></div>`).join('');
+document.getElementById('revBars').innerHTML=[[5,89],[4,29],[3,7],[2,2],[1,1]].map(([s,n])=>`
+  <div class="brow"><span>★${s}</span><div class="bar"><i style="width:${n/128*100}%"></i></div><span>${n}</span></div>`).join('');
+
+/* 会員 */
+document.getElementById('loginBtn').onclick=async e=>{
+  const b=e.currentTarget,old=b.textContent;b.innerHTML='<span class="spin"></span>認証中…';
+  await serverCall(900);b.textContent=old;
+  document.getElementById('loginBox').style.display='none';
+  document.getElementById('mypage').classList.add('on');
+  document.getElementById('ordList').style.display='';
+  document.getElementById('ordSub').textContent='過去のご注文 3件';
+  toast('ログインしました','本番ではサーバーが認証を行い、その会員の注文履歴・配送状況・ポイントを表示します。');
+};
+document.getElementById('logoutBtn').onclick=()=>{
+  document.getElementById('mypage').classList.remove('on');
+  document.getElementById('loginBox').style.display='';
+  document.getElementById('ordList').style.display='none';
+  document.getElementById('ordSub').textContent='ログインすると表示されます。';
+};
+</script>
+</body>
+</html>

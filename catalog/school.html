@@ -1,0 +1,628 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>くるくる教室 ｜ デザイン見本 F ポップ・にぎやか</title>
+<meta name="description" content="Webサイトデザイン見本 F ― 明るくにぎやかな教室・スクール向けデザイン(架空のこども向け教室)">
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+:root{
+  --bg:#FFFBF2; --card:#fff; --ink:#33302B; --dim:#7E7466;
+  --orange:#FF7043; --yellow:#FFC93C; --blue:#3ABEDC; --green:#7BC96F;  --line:#F0E6D6;
+  --round:"Hiragino Maru Gothic ProN","Rounded Mplus 1c","Yu Gothic",system-ui,sans-serif;
+}
+:root{--pink:#F2789F}
+html{scroll-behavior:smooth}
+body{font-family:var(--round);background:var(--bg);color:var(--ink);line-height:1.9;overflow-x:hidden}
+a{color:inherit}svg{display:block}button{font-family:inherit}
+
+/* デモ共通 */
+.demo-bar{position:fixed;inset:0 0 auto 0;z-index:900;display:flex;gap:12px;align-items:center;flex-wrap:wrap;padding:8px 14px;background:#2B2823;color:#FFF6E4;font-size:12.5px}
+.demo-bar a.demo-back{text-decoration:none;background:rgba(255,255,255,.14);padding:5px 12px;border-radius:999px;white-space:nowrap}
+.demo-note{opacity:.8}.demo-note b{color:var(--yellow)}
+.demo-toggle{margin-left:auto;font:inherit;cursor:pointer;color:#2B2823;background:var(--yellow);border:0;padding:6px 14px;border-radius:999px;white-space:nowrap}
+.demo-toggle[aria-pressed="true"]{background:#7EC8A9}
+body{padding-top:42px}
+html.embedded body{padding-top:0}
+html.embedded .demo-bar{display:none}
+@media(max-width:600px){.demo-note{display:none}}
+.hint-badge{display:none}
+body.hints .hint-badge{display:inline-flex;position:absolute;z-index:60;top:-13px;left:10px;background:#166B4F;color:#fff;font-size:11px;line-height:1.5;padding:3px 10px;border-radius:999px;box-shadow:0 4px 14px rgba(0,0,0,.18);max-width:calc(100% - 20px)}
+body.hints .has-hint{position:relative;outline:2px dashed #166B4F;outline-offset:6px;border-radius:8px}
+.toast{position:fixed;left:50%;bottom:26px;transform:translate(-50%,26px);z-index:950;opacity:0;pointer-events:none;background:#2B2823;color:#FFF6E4;padding:14px 20px;border-radius:14px;max-width:min(92vw,430px);box-shadow:0 18px 44px rgba(0,0,0,.25);transition:.3s;font-size:13px;line-height:1.75}
+.toast.on{opacity:1;transform:translate(-50%,0)}
+.toast b{display:block;color:var(--yellow);margin-bottom:2px}
+.toast small{display:block;margin-top:6px;opacity:.6;font-size:11.5px}
+.spin{display:inline-block;width:13px;height:13px;border:2px solid rgba(255,255,255,.3);border-top-color:#fff;border-radius:50%;animation:sp .7s linear infinite;vertical-align:-2px;margin-right:6px}
+@keyframes sp{to{transform:rotate(360deg)}}
+.ph{position:relative;overflow:hidden;background:#F3E9D8}
+.ph::after{content:attr(data-label);position:absolute;right:9px;bottom:6px;font-size:9.5px;letter-spacing:.14em;color:rgba(51,48,43,.32)}
+.p1{background:linear-gradient(140deg,#FFD9A0,#FF9E6B)}
+.p2{background:linear-gradient(140deg,#A9E5F2,#57BEE0)}
+.p3{background:linear-gradient(140deg,#CBEFB6,#7BC96F)}
+.p4{background:linear-gradient(140deg,#FFD5E2,#F2789F)}
+.p5{background:linear-gradient(140deg,#FFE9A8,#FFC93C)}
+
+/* ヘッダー */
+header.site{position:sticky;top:42px;z-index:400;border-bottom:3px solid var(--yellow)}
+header.site::before{content:"";position:absolute;inset:0;z-index:-1;background:rgba(255,251,242,.94);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px)}
+html.embedded header.site{top:0}
+.hd{max-width:1160px;margin:0 auto;padding:12px 20px;display:flex;align-items:center;gap:18px}
+.logo{display:flex;align-items:center;gap:10px;text-decoration:none}
+.logo .mk{width:44px;height:44px;border-radius:50%;background:var(--orange);display:grid;place-content:center;color:#fff;font-size:22px;font-weight:800;box-shadow:0 4px 0 #D9532E}
+.logo .tx{font-size:19px;font-weight:800;letter-spacing:.04em;line-height:1.25}
+.logo .tx small{display:block;font-size:9.5px;color:var(--dim);font-weight:400;letter-spacing:.1em}
+nav.main{margin-left:auto;display:flex;gap:20px;font-size:13.5px;font-weight:700}
+nav.main a{text-decoration:none;padding:4px 2px;border-bottom:3px solid transparent;transition:.2s}
+nav.main a:hover{border-color:var(--blue);color:var(--blue)}
+.burger{display:none;margin-left:auto;background:none;border:0;font-size:22px;cursor:pointer;z-index:600}
+@media(max-width:940px){
+  nav.main{position:fixed;inset:0;background:var(--bg);flex-direction:column;justify-content:center;align-items:center;gap:24px;font-size:17px;clip-path:inset(0 0 0 100%);pointer-events:none;transition:clip-path .4s cubic-bezier(.4,0,.2,1);z-index:500;margin:0}
+  nav.main.open{clip-path:inset(0);pointer-events:auto}
+  .burger{display:block}.hd .btn{display:none}
+}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;font:inherit;font-weight:800;font-size:15px;padding:15px 30px;border-radius:999px;border:0;background:var(--orange);color:#fff;cursor:pointer;text-decoration:none;box-shadow:0 5px 0 #D9532E;transition:.15s}
+.btn:hover{transform:translateY(2px);box-shadow:0 3px 0 #D9532E}
+.btn:active{transform:translateY(5px);box-shadow:none}
+.btn.blue{background:var(--blue);box-shadow:0 5px 0 #2895AE}
+.btn.blue:hover{box-shadow:0 3px 0 #2895AE}
+.btn.green{background:var(--green);box-shadow:0 5px 0 #5FA455}
+.btn.green:hover{box-shadow:0 3px 0 #5FA455}
+.btn.wht{background:#fff;color:var(--orange);box-shadow:0 5px 0 #EADFCB}
+.btn.wht:hover{box-shadow:0 3px 0 #EADFCB}
+.btn.sm{font-size:13px;padding:10px 20px;box-shadow:0 4px 0 #D9532E}
+.btn:disabled{opacity:.5;cursor:not-allowed}
+
+/* ヒーロー */
+.hero{position:relative;overflow:hidden;background:linear-gradient(170deg,#FFF3D6 0%,var(--bg) 70%)}
+.hero .in{max-width:1160px;margin:0 auto;padding:44px 20px 60px;display:grid;grid-template-columns:1.05fr .95fr;gap:34px;align-items:center;position:relative;z-index:2}
+.hero .pop{display:inline-block;background:var(--blue);color:#fff;font-size:13px;font-weight:800;padding:6px 18px;border-radius:999px;transform:rotate(-2deg);margin-bottom:16px}
+.hero h1{font-size:clamp(28px,5vw,50px);font-weight:800;line-height:1.4;letter-spacing:.02em}
+.hero h1 .y{color:var(--orange);position:relative;display:inline-block}
+.hero h1 .y::after{content:"";position:absolute;left:0;right:0;bottom:2px;height:10px;background:var(--yellow);opacity:.55;border-radius:6px;z-index:-1}
+.hero p{margin-top:20px;font-size:15px;color:var(--dim)}
+.hero .cta{margin-top:28px;display:flex;gap:12px;flex-wrap:wrap}
+.hero .art{position:relative}
+.hero .art .ph{aspect-ratio:1;border-radius:28px;transform:rotate(2deg);box-shadow:0 14px 0 rgba(255,201,60,.35)}
+.hero .bub{position:absolute;background:#fff;border-radius:999px;padding:9px 18px;font-size:13px;font-weight:700;box-shadow:0 6px 16px rgba(0,0,0,.1);animation:bob 3.4s ease-in-out infinite}
+.hero .bub.b1{top:6%;left:-6%;color:var(--blue)}
+.hero .bub.b2{bottom:12%;right:-4%;color:var(--pink);animation-delay:.9s}
+.hero .bub.b3{bottom:-3%;left:8%;color:var(--green);animation-delay:1.8s}
+@keyframes bob{50%{transform:translateY(-9px)}}
+.blob{position:absolute;border-radius:50%;opacity:.35;z-index:1}
+.blob.a{width:280px;height:280px;background:var(--yellow);top:-90px;right:-60px}
+.blob.b{width:200px;height:200px;background:var(--blue);bottom:-70px;left:-50px;opacity:.22}
+@media(max-width:900px){.hero .in{grid-template-columns:1fr}.hero .art{order:-1;max-width:400px;margin:0 auto}}
+
+section{padding:clamp(52px,7vw,84px) 20px;position:relative}
+.inner{max-width:1160px;margin:0 auto}
+.sec-head{text-align:center;margin-bottom:42px}
+.sec-head .en{display:inline-block;font-size:12px;font-weight:800;color:var(--blue);background:rgba(58,190,220,.14);padding:4px 16px;border-radius:999px;margin-bottom:12px}
+.sec-head h2{font-size:clamp(23px,3.4vw,34px);font-weight:800;letter-spacing:.02em}
+.sec-head p{margin-top:14px;font-size:14px;color:var(--dim)}
+.wavetop{display:block;width:100%;height:40px}
+.reveal{opacity:0;transform:translateY(24px) scale(.98);transition:.7s cubic-bezier(.2,.9,.3,1)}
+.reveal.in{opacity:1;transform:none}
+
+/* コース */
+.courses{display:grid;grid-template-columns:repeat(3,1fr);gap:22px}
+.course{background:var(--card);border-radius:22px;padding:26px;box-shadow:0 8px 0 var(--line);transition:.25s;border:2px solid transparent}
+.course:hover{transform:translateY(-4px);box-shadow:0 12px 0 var(--line)}
+.course .ic{width:70px;height:70px;border-radius:22px;display:grid;place-content:center;font-size:32px;margin-bottom:16px}
+.course.c1 .ic{background:rgba(255,112,67,.15)} .course.c1{border-color:rgba(255,112,67,.3)}
+.course.c2 .ic{background:rgba(58,190,220,.15)} .course.c2{border-color:rgba(58,190,220,.3)}
+.course.c3 .ic{background:rgba(123,201,111,.18)} .course.c3{border-color:rgba(123,201,111,.35)}
+.course h3{font-size:19px;font-weight:800;margin-bottom:4px}
+.course .age{font-size:12px;color:var(--dim);margin-bottom:12px}
+.course p{font-size:13.5px;color:var(--dim)}
+.course ul{list-style:none;margin-top:14px;font-size:13px}
+.course li{padding:6px 0 6px 24px;position:relative;border-top:1px dashed var(--line)}
+.course li::before{content:"✓";position:absolute;left:2px;color:var(--green);font-weight:800}
+.course .pr{margin-top:16px;background:#FFF7E6;border-radius:14px;padding:12px;text-align:center;font-size:13px}
+.course .pr b{font-size:22px;font-weight:800;color:var(--orange)}
+@media(max-width:900px){.courses{grid-template-columns:1fr}}
+
+/* 一日の流れ */
+.day{background:#fff}
+.timeline{max-width:760px;margin:0 auto;position:relative;padding-left:70px}
+.timeline::before{content:"";position:absolute;left:26px;top:10px;bottom:10px;width:4px;background:var(--yellow);border-radius:999px}
+.tl{position:relative;margin-bottom:24px}
+.tl .t{position:absolute;left:-70px;top:2px;width:54px;height:54px;border-radius:50%;background:var(--blue);color:#fff;display:grid;place-content:center;font-size:12.5px;font-weight:800;box-shadow:0 0 0 5px var(--bg)}
+.tl:nth-child(2n) .t{background:var(--orange)}
+.tl:nth-child(3n) .t{background:var(--green)}
+.tl h4{font-size:16px;font-weight:800}
+.tl p{font-size:13.5px;color:var(--dim)}
+@media(max-width:600px){.timeline{padding-left:56px}.timeline::before{left:20px}.tl .t{left:-56px;width:44px;height:44px;font-size:11px}}
+
+/* 先生 */
+.teachers{display:grid;grid-template-columns:repeat(3,1fr);gap:22px}
+.teacher{background:var(--card);border-radius:22px;overflow:hidden;box-shadow:0 8px 0 var(--line);text-align:center;padding-bottom:22px}
+.teacher .ph{aspect-ratio:1}
+.teacher h3{font-size:17px;font-weight:800;margin-top:16px}
+.teacher .rl{font-size:12px;color:var(--blue);font-weight:700}
+.teacher p{font-size:12.5px;color:var(--dim);padding:10px 20px 0}
+@media(max-width:800px){.teachers{grid-template-columns:1fr}}
+
+/* 空き枠 */
+.slots-wrap{background:#fff;border-radius:22px;padding:26px;box-shadow:0 8px 0 var(--line)}
+.slot-tabs{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:20px;justify-content:center}
+.slot-tabs button{font:inherit;font-size:13px;font-weight:700;background:var(--bg);border:2px solid var(--line);border-radius:999px;padding:8px 20px;cursor:pointer;transition:.2s}
+.slot-tabs button[aria-pressed="true"]{background:var(--blue);color:#fff;border-color:var(--blue)}
+.slot-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:12px}
+.slot{border:2px solid var(--line);border-radius:16px;padding:14px;text-align:center;background:var(--bg);cursor:pointer;transition:.2s;font:inherit}
+.slot:hover:not(:disabled){border-color:var(--orange);transform:translateY(-2px)}
+.slot[aria-pressed="true"]{background:rgba(255,112,67,.12);border-color:var(--orange)}
+.slot .d{font-size:15px;font-weight:800}
+.slot .t{font-size:12.5px;color:var(--dim)}
+.slot .st{font-size:12px;font-weight:800;margin-top:6px;color:var(--green)}
+.slot .st.few{color:var(--orange)}
+.slot:disabled{opacity:.45;cursor:not-allowed}
+.slot:disabled .st{color:var(--dim)}
+
+/* 申込フォーム */
+.apply{background:linear-gradient(180deg,#FFF3D6,var(--bg))}
+.form-card{max-width:720px;margin:0 auto;background:#fff;border-radius:26px;padding:clamp(24px,4vw,40px);box-shadow:0 10px 0 var(--line)}
+.field{margin-bottom:20px}
+.field label{display:block;font-size:13.5px;font-weight:800;margin-bottom:8px}
+.field .req{background:var(--orange);color:#fff;font-size:10.5px;padding:2px 9px;border-radius:999px;margin-left:8px;font-weight:700;vertical-align:2px}
+.field input,.field select,.field textarea{width:100%;font:inherit;font-size:15px;padding:13px 16px;border:2px solid var(--line);border-radius:14px;background:var(--bg);transition:.2s}
+.field input:focus,.field select:focus,.field textarea:focus{outline:none;border-color:var(--blue);background:#fff}
+.field.bad input,.field.bad select{border-color:var(--orange);background:#FFF3F0}
+.field .err{display:none;color:var(--orange);font-size:12.5px;margin-top:6px;font-weight:700}
+.field.bad .err{display:block}
+.row2{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+@media(max-width:600px){.row2{grid-template-columns:1fr;gap:0}}
+.picked{background:#FFF7E6;border-radius:16px;padding:16px;font-size:13.5px;margin-bottom:20px;text-align:center}
+.picked b{color:var(--orange);font-weight:800}
+.done{text-align:center;display:none}
+.done.on{display:block}
+.done .mk{width:80px;height:80px;margin:0 auto 20px;border-radius:50%;background:rgba(123,201,111,.18);color:var(--green);display:grid;place-content:center;font-size:40px;animation:pop .5s cubic-bezier(.2,1.4,.4,1) both}
+@keyframes pop{from{transform:scale(0)}}
+.done h3{font-size:22px;font-weight:800;margin-bottom:12px}
+.done p{font-size:13.5px;color:var(--dim)}
+
+/* 保護者マイページ */
+.mypage-box{max-width:760px;margin:0 auto;background:#fff;border-radius:26px;padding:clamp(24px,4vw,36px);box-shadow:0 10px 0 var(--line)}
+.mp{display:none}.mp.on{display:block}
+.mp-tabs{display:flex;gap:8px;margin-bottom:20px;flex-wrap:wrap}
+.mp-tabs button{font:inherit;font-size:13px;font-weight:700;background:var(--bg);border:2px solid var(--line);border-radius:999px;padding:8px 18px;cursor:pointer}
+.mp-tabs button[aria-pressed="true"]{background:var(--green);color:#fff;border-color:var(--green)}
+.mp-pane{display:none}.mp-pane.on{display:block}
+.att{display:grid;grid-template-columns:repeat(auto-fill,minmax(78px,1fr));gap:8px}
+.att div{border-radius:12px;padding:10px 6px;text-align:center;font-size:12px;background:var(--bg);border:2px solid var(--line)}
+.att div.ok{background:rgba(123,201,111,.16);border-color:rgba(123,201,111,.5)}
+.att div.no{background:rgba(255,112,67,.12);border-color:rgba(255,112,67,.4)}
+.att div b{display:block;font-size:14px;font-weight:800}
+.msg{border:2px solid var(--line);border-radius:16px;padding:14px 16px;margin-bottom:10px}
+.msg .h{display:flex;gap:10px;font-size:11.5px;color:var(--dim);margin-bottom:5px}
+.msg .h .new{background:var(--orange);color:#fff;border-radius:999px;padding:1px 9px;font-weight:800}
+.msg h4{font-size:14.5px;font-weight:800}
+.msg p{font-size:13px;color:var(--dim)}
+
+/* FAQ */
+.faq{max-width:800px;margin:0 auto}
+.faq-item{background:#fff;border-radius:18px;margin-bottom:10px;overflow:hidden;box-shadow:0 5px 0 var(--line)}
+.faq-q{width:100%;text-align:left;font:inherit;font-size:14.5px;font-weight:700;background:#fff;border:0;padding:18px 50px 18px 54px;cursor:pointer;position:relative}
+.faq-q::before{content:"Q";position:absolute;left:18px;top:16px;width:26px;height:26px;background:var(--blue);color:#fff;border-radius:50%;display:grid;place-content:center;font-size:13px;font-weight:800}
+.faq-q::after{content:"＋";position:absolute;right:20px;top:16px;color:var(--blue);font-size:19px;font-weight:800}
+.faq-item.open .faq-q::after{content:"−"}
+.faq-a{display:none;padding:0 22px 20px 54px;font-size:13.5px;color:var(--dim)}
+.faq-item.open .faq-a{display:block}
+
+/* チャット */
+.chat{position:fixed;right:18px;bottom:18px;z-index:600}
+.chat-btn{width:60px;height:60px;border-radius:50%;background:var(--green);color:#fff;border:0;font-size:26px;cursor:pointer;box-shadow:0 6px 18px rgba(0,0,0,.2)}
+.chat-win{position:absolute;right:0;bottom:72px;width:min(320px,calc(100vw - 36px));background:#fff;border-radius:20px;box-shadow:0 18px 44px rgba(0,0,0,.2);overflow:hidden;display:none}
+.chat-win.on{display:block;animation:pop2 .3s ease both}
+@keyframes pop2{from{opacity:0;transform:translateY(12px)}}
+.chat-hd{background:var(--green);color:#fff;padding:14px 18px;font-weight:800;font-size:14px;display:flex;align-items:center;gap:8px}
+.chat-hd button{margin-left:auto;background:none;border:0;color:#fff;font-size:19px;cursor:pointer}
+.chat-body{padding:14px;height:240px;overflow-y:auto;background:#F4F7F3;font-size:13px}
+.bubble{max-width:82%;padding:9px 14px;border-radius:16px;margin-bottom:10px;line-height:1.65}
+.bubble.them{background:#fff;border-bottom-left-radius:4px}
+.bubble.me{background:var(--green);color:#fff;margin-left:auto;border-bottom-right-radius:4px}
+.chat-in{display:flex;gap:6px;padding:10px;border-top:1px solid var(--line)}
+.chat-in input{flex:1;min-width:0;font:inherit;font-size:13px;padding:9px 12px;border:2px solid var(--line);border-radius:999px}
+.chat-in button{background:var(--green);color:#fff;border:0;border-radius:50%;width:38px;height:38px;cursor:pointer;font-size:15px}
+
+footer.site{background:#2B2823;color:#EDE4D4;padding:52px 20px 26px;font-size:13.5px}
+.ft{max-width:1160px;margin:0 auto;display:grid;grid-template-columns:1.4fr 1fr 1fr;gap:32px}
+.ft h4{font-size:12px;color:var(--yellow);margin-bottom:14px;font-weight:800}
+.ft ul{list-style:none}.ft li{margin-bottom:8px}
+.ft a{text-decoration:none;opacity:.85}.ft a:hover{opacity:1}
+.ft p{font-size:12.5px;opacity:.7;margin-top:12px}
+.ft-btm{max-width:1160px;margin:34px auto 0;padding-top:18px;border-top:1px solid rgba(255,255,255,.13);display:flex;justify-content:space-between;gap:14px;flex-wrap:wrap;font-size:11.5px;opacity:.6}
+@media(max-width:800px){.ft{grid-template-columns:1fr;gap:24px}}
+</style>
+</head>
+<body>
+
+<div class="demo-bar">
+  <a class="demo-back" href="index.html">← カタログへ戻る</a>
+  <span class="demo-note">デザイン見本 F ／ ポップ・にぎやか ― <b>くるくる教室</b>（架空の教室です）</span>
+  <button class="demo-toggle" id="hintBtn" aria-pressed="false">⚙ サーバーが要る機能を示す</button>
+</div>
+
+<header class="site">
+  <div class="hd">
+    <a class="logo" href="#top">
+      <span class="mk">く</span>
+      <span class="tx">くるくる教室<small>こどもプログラミング・ロボット</small></span>
+    </a>
+    <button class="burger" id="burger" aria-label="メニュー">☰</button>
+    <nav class="main" id="nav">
+      <a href="#course">コース</a><a href="#day">1日の流れ</a><a href="#teacher">先生</a>
+      <a href="#slots">空き枠</a><a href="#mypage">マイページ</a><a href="#faq">よくある質問</a>
+    </nav>
+    <a class="btn sm" href="#apply">体験に申し込む</a>
+  </div>
+</header>
+
+<div class="hero" id="top">
+  <div class="blob a"></div><div class="blob b"></div>
+  <div class="in">
+    <div>
+      <span class="pop">小学1年生〜中学3年生</span>
+      <h1>つくって、こわして、<br><span class="y">また つくる。</span></h1>
+      <p>プログラミングもロボットも、うまくいかないところから始まります。くるくる教室は「なんで動かないんだろう？」を、いちばん楽しい時間にする教室です。</p>
+      <div class="cta">
+        <a class="btn" href="#apply">まずは無料体験（60分）</a>
+        <a class="btn wht" href="#course">コースを見る</a>
+      </div>
+      <div style="margin-top:20px;font-size:12.5px;color:var(--dim)">＼ 在籍 87名 ／ 兄弟割引あり ／ 振替レッスン無料 ／</div>
+    </div>
+    <div class="art">
+      <div class="ph p2" data-label="PHOTO"></div>
+      <span class="bub b1">できた！</span>
+      <span class="bub b2">なんで動かないの？</span>
+      <span class="bub b3">もう一回！</span>
+    </div>
+  </div>
+</div>
+
+<section id="course">
+  <div class="inner">
+    <div class="sec-head reveal">
+      <div class="en">COURSE</div>
+      <h2>3つのコース</h2>
+      <p>学年ではなく、やりたいことで選べます。</p>
+    </div>
+    <div class="courses reveal">
+      <div class="course c1">
+        <div class="ic">🧩</div>
+        <h3>はじめてコース</h3>
+        <div class="age">小1〜小3 ／ 週1回 60分</div>
+        <p>ブロックを並べてキャラクターを動かすところから。ローマ字が読めなくても大丈夫です。</p>
+        <ul><li>Scratch でゲームづくり</li><li>マウス操作から練習</li><li>作品はおうちでも見られます</li></ul>
+        <div class="pr"><b>8,800</b>円／月（税込）</div>
+      </div>
+      <div class="course c2">
+        <div class="ic">🤖</div>
+        <h3>ロボットコース</h3>
+        <div class="age">小3〜小6 ／ 週1回 90分</div>
+        <p>組み立てたロボットを、自分で書いたプログラムで動かします。センサーを使った制御まで。</p>
+        <ul><li>教材は教室で貸し出し</li><li>年1回のロボット大会に出場</li><li>モーター・センサーの仕組み</li></ul>
+        <div class="pr"><b>12,100</b>円／月（税込）</div>
+      </div>
+      <div class="course c3">
+        <div class="ic">💻</div>
+        <h3>本格コース</h3>
+        <div class="age">小6〜中3 ／ 週1回 90分</div>
+        <p>テキストのプログラミングへ。自分で決めたものを、時間をかけて完成させます。</p>
+        <ul><li>Python / JavaScript</li><li>作品の発表会（年2回）</li><li>検定の受験にも対応</li></ul>
+        <div class="pr"><b>14,300</b>円／月（税込）</div>
+      </div>
+    </div>
+    <p style="text-align:center;margin-top:24px;font-size:13px;color:var(--dim)" class="reveal">※ 入会金 11,000円（体験当日のお申し込みで無料）／ 教材費は月謝に含まれます</p>
+  </div>
+</section>
+
+<section class="day" id="day">
+  <div class="inner">
+    <div class="sec-head reveal">
+      <div class="en">A DAY</div>
+      <h2>90分の教室、こんな感じです</h2>
+    </div>
+    <div class="timeline reveal">
+      <div class="tl"><div class="t">0-10分</div><h4>今日やることを決める</h4><p>先生と話しながら、今日のゴールをホワイトボードに書きます。</p></div>
+      <div class="tl"><div class="t">10-40分</div><h4>つくる</h4><p>まずは自分で。詰まったら手を挙げると先生が来ます。</p></div>
+      <div class="tl"><div class="t">40-50分</div><h4>休けい</h4><p>お茶を飲んで、ほかの子の作品を見に行く時間です。</p></div>
+      <div class="tl"><div class="t">50-80分</div><h4>直す・つけ足す</h4><p>動かないところを探して直します。ここがいちばん力がつきます。</p></div>
+      <div class="tl"><div class="t">80-90分</div><h4>見せあう</h4><p>その日できたところを発表。おうちの方にも記録をお送りします。</p></div>
+    </div>
+  </div>
+</section>
+
+<section id="teacher">
+  <div class="inner">
+    <div class="sec-head reveal">
+      <div class="en">TEACHER</div>
+      <h2>先生の紹介</h2>
+      <p>正解を教えるより、一緒に困るのが仕事です。</p>
+    </div>
+    <div class="teachers reveal">
+      <div class="teacher"><div class="ph p1" data-label="PHOTO"></div><h3>くるみ先生</h3><div class="rl">教室長／はじめてコース担当</div><p>元・小学校の先生。「わからない」と言えるまでを大切にしています。</p></div>
+      <div class="teacher"><div class="ph p3" data-label="PHOTO"></div><h3>そうた先生</h3><div class="rl">ロボットコース担当</div><p>ロボット大会の元・出場者。分解が大好きで、教室の道具はだいたい直せます。</p></div>
+      <div class="teacher"><div class="ph p4" data-label="PHOTO"></div><h3>あおい先生</h3><div class="rl">本格コース担当</div><p>ふだんはアプリをつくる仕事をしています。中学生の質問がいちばん鋭いそうです。</p></div>
+    </div>
+  </div>
+</section>
+
+<section class="day" id="slots">
+  <div class="inner">
+    <div class="sec-head reveal">
+      <div class="en">SCHEDULE</div>
+      <h2>無料体験の空き枠</h2>
+      <p>ご希望の日時を選んでから、お申し込みへお進みください。</p>
+    </div>
+    <div class="slots-wrap reveal has-hint" data-hint="⚙ 空き枠の管理・予約の重複防止（要サーバー）">
+      <div class="slot-tabs" id="slotTabs"></div>
+      <div class="slot-grid" id="slotGrid"></div>
+      <p style="text-align:center;font-size:12.5px;color:var(--dim);margin-top:18px">空き状況はリアルタイムで更新されます。ご希望の枠がない場合はお問い合わせください。</p>
+    </div>
+  </div>
+</section>
+
+<section class="apply" id="apply">
+  <div class="inner">
+    <div class="sec-head reveal">
+      <div class="en">TRIAL</div>
+      <h2>無料体験のお申し込み</h2>
+      <p>持ち物はありません。保護者の方の見学も歓迎です。</p>
+    </div>
+    <div class="form-card reveal has-hint" data-hint="⚙ 申込内容の保存・確認メール・教室への通知（要サーバー）">
+      <form id="aForm">
+        <div class="picked" id="picked">上の「空き枠」から、ご希望の日時を選んでください</div>
+        <div class="row2">
+          <div class="field"><label>お子さまのお名前 <span class="req">必須</span></label><input type="text" id="kName" placeholder="やまだ たろう"><div class="err">入力してください</div></div>
+          <div class="field"><label>学年 <span class="req">必須</span></label>
+            <select id="kGrade"><option>小学1年</option><option>小学2年</option><option>小学3年</option><option>小学4年</option><option>小学5年</option><option>小学6年</option><option>中学1年</option><option>中学2年</option><option>中学3年</option></select></div>
+        </div>
+        <div class="field"><label>ご希望のコース <span class="req">必須</span></label>
+          <select id="kCourse"><option>はじめてコース</option><option>ロボットコース</option><option>本格コース</option><option>まだ決めていない</option></select></div>
+        <div class="row2">
+          <div class="field"><label>保護者さまのお名前 <span class="req">必須</span></label><input type="text" id="pName" placeholder="山田 花子"><div class="err">入力してください</div></div>
+          <div class="field"><label>電話番号 <span class="req">必須</span></label><input type="tel" id="pTel" placeholder="090-1234-5678"><div class="err">入力してください</div></div>
+        </div>
+        <div class="field"><label>メールアドレス <span class="req">必須</span></label><input type="email" id="pMail" placeholder="hanako@example.com"><div class="err">メールアドレスの形式をご確認ください</div></div>
+        <div class="field"><label>ご質問・気になること</label><textarea id="pMemo" rows="3" placeholder="人見知りなのですが大丈夫でしょうか？"></textarea></div>
+        <button class="btn" type="submit" style="width:100%;font-size:17px">この内容で申し込む</button>
+      </form>
+      <div class="done" id="done">
+        <div class="mk">🎉</div>
+        <h3>お申し込みありがとうございます！</h3>
+        <p id="doneTxt"></p>
+        <div style="margin-top:24px"><button class="btn wht sm" id="again">もう一度ためす</button></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="mypage">
+  <div class="inner">
+    <div class="sec-head reveal">
+      <div class="en">MY PAGE</div>
+      <h2>保護者マイページ</h2>
+      <p>通っている方はこちらから、出席・お知らせ・お月謝をご確認いただけます。</p>
+    </div>
+    <div class="mypage-box reveal has-hint" data-hint="⚙ ログイン認証・出欠記録・お知らせ配信・請求の管理（要サーバー）">
+      <div id="mLogin">
+        <div class="row2">
+          <div class="field"><label>メールアドレス</label><input type="email" id="mid" value="hanako@example.com"></div>
+          <div class="field"><label>パスワード</label><input type="password" id="mpw" value="password"></div>
+        </div>
+        <button class="btn green" id="loginBtn" style="width:100%">ログイン</button>
+        <p style="text-align:center;font-size:12.5px;color:var(--dim);margin-top:12px">デモです。そのまま押せます。</p>
+      </div>
+      <div class="mp" id="mp">
+        <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin-bottom:18px">
+          <div style="width:46px;height:46px;border-radius:50%;background:var(--yellow);display:grid;place-content:center;font-size:20px">🐣</div>
+          <div><b style="font-size:16px">やまだ たろう くん</b><div style="font-size:12px;color:var(--dim)">ロボットコース／毎週水曜 17:00</div></div>
+          <button class="btn wht sm" id="logoutBtn" style="margin-left:auto">ログアウト</button>
+        </div>
+        <div class="mp-tabs">
+          <button data-p="att" aria-pressed="true">出席</button>
+          <button data-p="msg" aria-pressed="false">お知らせ</button>
+          <button data-p="pay" aria-pressed="false">お月謝</button>
+        </div>
+        <div class="mp-pane on" id="pane-att">
+          <div class="att" id="attGrid"></div>
+          <p style="font-size:12.5px;color:var(--dim);margin-top:14px">お休みされた回は、3か月以内に振替レッスンを無料でお受けいただけます。</p>
+          <button class="btn blue sm" id="furikae" style="margin-top:10px">振替レッスンを予約する</button>
+        </div>
+        <div class="mp-pane" id="pane-msg">
+          <div class="msg"><div class="h"><span class="new">NEW</span><span>2026.08.18</span></div><h4>8月の発表会について</h4><p>8月30日（日）の発表会、保護者さまの席をご用意しています。参加の可否をこのページからご回答ください。</p></div>
+          <div class="msg"><div class="h"><span>2026.08.05</span></div><h4>たろうくんの今週の記録</h4><p>センサーを使って、障害物の前で止まるプログラムができました。次回は曲がる動きに挑戦します。</p></div>
+          <div class="msg"><div class="h"><span>2026.07.22</span></div><h4>夏休みの短期講座のご案内</h4><p>8月の平日午前に、ゲームづくりの短期講座（全3回）を開きます。</p></div>
+        </div>
+        <div class="mp-pane" id="pane-pay">
+          <div class="msg"><div class="h"><span>2026年8月分</span></div><h4>12,100円　お支払い済み</h4><p>8月5日にクレジットカードで決済されました。領収書はこちらから発行できます。</p></div>
+          <div class="msg"><div class="h"><span>2026年9月分</span></div><h4>12,100円　9月5日に引き落とし予定</h4><p>兄弟割引 −1,000円が適用されています。</p></div>
+          <button class="btn blue sm" id="receipt">領収書を発行する</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="day" id="faq">
+  <div class="inner">
+    <div class="sec-head reveal">
+      <div class="en">FAQ</div>
+      <h2>よくあるご質問</h2>
+    </div>
+    <div class="faq reveal" id="faqList"></div>
+  </div>
+</section>
+
+<footer class="site">
+  <div class="ft">
+    <div>
+      <div style="font-size:19px;font-weight:800">くるくる教室</div>
+      <p>〒000-0000 ○○県○○市かえで町2-3-4 かえでビル 2F<br>TEL 000-000-0000（平日 13:00–20:00）</p>
+    </div>
+    <div><h4>教室について</h4><ul><li><a href="#course">コース</a></li><li><a href="#day">1日の流れ</a></li><li><a href="#teacher">先生の紹介</a></li><li><a href="#faq">よくある質問</a></li></ul></div>
+    <div><h4>お手続き</h4><ul><li><a href="#apply">無料体験のお申し込み</a></li><li><a href="#slots">空き枠を見る</a></li><li><a href="#mypage">保護者マイページ</a></li></ul></div>
+  </div>
+  <div class="ft-btm">
+    <span>© 2026 くるくる教室（架空の教室です）</span>
+    <span>デザイン見本 F ／ ポップ・にぎやか</span>
+  </div>
+</footer>
+
+<div class="chat">
+  <div class="chat-win" id="chatWin">
+    <div class="chat-hd">💬 教室に質問する<button id="chatX">×</button></div>
+    <div class="chat-body" id="chatBody">
+      <div class="bubble them">こんにちは！くるくる教室です。ご質問をどうぞ。<br>（デモです。自動で返事が返ります）</div>
+    </div>
+    <div class="chat-in">
+      <input type="text" id="chatIn" placeholder="メッセージを入力">
+      <button id="chatSend">➤</button>
+    </div>
+  </div>
+  <button class="chat-btn" id="chatBtn" aria-label="チャットで質問">💬</button>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+/* デモ共通 */
+if(window.self!==window.top) document.documentElement.classList.add('embedded');
+document.querySelectorAll('[data-hint]').forEach(el=>{const b=document.createElement('span');b.className='hint-badge';b.textContent=el.dataset.hint;el.appendChild(b);});
+const hintBtn=document.getElementById('hintBtn');
+hintBtn.onclick=()=>{const on=document.body.classList.toggle('hints');
+  hintBtn.setAttribute('aria-pressed',on);
+  hintBtn.textContent=on?'⚙ 表示中（クリックで戻す）':'⚙ サーバーが要る機能を示す';
+  if(on) toast('サーバー（バックエンド）が要る箇所','緑の点線で囲まれた部分は、空き枠の管理・申込の受付・保護者ごとのマイページなどをサーバー側で行う機能です。');};
+let tt;function toast(t,b){const e=document.getElementById('toast');
+  e.innerHTML='<b>'+t+'</b>'+(b||'')+'<small>※これはデザイン見本です。実際の動作はしません。</small>';
+  e.classList.add('on');clearTimeout(tt);tt=setTimeout(()=>e.classList.remove('on'),5400);}
+function serverCall(ms){return new Promise(r=>setTimeout(r,ms||(600+Math.random()*500)));}
+const io=new IntersectionObserver(es=>es.forEach(e=>{if(e.isIntersecting){e.target.classList.add('in');io.unobserve(e.target);}}),{threshold:.08});
+document.querySelectorAll('.reveal').forEach(el=>io.observe(el));
+
+const nav=document.getElementById('nav'),burger=document.getElementById('burger');
+burger.onclick=()=>{nav.classList.toggle('open');burger.textContent=nav.classList.contains('open')?'×':'☰';};
+nav.querySelectorAll('a').forEach(a=>a.onclick=()=>{nav.classList.remove('open');burger.textContent='☰';});
+
+/* 空き枠 */
+const W=['日','月','火','水','木','金','土'];
+let wtab=0,picked=null;
+document.getElementById('slotTabs').innerHTML=['今週','来週','再来週'].map((w,i)=>`<button data-i="${i}" aria-pressed="${i===0}">${w}</button>`).join('');
+function slotState(key){let h=0;for(let i=0;i<key.length;i++)h=(h*37+key.charCodeAt(i))%9949;
+  const n=h%10; return n<5?'空きあり':n<8?'残り1枠':'満席';}
+function drawSlots(){
+  /* 明日から2週間ぶんの候補日をつくり、日曜は休みとする（本番はサーバーの枠データを表示します） */
+  const base=new Date(); base.setHours(0,0,0,0); base.setDate(base.getDate()+1+wtab*7);
+  let h='';
+  for(let i=0;i<7;i++){
+    const dt=new Date(base); dt.setDate(base.getDate()+i);
+    const dow=dt.getDay();
+    if(dow===0) continue;                             /* 日曜はお休み */
+    const times = dow===6 ? ['10:30','13:30'] : ['16:00','17:00'];
+    times.forEach(t=>{
+      const key=dt.toDateString()+t, st=slotState(key), full=(st==='満席');
+      h+=`<button class="slot" ${full?'disabled':''} aria-pressed="false" data-d="${dt.getMonth()+1}/${dt.getDate()}（${W[dow]}）" data-t="${t}">
+        <div class="d">${dt.getMonth()+1}/${dt.getDate()}<span style="font-size:12px">（${W[dow]}）</span></div>
+        <div class="t">${t} 〜</div><div class="st ${st!=='空きあり'?'few':''}">${st}</div></button>`;
+    });
+  }
+  document.getElementById('slotGrid').innerHTML=h;
+}
+drawSlots();
+document.getElementById('slotTabs').onclick=e=>{const b=e.target.closest('button');if(!b)return;
+  wtab=+b.dataset.i;document.querySelectorAll('#slotTabs button').forEach(x=>x.setAttribute('aria-pressed',+x.dataset.i===wtab));
+  picked=null;document.getElementById('picked').innerHTML='上の「空き枠」から、ご希望の日時を選んでください';drawSlots();};
+document.getElementById('slotGrid').onclick=e=>{const b=e.target.closest('.slot');if(!b||b.disabled)return;
+  document.querySelectorAll('.slot').forEach(x=>x.setAttribute('aria-pressed','false'));
+  b.setAttribute('aria-pressed','true');
+  picked=b.dataset.d+' '+b.dataset.t;
+  document.getElementById('picked').innerHTML='ご希望の日時：<b>'+picked+'〜</b>（変更したいときは、もう一度お選びください）';
+  document.getElementById('apply').scrollIntoView({behavior:'smooth',block:'start'});};
+
+/* 申込フォーム */
+document.getElementById('aForm').onsubmit=async e=>{
+  e.preventDefault(); let ok=true;
+  [['kName',v=>v.trim()],['pName',v=>v.trim()],['pTel',v=>v.trim().length>=8],['pMail',v=>/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(v)]].forEach(([id,t])=>{
+    const el=document.getElementById(id),bad=!t(el.value);el.closest('.field').classList.toggle('bad',bad);if(bad)ok=false;});
+  if(!picked){ toast('ご希望の日時をお選びください','「無料体験の空き枠」から日時を選んでからお申し込みください。');
+    document.getElementById('slots').scrollIntoView({behavior:'smooth'}); return; }
+  if(!ok){ document.querySelector('.field.bad').scrollIntoView({behavior:'smooth',block:'center'}); return; }
+  const btn=e.target.querySelector('button[type=submit]'),old=btn.textContent;
+  btn.innerHTML='<span class="spin"></span>送信中…';btn.disabled=true;
+  await serverCall(1200); btn.textContent=old;btn.disabled=false;
+  document.getElementById('doneTxt').innerHTML=
+    `<b>${picked}〜</b> の無料体験でお待ちしています。<br>${document.getElementById('pMail').value} 宛に確認のメールをお送りしました。<br><br>受付番号：KK-${Math.random().toString(36).slice(2,7).toUpperCase()}`;
+  e.target.style.display='none'; document.getElementById('done').classList.add('on');
+  toast('お申し込みを受け付けました','本番ではこの枠が「予約済み」になり、他の方は選べなくなります。教室にも通知が届きます。');
+};
+document.getElementById('again').onclick=()=>{
+  document.getElementById('done').classList.remove('on');
+  document.getElementById('aForm').style.display='';
+};
+
+/* マイページ */
+document.getElementById('loginBtn').onclick=async e=>{
+  const b=e.currentTarget,old=b.textContent;b.innerHTML='<span class="spin"></span>認証中…';
+  await serverCall(900);b.textContent=old;
+  document.getElementById('mLogin').style.display='none';
+  document.getElementById('mp').classList.add('on');
+  toast('ログインしました','本番ではご家庭ごとにアカウントを発行し、その子の出席記録・お知らせ・お月謝だけが表示されます。');
+};
+document.getElementById('logoutBtn').onclick=()=>{
+  document.getElementById('mp').classList.remove('on');
+  document.getElementById('mLogin').style.display='';
+};
+document.querySelector('.mp-tabs').onclick=e=>{const b=e.target.closest('button');if(!b)return;
+  document.querySelectorAll('.mp-tabs button').forEach(x=>x.setAttribute('aria-pressed','false'));
+  b.setAttribute('aria-pressed','true');
+  document.querySelectorAll('.mp-pane').forEach(p=>p.classList.remove('on'));
+  document.getElementById('pane-'+b.dataset.p).classList.add('on');};
+const ATT=[['4/2','◯'],['4/9','◯'],['4/16','×'],['4/23','◯'],['5/7','◯'],['5/14','◯'],['5/21','◯'],['5/28','◯'],
+  ['6/4','◯'],['6/11','×'],['6/18','◯'],['6/25','◯'],['7/2','◯'],['7/9','◯'],['7/16','◯'],['7/23','◯'],
+  ['8/6','◯'],['8/13','◯'],['8/20','◯'],['8/27','—']];
+document.getElementById('attGrid').innerHTML=ATT.map(([d,s])=>
+  `<div class="${s==='◯'?'ok':s==='×'?'no':''}"><b>${s}</b>${d}</div>`).join('');
+document.getElementById('furikae').onclick=()=>toast('振替の予約画面へ','本番では、お休みされた回数と有効期限をサーバーが管理し、空いている枠から振替日を選べるようにします。');
+document.getElementById('receipt').onclick=()=>toast('領収書を発行しました','本番では決済の記録からPDFの領収書を自動生成し、ダウンロードできるようにします。');
+
+/* FAQ */
+const FAQ=[
+  ['パソコンを持っていなくても大丈夫ですか？','教室のパソコンをお使いいただけます。ご自宅での練習は必須ではありません。'],
+  ['人見知りな子でも続けられますか？','1回の教室は最大6名までで、席は固定していません。最初の3回は先生が隣につきます。'],
+  ['月の途中から入会できますか？','できます。その月は回数に応じた日割りでのお月謝となります。'],
+  ['休んだ日の振替はできますか？','3か月以内であれば無料で振替できます。マイページからご予約いただけます。'],
+  ['兄弟で通うと割引はありますか？','2人目以降のお月謝が毎月1,000円引きになります。'],
+  ['保護者は見学できますか？','いつでもご覧いただけます。後ろに見学用の椅子をご用意しています。']
+];
+document.getElementById('faqList').innerHTML=FAQ.map(([q,a])=>
+  `<div class="faq-item"><button class="faq-q">${q}</button><div class="faq-a">${a}</div></div>`).join('');
+document.getElementById('faqList').onclick=e=>{const b=e.target.closest('.faq-q');if(!b)return;
+  b.parentElement.classList.toggle('open');};
+
+/* チャット */
+const cw=document.getElementById('chatWin');
+document.getElementById('chatBtn').onclick=()=>cw.classList.toggle('on');
+document.getElementById('chatX').onclick=()=>cw.classList.remove('on');
+const REPLIES=['ありがとうございます！確認して、担当より折り返しご連絡いたします。',
+  'その点でしたら、無料体験のときに実際にご覧いただくのがいちばん分かりやすいと思います。',
+  'はい、大丈夫です。同じようなご質問をよくいただきます。',
+  'よろしければ、お電話（000-000-0000）でもご相談を承っています。'];
+let ri=0;
+async function sendChat(){
+  const inp=document.getElementById('chatIn'), v=inp.value.trim(); if(!v)return;
+  const body=document.getElementById('chatBody');
+  body.insertAdjacentHTML('beforeend',`<div class="bubble me">${v.replace(/[<>&]/g,'')}</div>`);
+  inp.value=''; body.scrollTop=body.scrollHeight;
+  await serverCall(900);
+  body.insertAdjacentHTML('beforeend',`<div class="bubble them">${REPLIES[ri++%REPLIES.length]}</div>`);
+  body.scrollTop=body.scrollHeight;
+  toast('メッセージを送信しました','本番ではLINE公式アカウントやチャットツールと連携し、教室のスマホに通知が届きます。');
+}
+document.getElementById('chatSend').onclick=sendChat;
+document.getElementById('chatIn').onkeydown=e=>{if(e.key==='Enter')sendChat();};
+</script>
+</body>
+</html>
