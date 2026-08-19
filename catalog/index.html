@@ -129,6 +129,32 @@ section{padding:clamp(50px,7vw,84px) 20px}
 .can-card .badge{font-size:10.5px;font-weight:700;padding:3px 9px;border-radius:999px;white-space:nowrap}
 .badge.stat{background:#F1F3F7;color:#5A6376}
 .badge.srv{background:rgba(27,122,90,.12);color:var(--ok)}
+.badge.talk{background:rgba(178,106,27,.14);color:var(--warn)}
+.can-card.istalk{border-color:#EBD7B4;background:#FFFCF6}
+.can-card .why{font-size:11.5px;color:var(--warn);margin-top:8px;line-height:1.7}
+.pat .ribbon{position:absolute;left:0;right:0;top:0;background:var(--warn);color:#fff;font-size:11.5px;font-weight:700;text-align:center;padding:5px;z-index:2}
+.pat .ribbon ~ .letter,.pat .ribbon ~ .like{top:38px}
+.pat .tags span.talk{background:rgba(178,106,27,.14);color:var(--warn)}
+/* お引き受けの範囲 */
+.scope-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:18px;align-items:start}
+@media(max-width:960px){.scope-grid{grid-template-columns:1fr}}
+.scope-card{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:24px;box-shadow:var(--sh)}
+.scope-card.ok{border-top:4px solid var(--ok)}
+.scope-card.talk{border-top:4px solid var(--warn);background:#FFFCF6}
+.scope-card.rec{border-top:4px solid var(--ac)}
+.scope-card h3{font-size:16px;font-weight:800;margin-bottom:6px}
+.scope-card .sub{font-size:12px;color:var(--dim);margin-bottom:16px}
+.scope-card ul{list-style:none;font-size:13px;margin-bottom:16px}
+.scope-card li{padding:5px 0 5px 20px;position:relative;border-top:1px dashed var(--line)}
+.scope-card li:first-child{border-top:0}
+.scope-card li::before{position:absolute;left:0;font-weight:800}
+.scope-card.ok li::before{content:"✓";color:var(--ok)}
+.scope-card.talk li::before{content:"⚠";color:var(--warn)}
+.scope-card.rec li::before{content:"◆";color:var(--ac);font-size:10px;top:8px}
+.scope-card p{font-size:12.5px;color:var(--dim)}
+.scope-card p b{color:var(--ink)}
+.est-talk{display:none;font-size:12px;background:#FFF4E2;border:1px solid #EBD7B4;color:#8A5A14;border-radius:10px;padding:12px;margin-top:12px;line-height:1.75}
+.est-talk.on{display:block}
 .can-card p{font-size:12.5px;color:var(--dim)}
 .can-card .ex{font-size:11.5px;color:var(--ac);margin-top:8px}
 .can-card .lk{position:absolute;top:14px;right:14px}
@@ -215,6 +241,7 @@ footer.site{background:#0F1116;color:#98A0B0;padding:44px 20px 30px;font-size:12
     <nav class="main" id="nav">
       <a href="#patterns">デザイン見本</a>
       <a href="#can">できること</a>
+      <a href="#scope">お引き受けの範囲</a>
       <a href="#estimate">概算の見積り</a>
       <a href="#flow">進め方</a>
       <a href="#faq">よくある質問</a>
@@ -229,7 +256,8 @@ footer.site{background:#0F1116;color:#98A0B0;padding:44px 20px 30px;font-size:12
   <p class="lead">
     言葉だけだと、どうしてもイメージしづらいところです。そこで、実際に触れるデザイン見本を6種類つくりました。
     どれも本物のサイトと同じように動きます。予約フォームを送ってみたり、カートに商品を入れたりしてみてください。<br>
-    <b>ここに載っているものが上限ではありません。</b>気に入った見本の「この部分だけ」を組み合わせることも、まったく別の雰囲気にすることもできます。
+    <b>ここに載っているものが上限ではありません。</b>気に入った見本の「この部分だけ」を組み合わせることも、まったく別の雰囲気にすることもできます。<br>
+    ただし、<b>作れること</b>と<b>私がお引き受けできること</b>は少し別です。お金のやりとりが絡む機能には <span class="badge talk">⚠ 要相談</span> の印をつけ、<a href="#scope" style="color:var(--ac);font-weight:700">その理由</a>も書いています。
   </p>
   <div class="cta">
     <a class="btn lg" href="#patterns">デザイン見本を見る</a>
@@ -248,7 +276,8 @@ footer.site{background:#0F1116;color:#98A0B0;padding:44px 20px 30px;font-size:12
     <div class="sec-head reveal">
       <div class="en">DESIGN PATTERNS</div>
       <h2>6つのデザイン見本</h2>
-      <p>クリックすると、その場でスマホ・タブレット・パソコンの見え方を切り替えられます。各見本の上部にある「⚙ サーバーが要る機能を示す」を押すと、どの部分にサーバー（バックエンド）が必要かが色つきで表示されます。</p>
+      <p>クリックすると、その場でスマホ・タブレット・パソコンの見え方を切り替えられます。各見本の上部にある「⚙ サーバーが要る機能を示す」を押すと、どの部分にサーバー（バックエンド）が必要かが色つきで表示されます。<br>
+      オレンジの <span class="badge talk">⚠ 要相談</span> は、作れはするものの、お引き受けできるかを個別にご相談したい機能です（<a href="#scope" style="color:var(--warn);font-weight:700">理由</a>）。</p>
     </div>
     <div class="pats reveal" id="pats"></div>
   </div>
@@ -264,9 +293,60 @@ footer.site{background:#0F1116;color:#98A0B0;padding:44px 20px 30px;font-size:12
     <div class="legend reveal">
       <span><span class="badge stat">静的</span>　ページを作るだけで実現できます。維持費はほぼかかりません。</span>
       <span><span class="badge srv">サーバー</span>　データの保存や送信が必要です。月々の費用が発生します。</span>
+      <span><span class="badge talk">⚠ 要相談</span>　技術的には作れますが、お引き受けできるかは別途ご相談です（<a href="#scope" style="color:var(--warn)">理由</a>）。</span>
     </div>
     <div class="cantabs reveal" id="canTabs"></div>
     <div class="cangrid reveal" id="canGrid"></div>
+  </div>
+</section>
+
+<section id="scope">
+  <div class="inner">
+    <div class="sec-head reveal">
+      <div class="en">SCOPE</div>
+      <h2>「作れること」と「お引き受けできること」</h2>
+      <p>技術的に作れるかどうかと、私がお引き受けできるかどうかは、少し別の話です。とくにお金のやりとりが絡む機能は、うまくいっているうちは問題になりませんが、何かあったときの損害がサイトの制作費をはるかに超えることがあります。あとで揉めないよう、先に書いておきます。</p>
+    </div>
+    <div class="scope-grid reveal">
+      <div class="scope-card ok">
+        <h3>通常どおりお引き受けします</h3>
+        <div class="sub">このカタログの見本 A・B・C・D・F にあたる範囲です。</div>
+        <ul>
+          <li>サイトの設計・デザイン・制作</li>
+          <li>お問い合わせ・ご相談・お申し込みフォーム</li>
+          <li>予約の受付と空き枠の表示</li>
+          <li>お知らせ／ブログの投稿機能、営業カレンダー</li>
+          <li>写真・商品情報の入れ替え、メール配信</li>
+          <li>会員ページ、口コミの投稿と承認</li>
+          <li>公開後の保守、アクセス解析、SEOの基礎</li>
+        </ul>
+        <p>この範囲であれば、制作から公開後のサポートまで一貫してお受けできます。</p>
+      </div>
+      <div class="scope-card talk">
+        <h3>⚠ 要相談（お金のやりとりが発生するもの）</h3>
+        <div class="sub">見本 E のネットショップが、まるごとここに入ります。</div>
+        <ul>
+          <li>カート・購入手続き</li>
+          <li>クレジットカード決済、各種オンライン決済</li>
+          <li>在庫の管理、注文・配送の管理</li>
+          <li>クーポン・セール、定期購入・回数券</li>
+          <li>月謝などの請求と領収書の発行</li>
+        </ul>
+        <p><b>作れないわけではありません。</b>ただ、金額の計算違い・在庫の売り違い・決済の重複といったことが起きたとき、損害はサイトの制作費では収まりません。また、ご購入者さまの個人情報やお支払いの情報をお預かりすることになり、万一のときには届け出や連絡の義務が発生します。売上が止まらないよう夜間・休日も対応する体制も要ります。<br><br>個人の事務所でここまで背負うのは正直むずかしく、<b>責任の切り分けと運用の体制を決めたうえで、お受けできるかを個別に判断させてください。</b>お断りすることもあります。</p>
+      </div>
+      <div class="scope-card rec">
+        <h3>おすすめの進め方</h3>
+        <div class="sub">ネットショップをお考えの場合。</div>
+        <ul>
+          <li>BASE・STORES・Shopify・カラーミーショップなど、既存のショップサービスを土台にする</li>
+          <li>その上のデザインと、ブランドサイト側は私がお作りする</li>
+          <li>決済・在庫・注文・返品の仕組みはサービス側が用意し、責任も持つ</li>
+          <li>法改正やセキュリティの対応も、サービス側で自動的に更新される</li>
+          <li>初期費用と月額を抑えられ、売れはじめてから広げやすい</li>
+        </ul>
+        <p>見本 E のような見え方は、この方法でもほぼ実現できます。ご自身で最初から全部を持つより、はじめの一歩としても安全です。まずはここからをおすすめしています。</p>
+      </div>
+    </div>
   </div>
 </section>
 
@@ -307,6 +387,7 @@ footer.site{background:#0F1116;color:#98A0B0;padding:44px 20px 30px;font-size:12
           <div><b id="estMonth">¥0</b><span>月額（維持費）</span></div>
           <div><b id="estWeeks">—</b><span>制作期間の目安</span></div>
         </div>
+        <div class="est-talk" id="estTalk"></div>
         <div class="est-note" id="estNote">※ 金額はサンプルです。実際の条件によって変わります。</div>
         <button class="btn out sm" id="estCopy" style="width:100%;margin-top:14px">この内容をメモに追加する</button>
       </div>
@@ -408,11 +489,13 @@ const PATTERNS=[
    pal:{bg:'#FFFFFF',ink:'#20303C',ac:'#0E3A63',sub:'#B8892E'},layout:'info'},
   {id:'shop',L:'E',file:'shop.html',style:'ネットショップ',name:'hitotsu 工房',who:'作家／食品／アパレル／産直',
    desc:'商品を並べて、その場で買っていただくタイプ。ここに載せた中でいちばん機能が多い見本です。',
-   tags:['商品の絞り込み・並べ替え','商品詳細','特定商取引法の表記'],srv:['カートと決済','在庫の管理','会員・注文履歴','クーポン','レビュー'],
+   tags:['商品の絞り込み・並べ替え','商品詳細','特定商取引法の表記'],srv:['レビュー'],
+   talkCore:true, talk:['カートと決済','在庫の管理','注文・配送の管理','クーポン'],
    pal:{bg:'#FAF8F4',ink:'#2A2724',ac:'#4A6B52',sub:'#B5503C'},layout:'grid'},
   {id:'school',L:'F',file:'school.html',style:'ポップ・にぎやか',name:'くるくる教室',who:'習い事／学習塾／保育／地域のイベント',
    desc:'丸みと原色で、親しみやすさを前に出したタイプ。お子さま向け・ご家族向けのサービスに。',
-   tags:['コース紹介','1日の流れ','先生紹介','よくある質問'],srv:['体験申込フォーム','空き枠の表示','保護者マイページ（出欠・請求）','チャット問い合わせ'],
+   tags:['コース紹介','1日の流れ','先生紹介','よくある質問'],srv:['体験申込フォーム','空き枠の表示','保護者マイページ（出欠）','チャット問い合わせ'],
+   talk:['月謝の請求・領収書'],
    pal:{bg:'#FFFBF2',ink:'#33302B',ac:'#FF7043',sub:'#3ABEDC'},layout:'pop'}
 ];
 
@@ -507,17 +590,17 @@ const FEATURES=[
   ['お知らせ・更新','写真・商品の入れ替え','サーバー','写真の差し替えや並べ替えを、ご自身で行えます。','見本B・E'],
   ['お知らせ・更新','メールマガジンの配信','サーバー','登録された方へ一斉にお知らせを送れます。','見本A'],
 
-  ['販売','カート・購入手続き','サーバー','商品をまとめて購入していただく仕組みです。','見本E'],
-  ['販売','クレジットカード決済','サーバー','カード・コンビニ払い・スマホ決済に対応できます。決済会社の手数料が別途かかります。','見本E'],
-  ['販売','在庫の管理','サーバー','売れたら在庫が減り、ゼロになれば「売り切れ」表示に変わります。','見本E'],
-  ['販売','注文・配送の管理','サーバー','注文一覧、発送済みの記録、追跡番号のお知らせまで。','見本E'],
-  ['販売','クーポン・セール','サーバー','期間限定の割引コードを発行できます。','見本E'],
-  ['販売','定期購入・回数券','サーバー','毎月の自動決済や、回数券の残数管理もできます。','—'],
+  ['販売','カート・購入手続き','サーバー','商品をまとめて購入していただく仕組みです。','見本E','お金のやりとりが発生するため'],
+  ['販売','クレジットカード決済','サーバー','カード・コンビニ払い・スマホ決済に対応できます。決済会社の手数料が別途かかります。','見本E','お金のやりとりが発生するため'],
+  ['販売','在庫の管理','サーバー','売れたら在庫が減り、ゼロになれば「売り切れ」表示に変わります。','見本E','売り違いが金銭のトラブルに直結するため'],
+  ['販売','注文・配送の管理','サーバー','注文一覧、発送済みの記録、追跡番号のお知らせまで。','見本E','お金のやりとりが発生するため'],
+  ['販売','クーポン・セール','サーバー','期間限定の割引コードを発行できます。','見本E','お金のやりとりが発生するため'],
+  ['販売','定期購入・回数券','サーバー','毎月の自動決済や、回数券の残数管理もできます。','—','お金のやりとりが発生するため'],
 
   ['会員','会員登録・ログイン','サーバー','その人だけに見せる情報を用意できます。','見本B・E・F'],
   ['会員','マイページ（履歴・ポイント）','サーバー','来店履歴、購入履歴、ポイント残高など。','見本B・E'],
   ['会員','会員限定ページ','サーバー','パスワードを知っている方だけが見られるページ。','見本C'],
-  ['会員','出欠・請求の管理','サーバー','教室や塾での出席記録、月謝の請求と領収書の発行。','見本F'],
+  ['会員','出欠・請求の管理','サーバー','教室や塾での出席記録、月謝の請求と領収書の発行。','見本F','請求・入金の記録を扱うため'],
   ['会員','レビュー・口コミの投稿','サーバー','購入者だけが書けるようにしたり、公開前に承認したりできます。','見本B・E'],
 
   ['運用','アクセス解析','サーバー','何人が、どのページを、どこから見たかが分かります。改善の材料になります。','—'],
@@ -546,7 +629,7 @@ const PRICE={
     ['form','お問い合わせフォーム',33000,0,1100],
     ['reserve','予約システム（空き枠表示つき）',110000,2,3300],
     ['blog','お知らせ・ブログの投稿機能',55000,1,1100],
-    ['cart','カート・カード決済',165000,3,5500],
+    ['cart','カート・カード決済 ⚠要相談',165000,3,5500],
     ['member','会員登録・マイページ',132000,2,3300],
     ['mail','メールマガジン配信',44000,1,2200],
     ['multi','多言語（英語）対応',88000,2,0],
@@ -565,6 +648,8 @@ const PRICE={
    よくある質問
    ============================================================ */
 const FAQ=[
+  ['ネットショップも作ってもらえますか？','技術的にはお作りできます。ただ、カート・決済・在庫・注文の管理は、金額の計算違いや在庫の売り違いが起きたときの損害が大きく、お客さまのお支払い情報もお預かりすることになります。個人の事務所でその責任をすべて背負うのは正直むずかしいため、<b>お受けできるかどうかを個別にご相談させてください</b>（お断りすることもあります）。<br><br>おすすめしているのは、BASE・STORES・Shopify といった既存のショップサービスを土台にして、その上のデザインとブランドサイトを私がお作りする方法です。決済や在庫の仕組みはサービス側が責任をもって用意してくれるので、安心して長く続けられます。見た目は見本Eとほぼ同じものが作れます。'],
+  ['なぜ「要相談」の機能があるのですか？','正直にお伝えしておいたほうが、あとでお互いに困らないからです。お金のやりとりが絡む機能は、公開したあとに何かあったときの責任と、夜間・休日を含む対応の体制まで決めておく必要があります。そこを曖昧にしたままお引き受けするのは、私にとってもお客さまにとっても危ないと考えています。<br><br>逆に、それ以外の機能（フォーム、予約、ブログ、会員ページなど）は通常どおりお引き受けしています。'],
   ['この見本の中から選ばないといけませんか？','いいえ。見本は「言葉だけだと伝わりにくい部分」を見ていただくためのものです。「Aの写真の見せ方と、Dの料金表の並べ方を組み合わせたい」といったご要望も、そのまま形にできます。まったく別の雰囲気をご希望でしたら、参考にされているサイトのURLをいくつかお送りいただくのがいちばん早いです。'],
   ['「サーバーが必要な機能」とは何ですか？','データを預かったり、メールを送ったりする仕組みのことです。たとえば予約フォームは、送信された内容をどこかに保存して、あなたに知らせる必要があります。この「どこか」がサーバーです。ページを見せるだけなら不要ですが、お客さまとやりとりする機能には基本的に必要になります。'],
   ['月々の費用はどのくらいかかりますか？','サーバーとドメイン（URL）の維持だけなら、月に1,000〜2,000円ほどです。予約や決済など、機能を追加するとその分増えます。上の「概算の見積り」で、選んだ機能に応じた月額の目安が出ますのでご覧ください。'],
@@ -588,8 +673,9 @@ el('pats').innerHTML=PATTERNS.map(p=>`
   <article class="pat">
     <div class="thumb" data-pv="${p.id}">
       ${thumb(p)}
+      ${p.talkCore?'<div class="ribbon">⚠ この見本の中心となる機能は「要相談」です</div>':''}
       <span class="letter">${p.L}</span>
-      <button class="like" data-like="見本${p.L}：${p.style}（${p.name}）" aria-label="気になる">♥</button>
+      <button class="like" data-like="見本${p.L}：${p.style}（${p.name}）${p.talk?'※要相談の機能を含みます':''}" aria-label="気になる">♥</button>
       <div class="hoverbar">クリックでプレビュー</div>
     </div>
     <div class="bd">
@@ -600,6 +686,7 @@ el('pats').innerHTML=PATTERNS.map(p=>`
       <div class="tags">
         ${p.tags.map(t=>`<span>${t}</span>`).join('')}
         ${p.srv.map(t=>`<span class="srv">⚙ ${t}</span>`).join('')}
+        ${(p.talk||[]).map(t=>`<span class="talk">⚠ ${t}</span>`).join('')}
       </div>
       <div class="acts">
         <button class="btn sm" data-pv="${p.id}">プレビュー</button>
@@ -609,22 +696,24 @@ el('pats').innerHTML=PATTERNS.map(p=>`
   </article>`).join('');
 
 /* できること */
-const CATS=['すべて',...new Set(FEATURES.map(f=>f[0]))];
+const TALKCAT='⚠ 要相談のもの';
+const CATS=['すべて',...new Set(FEATURES.map(f=>f[0])),TALKCAT];
+const canList=()=>FEATURES.filter(f=>ccat==='すべて'?true:ccat===TALKCAT?!!f[5]:f[0]===ccat);
 let ccat='すべて';
 el('canTabs').innerHTML=CATS.map(c=>`<button data-c="${c}" aria-pressed="${c===ccat}">${c}</button>`).join('');
 function drawCan(){
-  el('canGrid').innerHTML=FEATURES.filter(f=>ccat==='すべて'||f[0]===ccat).map(([cat,n,kind,d,ex])=>`
-    <div class="can-card">
-      <div class="top"><h4>${n}</h4><span class="badge ${kind==='静的'?'stat':'srv'}">${kind}</span></div>
+  el('canGrid').innerHTML=canList().map(([cat,n,kind,d,ex,talk])=>`
+    <div class="can-card${talk?' istalk':''}">
+      <div class="top"><h4>${n}</h4><span class="badge ${kind==='静的'?'stat':'srv'}">${kind}</span>${talk?'<span class="badge talk">⚠ 要相談</span>':''}</div>
       <p>${d}</p>
+      ${talk?`<div class="why">${talk}／お引き受けできるかは <a href="#scope" style="color:inherit">こちら</a> をご覧ください</div>`:''}
       <div class="ex">見られる見本：${ex}</div>
-      <button class="like lk" data-like="機能：${n}（${kind}）" style="position:absolute;top:14px;right:14px;display:none"></button>
+      <button class="like lk" style="position:absolute;top:14px;right:14px;display:none"></button>
     </div>`).join('');
   /* ♡ボタンを差し込む */
   document.querySelectorAll('#canGrid .can-card').forEach((c,i)=>{
-    const list=FEATURES.filter(f=>ccat==='すべて'||f[0]===ccat);
-    const [ , n, kind]=list[i];
-    const key='機能：'+n+'（'+kind+'）';
+    const [ , n, kind, , , talk]=canList()[i];
+    const key='機能：'+n+'（'+kind+(talk?'・要相談':'')+'）';
     const b=document.createElement('button');
     b.className='btn gray sm'; b.dataset.like=key;
     b.style.cssText='margin-top:12px;width:100%';
@@ -739,13 +828,24 @@ function calc(){
   el('estMonth').textContent=yen(monthly);
   el('estWeeks').textContent='約'+weeks+'〜'+(weeks+3)+'週間';
   el('estNote').innerHTML='※ 金額はサンプルです。月額には'+PRICE.base.note+'（'+yen(PRICE.base.monthly)+'）を含みます。決済手数料など、外部サービスの費用は別途かかります。';
-  return {total,monthly,weeks,rows};
+  /* お金のやりとりが絡む機能を選んだときは、金額より先に「要相談」であることを伝える */
+  const talkPicked=fs.filter(f=>f[1].includes('⚠要相談')).map(f=>f[1].replace(' ⚠要相談',''));
+  const isEC = sc[0]==='ec';
+  const t=el('estTalk');
+  if(talkPicked.length||isEC){
+    t.classList.add('on');
+    t.innerHTML='⚠ <b>'+(talkPicked.concat(isEC?['ネットショップ']:[]).join('・'))+'</b> は「要相談」の項目です。'
+      +'ここに出ている金額はあくまで目安で、<b>お引き受けできるかどうかを含めて個別のご相談</b>になります。'
+      +'<a href="#scope" style="color:inherit;font-weight:700">理由と、おすすめの進め方はこちら →</a>';
+  } else t.classList.remove('on');
+  return {total,monthly,weeks,rows,talk:talkPicked.length>0||isEC};
 }
 document.querySelectorAll('#optScale input,#optDesign input,#optFeat input,#optAsset input').forEach(i=>i.onchange=calc);
 calc();
 el('estCopy').onclick=()=>{
   const r=calc();
-  const key='見積りの目安：初期 '+yen(r.total)+'／月額 '+yen(r.monthly)+'／約'+r.weeks+'週間（'+r.rows.map(x=>x[0]).join('、')+'）';
+  const key='見積りの目安：初期 '+yen(r.total)+'／月額 '+yen(r.monthly)+'／約'+r.weeks+'週間（'+r.rows.map(x=>x[0]).join('、')+'）'
+    +(r.talk?'　※要相談の項目を含みます':'');
   [...liked].forEach(k=>{ if(k.startsWith('見積りの目安：')) liked.delete(k); });
   liked.add(key); syncLikes();
   toast('見積りの目安をメモに追加しました','ページ下部でコピーできます。');

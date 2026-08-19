@@ -23,6 +23,12 @@ a{color:inherit}svg{display:block}button{font-family:inherit}
 .demo-note{opacity:.8}.demo-note b{color:#B6D3BC}
 .demo-toggle{margin-left:auto;font:inherit;cursor:pointer;color:#231F1B;background:#B6D3BC;border:0;padding:6px 14px;border-radius:999px;white-space:nowrap}
 .demo-toggle[aria-pressed="true"]{background:#7EC8A9}
+.demo-flag{background:#B26A1B;color:#fff;border-radius:999px;padding:4px 12px;font-size:11.5px;font-weight:700;white-space:nowrap}
+.talk-note{background:#FFF4E2;border-bottom:1px solid #EBD7B4;color:#8A5A14;font-size:12.5px;line-height:1.8;padding:12px 18px;text-align:center}
+.talk-note b{color:#7A4C0F}
+.talk-note a{color:#7A4C0F}
+html.embedded .talk-note{display:none}
+@media(max-width:700px){.demo-flag{display:none}}
 body{padding-top:42px}
 html.embedded body{padding-top:0}
 html.embedded .demo-bar{display:none}
@@ -242,7 +248,15 @@ footer.site{background:#231F1B;color:#DCD4C8;padding:52px 20px 26px;font-size:13
 <div class="demo-bar">
   <a class="demo-back" href="index.html">← カタログへ戻る</a>
   <span class="demo-note">デザイン見本 E ／ ネットショップ ― <b>hitotsu 工房</b>（架空のお店です）</span>
+  <span class="demo-flag">⚠ 要相談の見本</span>
   <button class="demo-toggle" id="hintBtn" aria-pressed="false">⚙ サーバーが要る機能を示す</button>
+</div>
+
+<div class="talk-note">
+  ⚠ <b>この見本の中心となる機能（カート・決済・在庫・注文管理）は「要相談」です。</b>
+  作れないわけではありませんが、お金のやりとりが絡むため、責任の切り分けと運用の体制を決めたうえで、お受けできるかを個別に判断させてください。<br>
+  ネットショップは <b>BASE・STORES・Shopify などのサービスを土台にして、その上のデザインをお作りする</b>進め方をおすすめしています。
+  <a href="index.html#scope">→ 理由とおすすめの進め方</a>
 </div>
 
 <div class="notice">8,000円以上のお買い上げで送料無料　／　平日15時までのご注文で当日発送</div>
@@ -455,7 +469,7 @@ const hintBtn=document.getElementById('hintBtn');
 hintBtn.onclick=()=>{const on=document.body.classList.toggle('hints');
   hintBtn.setAttribute('aria-pressed',on);
   hintBtn.textContent=on?'⚙ 表示中（クリックで戻す）':'⚙ サーバーが要る機能を示す';
-  if(on) toast('サーバー（バックエンド）が要る箇所','ネットショップは大半の機能にサーバーが要ります。商品と在庫の管理、カート、決済、注文、会員、レビュー。緑の点線の箇所がそれにあたります。');};
+  if(on) toast('サーバー（バックエンド）が要る箇所','ネットショップは大半の機能にサーバーが要ります。商品と在庫の管理、カート、決済、注文、会員、レビュー。緑の点線の箇所がそれにあたります。なお、このうちお金のやりとりが絡む部分は「要相談」の扱いです。');};
 let tt;function toast(t,b){const e=document.getElementById('toast');
   e.innerHTML='<b>'+t+'</b>'+(b||'')+'<small>※これはデザイン見本です。実際の決済は行われません。</small>';
   e.classList.add('on');clearTimeout(tt);tt=setTimeout(()=>e.classList.remove('on'),5400);}
@@ -646,7 +660,7 @@ document.getElementById('cpnBtn').onclick=async e=>{
 document.getElementById('checkout').onclick=async e=>{
   const b=e.currentTarget,old=b.textContent;b.innerHTML='<span class="spin"></span>決済画面へ…';b.disabled=true;
   await serverCall(1400); b.textContent=old; b.disabled=false;
-  toast('ここから決済に進みます','本番ではクレジットカード決済（Stripe など）や、コンビニ払い・代引きに接続します。決済が完了すると在庫が減り、注文番号が発行され、お客さまとお店に確認メールが届きます。');
+  toast('ここから決済に進みます','本番ではクレジットカード決済（Stripe など）や、コンビニ払い・代引きに接続します。決済が完了すると在庫が減り、注文番号が発行され、お客さまとお店に確認メールが届きます。<br><br>⚠ この部分は「要相談」です。BASE・STORES・Shopify などのサービスを土台にする進め方をおすすめしています。');
 };
 
 /* レビュー */
