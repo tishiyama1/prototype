@@ -1,0 +1,546 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ほぐし処 なごみ ｜ デザイン見本 G 縦長1枚（LP）</title>
+<meta name="description" content="Webサイトデザイン見本 G ― ナビゲーションを置かない縦長1枚のランディングページ(架空の整体院)">
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+:root{
+  --bg:#FFFFFF; --ink:#232830; --dim:#68707C; --line:#E6E9EE;
+  --cta:#E8602C; --cta-d:#C64C1D; --deep:#17564E; --deep-l:#EAF3F0; --cream:#FFF7EC;
+  --sans:"Hiragino Kaku Gothic ProN","Yu Gothic","Noto Sans JP",system-ui,sans-serif;
+  --serif:"Hiragino Mincho ProN","Yu Mincho",serif;
+}
+html{scroll-behavior:smooth}
+body{font-family:var(--sans);background:var(--bg);color:var(--ink);line-height:1.9;overflow-x:hidden}
+a{color:inherit}svg{display:block}button{font-family:inherit}
+
+/* デモ共通 */
+.demo-bar{position:fixed;inset:0 0 auto 0;z-index:900;display:flex;gap:12px;align-items:center;flex-wrap:wrap;padding:8px 14px;background:#181C22;color:#EEF1F5;font-size:12.5px}
+.demo-bar a.demo-back{text-decoration:none;background:rgba(255,255,255,.14);padding:5px 12px;border-radius:999px;white-space:nowrap}
+.demo-note{opacity:.8}.demo-note b{color:#FFB68F}
+.demo-toggle{margin-left:auto;font:inherit;cursor:pointer;color:#181C22;background:#FFB68F;border:0;padding:6px 14px;border-radius:999px;white-space:nowrap}
+.demo-toggle[aria-pressed="true"]{background:#7EC8A9}
+body{padding-top:42px}
+html.embedded body{padding-top:0}
+html.embedded .demo-bar{display:none}
+@media(max-width:600px){.demo-note{display:none}}
+.hint-badge{display:none}
+body.hints .hint-badge{display:inline-flex;position:absolute;z-index:60;top:-13px;left:10px;background:#166B4F;color:#fff;font-size:11px;line-height:1.5;padding:3px 10px;border-radius:999px;box-shadow:0 4px 14px rgba(0,0,0,.2);max-width:calc(100% - 20px)}
+body.hints .has-hint{position:relative;outline:2px dashed #166B4F;outline-offset:6px;border-radius:6px}
+.toast{position:fixed;left:50%;bottom:96px;transform:translate(-50%,24px);z-index:950;opacity:0;pointer-events:none;background:#181C22;color:#EEF1F5;padding:14px 20px;border-radius:12px;max-width:min(92vw,430px);box-shadow:0 18px 44px rgba(0,0,0,.3);transition:.3s;font-size:13px;line-height:1.75}
+.toast.on{opacity:1;transform:translate(-50%,0)}
+.toast b{display:block;color:#FFB68F;margin-bottom:2px}
+.toast small{display:block;margin-top:6px;opacity:.6;font-size:11.5px}
+.spin{display:inline-block;width:13px;height:13px;border:2px solid rgba(255,255,255,.3);border-top-color:#fff;border-radius:50%;animation:sp .7s linear infinite;vertical-align:-2px;margin-right:6px}
+@keyframes sp{to{transform:rotate(360deg)}}
+.ph{position:relative;overflow:hidden;background:#E9EDF2}
+.ph::after{content:attr(data-label);position:absolute;right:9px;bottom:6px;font-size:9.5px;letter-spacing:.16em;color:rgba(35,40,48,.34)}
+.q1{background:radial-gradient(80% 70% at 35% 25%,#F3EDE2,#C9BBA6)}
+.q2{background:radial-gradient(80% 70% at 60% 30%,#DCE9E5,#8FB3AA)}
+.q3{background:radial-gradient(70% 80% at 40% 60%,#F0E4DA,#C8A88E)}
+
+/* ▼ 構造のポイント：ナビゲーションを置かない。上部は電話と申込だけ */
+.topbar{position:sticky;top:42px;z-index:400;background:rgba(255,255,255,.96);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);border-bottom:1px solid var(--line)}
+html.embedded .topbar{top:0}
+.tb{max-width:1080px;margin:0 auto;padding:10px 18px;display:flex;align-items:center;gap:14px}
+.tb .nm{font-family:var(--serif);font-size:18px;letter-spacing:.08em;line-height:1.3}
+.tb .nm small{display:block;font-family:var(--sans);font-size:10px;color:var(--dim);letter-spacing:.06em}
+.tb .tel{margin-left:auto;text-align:right;line-height:1.3}
+.tb .tel b{display:block;font-family:var(--serif);font-size:19px}
+.tb .tel small{font-size:10px;color:var(--dim)}
+@media(max-width:640px){.tb .tel{display:none}}
+
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;font:inherit;font-size:16px;font-weight:800;
+  padding:17px 32px;border-radius:999px;border:0;background:var(--cta);color:#fff;cursor:pointer;text-decoration:none;
+  box-shadow:0 6px 0 var(--cta-d);transition:.15s;line-height:1.5;text-align:center}
+.btn:hover{transform:translateY(2px);box-shadow:0 4px 0 var(--cta-d)}
+.btn:active{transform:translateY(6px);box-shadow:none}
+.btn.sm{font-size:13.5px;padding:11px 20px;box-shadow:0 4px 0 var(--cta-d)}
+.btn.line{background:#06C755;box-shadow:0 6px 0 #049B43}
+.btn.out{background:#fff;color:var(--deep);border:2px solid var(--deep);box-shadow:0 6px 0 rgba(23,86,78,.25)}
+.btn:disabled{opacity:.5}
+
+/* ファーストビュー */
+.fv{position:relative;background:linear-gradient(170deg,var(--cream),#fff 70%);overflow:hidden}
+.fv .in{max-width:1080px;margin:0 auto;padding:40px 18px 48px;display:grid;grid-template-columns:1.06fr .94fr;gap:30px;align-items:center}
+.fv .rib{display:inline-block;background:var(--deep);color:#fff;font-size:13px;font-weight:800;padding:6px 18px;border-radius:6px;margin-bottom:16px}
+.fv h1{font-size:clamp(27px,4.6vw,46px);font-weight:800;line-height:1.45;letter-spacing:.01em}
+.fv h1 .mk{background:linear-gradient(transparent 58%,#FFD9A0 58%);padding:0 2px}
+.fv h1 .big{color:var(--cta);font-size:1.2em}
+.fv .sub{margin-top:18px;font-size:15px;color:var(--dim)}
+.fv .badges{display:flex;gap:10px;flex-wrap:wrap;margin-top:22px}
+.fv .badges span{background:#fff;border:2px solid var(--line);border-radius:999px;font-size:12.5px;font-weight:700;padding:6px 14px}
+.fv .badges span b{color:var(--cta)}
+.fv .ctaline{margin-top:26px;display:flex;gap:12px;flex-wrap:wrap;align-items:center}
+.fv .left{font-size:13px;font-weight:800;color:var(--cta);background:#FFF0E7;border-radius:8px;padding:8px 14px}
+.fv .art{position:relative}
+.fv .art .ph{aspect-ratio:4/5;border-radius:20px}
+.fv .stamp{position:absolute;right:-8px;top:-14px;width:118px;height:118px;border-radius:50%;background:var(--cta);color:#fff;
+  display:grid;place-content:center;text-align:center;font-size:13px;font-weight:800;line-height:1.5;transform:rotate(-8deg);box-shadow:0 10px 26px rgba(232,96,44,.35)}
+.fv .stamp b{display:block;font-size:26px}
+@media(max-width:860px){.fv .in{grid-template-columns:1fr}.fv .art{max-width:420px;margin:0 auto}}
+
+section{padding:clamp(48px,7vw,80px) 18px}
+.inner{max-width:1080px;margin:0 auto}
+.sec-head{text-align:center;margin-bottom:36px}
+.sec-head .en{font-size:11.5px;font-weight:800;letter-spacing:.2em;color:var(--deep)}
+.sec-head h2{font-size:clamp(21px,3.4vw,31px);font-weight:800;margin-top:8px;line-height:1.5}
+.sec-head h2 .mk{background:linear-gradient(transparent 58%,#FFD9A0 58%)}
+.sec-head p{margin-top:14px;font-size:14px;color:var(--dim)}
+.reveal{opacity:0;transform:translateY(22px);transition:.75s cubic-bezier(.2,.8,.3,1)}
+.reveal.in{opacity:1;transform:none}
+
+/* お悩み */
+.worry{background:var(--deep-l)}
+.checks{max-width:720px;margin:0 auto;background:#fff;border-radius:18px;padding:clamp(22px,4vw,34px);box-shadow:0 8px 26px rgba(23,86,78,.08)}
+.checks li{list-style:none;display:flex;gap:12px;align-items:flex-start;padding:13px 0;border-bottom:1px dashed var(--line);font-size:15.5px;font-weight:700}
+.checks li:last-child{border:0}
+.checks li::before{content:"✓";flex:none;width:26px;height:26px;border-radius:50%;background:var(--deep);color:#fff;display:grid;place-content:center;font-size:14px;margin-top:2px}
+.arrowdown{text-align:center;font-size:30px;color:var(--deep);margin-top:26px}
+.worry .lead{text-align:center;font-size:clamp(17px,2.6vw,23px);font-weight:800;margin-top:10px}
+.worry .lead em{font-style:normal;color:var(--cta)}
+
+/* 理由 */
+.reason{display:grid;grid-template-columns:repeat(3,1fr);gap:18px}
+.rcard{background:#fff;border:2px solid var(--line);border-radius:18px;padding:26px 22px;position:relative}
+.rcard .no{position:absolute;top:-15px;left:22px;background:var(--deep);color:#fff;font-size:12px;font-weight:800;padding:4px 14px;border-radius:999px}
+.rcard h3{font-size:17px;font-weight:800;margin:10px 0 10px}
+.rcard p{font-size:13.5px;color:var(--dim)}
+@media(max-width:860px){.reason{grid-template-columns:1fr}}
+
+/* 流れ */
+.flow{background:var(--cream)}
+.steps{display:grid;grid-template-columns:repeat(4,1fr);gap:16px}
+.step{background:#fff;border-radius:18px;padding:24px 20px;text-align:center}
+.step .n{width:40px;height:40px;margin:0 auto 12px;border-radius:50%;background:var(--cta);color:#fff;font-weight:800;display:grid;place-content:center}
+.step h4{font-size:15.5px;font-weight:800;margin-bottom:8px}
+.step p{font-size:12.5px;color:var(--dim)}
+@media(max-width:860px){.steps{grid-template-columns:1fr 1fr}}
+
+/* 声 */
+.voices{display:grid;grid-template-columns:repeat(3,1fr);gap:18px}
+.vc{background:#fff;border:2px solid var(--line);border-radius:18px;padding:24px}
+.vc .st{color:#F0A81E;font-size:15px}
+.vc h4{font-size:15.5px;font-weight:800;margin:10px 0 8px;line-height:1.6}
+.vc p{font-size:13px;color:var(--dim)}
+.vc .who{margin-top:14px;padding-top:12px;border-top:1px dashed var(--line);font-size:12px;color:var(--dim)}
+@media(max-width:860px){.voices{grid-template-columns:1fr}}
+
+/* 料金 */
+.price{background:var(--deep);color:#fff}
+.price .sec-head h2,.price .sec-head .en{color:#fff}
+.price .sec-head p{color:rgba(255,255,255,.72)}
+.pbox{max-width:560px;margin:0 auto;background:#fff;color:var(--ink);border-radius:22px;padding:clamp(24px,4vw,36px);text-align:center;box-shadow:0 18px 44px rgba(0,0,0,.22)}
+.pbox .ttl{font-size:17px;font-weight:800}
+.pbox .was{font-size:16px;color:var(--dim);text-decoration:line-through;margin-top:14px}
+.pbox .now{font-size:clamp(38px,7vw,58px);font-weight:800;color:var(--cta);line-height:1.2}
+.pbox .now small{font-size:17px}
+.pbox .note{font-size:12.5px;color:var(--dim);margin-top:10px}
+.pbox .incl{text-align:left;background:var(--deep-l);border-radius:14px;padding:16px 18px;margin:20px 0;font-size:13.5px}
+.pbox .incl li{list-style:none;padding:4px 0 4px 22px;position:relative}
+.pbox .incl li::before{content:"✓";position:absolute;left:0;color:var(--deep);font-weight:800}
+.limit{margin-top:18px;background:#FFF0E7;border:2px dashed var(--cta);border-radius:12px;padding:12px;font-size:13.5px;font-weight:800;color:var(--cta-d)}
+
+/* 院長 */
+.doc{display:grid;grid-template-columns:.8fr 1.2fr;gap:36px;align-items:center}
+.doc .ph{aspect-ratio:1;border-radius:20px}
+.doc h3{font-size:21px;font-weight:800}
+.doc .role{font-size:13px;color:var(--deep);font-weight:700;margin-bottom:14px}
+.doc p{font-size:13.5px;color:var(--dim);margin-bottom:12px}
+@media(max-width:860px){.doc{grid-template-columns:1fr}}
+
+/* FAQ */
+.faq{max-width:800px;margin:0 auto}
+.fi{background:#fff;border:2px solid var(--line);border-radius:14px;margin-bottom:10px;overflow:hidden}
+.fq{width:100%;text-align:left;font:inherit;font-size:15px;font-weight:800;background:#fff;border:0;padding:17px 48px 17px 20px;cursor:pointer;position:relative}
+.fq::after{content:"＋";position:absolute;right:18px;top:15px;color:var(--deep);font-size:19px}
+.fi.open .fq::after{content:"−"}
+.fa{display:none;padding:0 20px 18px;font-size:13.5px;color:var(--dim)}
+.fi.open .fa{display:block}
+
+/* 申込 */
+.apply{background:var(--cream)}
+.form-card{max-width:660px;margin:0 auto;background:#fff;border-radius:22px;padding:clamp(24px,4vw,38px);box-shadow:0 12px 34px rgba(35,40,48,.1)}
+.slots{display:grid;grid-template-columns:repeat(auto-fill,minmax(112px,1fr));gap:8px}
+.slot{font:inherit;font-size:13.5px;font-weight:700;padding:12px 4px;border:2px solid var(--line);border-radius:12px;background:#fff;cursor:pointer;transition:.2s}
+.slot:hover:not(:disabled){border-color:var(--cta)}
+.slot[aria-pressed="true"]{background:#FFF0E7;border-color:var(--cta);color:var(--cta-d)}
+.slot small{display:block;font-size:10.5px;font-weight:400;color:var(--dim)}
+.slot:disabled{opacity:.42;cursor:not-allowed}
+.field{margin-bottom:18px}
+.field label{display:block;font-size:13.5px;font-weight:800;margin-bottom:8px}
+.field .req{background:var(--cta);color:#fff;font-size:10.5px;padding:2px 9px;border-radius:999px;margin-left:8px;vertical-align:2px}
+.field input,.field select,.field textarea{width:100%;font:inherit;font-size:15px;padding:13px 15px;border:2px solid var(--line);border-radius:12px;background:#FCFDFE;transition:.2s}
+.field input:focus,.field select:focus,.field textarea:focus{outline:none;border-color:var(--deep);background:#fff}
+.field.bad input,.field.bad select{border-color:var(--cta);background:#FFF6F2}
+.field .err{display:none;color:var(--cta-d);font-size:12.5px;font-weight:700;margin-top:6px}
+.field.bad .err{display:block}
+.row2{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+@media(max-width:600px){.row2{grid-template-columns:1fr;gap:0}}
+.done{display:none;text-align:center}
+.done.on{display:block}
+.done .mk{width:76px;height:76px;margin:0 auto 18px;border-radius:50%;background:var(--deep-l);color:var(--deep);display:grid;place-content:center;font-size:36px}
+.done h3{font-size:21px;font-weight:800;margin-bottom:12px}
+.done p{font-size:13.5px;color:var(--dim)}
+
+/* アクセス */
+.acc{display:grid;grid-template-columns:1fr 1fr;gap:30px;align-items:center}
+.acc table{width:100%;font-size:13.5px}
+.acc th{text-align:left;width:6.5em;color:var(--dim);font-weight:400;font-size:12.5px;padding:11px 0;border-bottom:1px solid var(--line);vertical-align:top}
+.acc td{padding:11px 0;border-bottom:1px solid var(--line)}
+@media(max-width:860px){.acc{grid-template-columns:1fr}}
+
+footer.site{background:#181C22;color:#B9C0CB;padding:40px 18px 30px;font-size:12.5px;text-align:center}
+footer.site b{display:block;color:#fff;font-family:var(--serif);font-size:17px;margin-bottom:8px}
+footer .fb{margin-top:20px;padding-top:16px;border-top:1px solid rgba(255,255,255,.12);display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap;font-size:11px;opacity:.6}
+
+/* ▼ 追従CTA（1枚もののLPでは、これがナビゲーションの代わりになります） */
+.fixcta{position:fixed;left:0;right:0;bottom:0;z-index:500;background:rgba(255,255,255,.97);backdrop-filter:blur(10px);
+  border-top:2px solid var(--line);box-shadow:0 -6px 22px rgba(35,40,48,.1);padding:9px 14px env(safe-area-inset-bottom)}
+.fixcta .in{max-width:1080px;margin:0 auto;display:flex;gap:10px;align-items:center}
+.fixcta .txt{font-size:13px;font-weight:800;line-height:1.5}
+.fixcta .txt small{display:block;font-size:11px;font-weight:400;color:var(--dim)}
+.fixcta .btn{flex:none}
+.fixcta a.tel{flex:none;text-decoration:none;font-weight:800;font-size:14px;border:2px solid var(--deep);color:var(--deep);border-radius:999px;padding:11px 18px}
+@media(max-width:720px){.fixcta .txt{display:none}.fixcta .in{gap:8px}.fixcta .btn,.fixcta a.tel{flex:1;justify-content:center;text-align:center}}
+body{padding-bottom:84px}
+.progress{position:fixed;left:0;top:42px;height:3px;background:var(--cta);z-index:600;width:0;transition:width .1s}
+html.embedded .progress{top:0}
+</style>
+</head>
+<body>
+
+<div class="demo-bar">
+  <a class="demo-back" href="index.html">← カタログへ戻る</a>
+  <span class="demo-note">デザイン見本 G ／ 縦長1枚（LP） ― <b>ほぐし処 なごみ</b>（架空の店舗です）</span>
+  <button class="demo-toggle" id="hintBtn" aria-pressed="false">⚙ サーバーが要る機能を示す</button>
+</div>
+<div class="progress" id="prog"></div>
+
+<!-- ▼ この見本にはメニューバーがありません。上から順に読ませて申込へ導く構造です -->
+<div class="topbar">
+  <div class="tb">
+    <div class="nm">ほぐし処 なごみ<small>肩こり・腰の張り専門</small></div>
+    <div class="tel"><b>000-000-0000</b><small>9:00–20:00／日曜も営業</small></div>
+    <a class="btn sm" href="#apply">初回体験を申し込む</a>
+  </div>
+</div>
+
+<div class="fv" id="top">
+  <div class="in">
+    <div>
+      <span class="rib">○○駅 徒歩3分／完全予約制</span>
+      <h1>肩がつらくて、<br><span class="mk">夜中に目が覚める。</span><br>その毎日、<span class="big">今週で</span>終わりに。</h1>
+      <p class="sub">整体歴18年の院長が、ひとりにつき60分。もみ返しの出にくい施術で、その場しのぎではない状態を目指します。</p>
+      <div class="badges">
+        <span>のべ <b>12,000</b> 名</span>
+        <span>再来院率 <b>92%</b></span>
+        <span>口コミ <b>★4.8</b></span>
+        <span>当日予約OK</span>
+      </div>
+      <div class="ctaline">
+        <a class="btn" href="#apply">初回体験 2,980円で予約する →</a>
+        <span class="left has-hint" data-hint="⚙ 残り枠のリアルタイム表示（要サーバー）">今週の残り <b id="left1">3</b> 枠</span>
+      </div>
+    </div>
+    <div class="art">
+      <div class="ph q2" data-label="PHOTO"></div>
+      <div class="stamp">初回<b>2,980</b>円</div>
+    </div>
+  </div>
+</div>
+
+<section class="worry">
+  <div class="inner">
+    <div class="sec-head reveal">
+      <div class="en">CHECK</div>
+      <h2>こんな状態が<span class="mk">3つ以上</span>あてはまりませんか</h2>
+    </div>
+    <ul class="checks reveal">
+      <li>朝起きた時点で、もう肩が重い</li>
+      <li>マッサージに行っても、3日で戻ってしまう</li>
+      <li>デスクワークで夕方には頭痛がしてくる</li>
+      <li>腕を上げると、肩の奥に引っかかる感じがある</li>
+      <li>湿布や痛み止めが手放せない</li>
+      <li>「歳のせい」と言われて、あきらめている</li>
+    </ul>
+    <div class="arrowdown reveal">▼</div>
+    <p class="lead reveal">それは筋肉ではなく、<em>使い方のクセ</em>が原因かもしれません。</p>
+  </div>
+</section>
+
+<section>
+  <div class="inner">
+    <div class="sec-head reveal">
+      <div class="en">REASON</div>
+      <h2>なごみが選ばれている3つの理由</h2>
+    </div>
+    <div class="reason reveal">
+      <div class="rcard"><span class="no">理由 01</span><h3>ひとりに60分、院長がひとりで担当</h3><p>担当が毎回変わることはありません。前回どこを触ったか、どう変化したかを踏まえて組み立てます。</p></div>
+      <div class="rcard"><span class="no">理由 02</span><h3>強く押さない。もみ返しが出にくい</h3><p>痛みを我慢する施術はしません。関節の動きを整えてから筋肉をゆるめるので、翌日がつらくなりにくい方法です。</p></div>
+      <div class="rcard"><span class="no">理由 03</span><h3>通わせません。セルフケアまで渡します</h3><p>ご自宅でできる1日3分の運動をお渡しします。回数券の押し売りは一切ありません。</p></div>
+    </div>
+  </div>
+</section>
+
+<section class="flow">
+  <div class="inner">
+    <div class="sec-head reveal">
+      <div class="en">FLOW</div>
+      <h2>初回60分の流れ</h2>
+      <p>着替えはこちらで用意します。手ぶらでお越しください。</p>
+    </div>
+    <div class="steps reveal">
+      <div class="step"><div class="n">1</div><h4>カウンセリング<br>15分</h4><p>いつから、どんなときにつらいのかを伺います。</p></div>
+      <div class="step"><div class="n">2</div><h4>姿勢と動きの確認<br>10分</h4><p>写真を撮って、どこに負担が集まっているかをお見せします。</p></div>
+      <div class="step"><div class="n">3</div><h4>施術<br>30分</h4><p>その日いちばんつらい場所から。強さは都度お尋ねします。</p></div>
+      <div class="step"><div class="n">4</div><h4>セルフケア<br>5分</h4><p>ご自宅でできる運動を1つだけお渡しします。</p></div>
+    </div>
+  </div>
+</section>
+
+<section>
+  <div class="inner">
+    <div class="sec-head reveal">
+      <div class="en">VOICE</div>
+      <h2>通われた方の声</h2>
+    </div>
+    <div class="voices reveal">
+      <div class="vc"><div class="st">★★★★★</div><h4>3回目で、朝の重さがなくなりました</h4><p>他院では強く押されて翌日つらかったのですが、ここは痛くないのに終わったあと肩が軽いです。自宅でやる運動も簡単でした。</p><div class="who">40代・会社員／肩こり</div></div>
+      <div class="vc"><div class="st">★★★★★</div><h4>写真で説明してもらえて納得できた</h4><p>自分の姿勢を見せてもらって、なぜ腰に来るのかが分かりました。通う回数の目安も最初に教えてくれます。</p><div class="who">50代・自営業／腰の張り</div></div>
+      <div class="vc"><div class="st">★★★★☆</div><h4>回数券をすすめられないのが良い</h4><p>前に行った所は毎回すすめられて気まずかったので。必要なときだけ予約しています。</p><div class="who">30代・会社員／首こり</div></div>
+    </div>
+  </div>
+</section>
+
+<section class="price">
+  <div class="inner">
+    <div class="sec-head reveal">
+      <div class="en">PRICE</div>
+      <h2>初回体験のご案内</h2>
+      <p>2回目以降は 6,600円（60分）です。回数券のご案内はしていません。</p>
+    </div>
+    <div class="pbox reveal">
+      <div class="ttl">初回限定・60分コース</div>
+      <div class="was">通常 6,600円のところ</div>
+      <div class="now">2,980<small>円（税込）</small></div>
+      <div class="note">カウンセリング・姿勢チェック・施術・セルフケア指導すべて込み</div>
+      <ul class="incl">
+        <li>着替え、タオルはこちらでご用意します</li>
+        <li>施術後に自宅でできる運動を1つお渡しします</li>
+        <li>次回の予約を無理におすすめすることはありません</li>
+        <li>効果を感じられなければ、その場で全額お返しします</li>
+      </ul>
+      <a class="btn" href="#apply" style="width:100%">この内容で申し込む →</a>
+      <div class="limit has-hint" data-hint="⚙ 残り枠のリアルタイム表示（要サーバー）">初回枠は1日2名まで／今週の残り <span id="left2">3</span> 枠</div>
+    </div>
+  </div>
+</section>
+
+<section>
+  <div class="inner">
+    <div class="sec-head reveal">
+      <div class="en">STAFF</div>
+      <h2>担当する人</h2>
+    </div>
+    <div class="doc">
+      <div class="ph q3 reveal" data-label="PHOTO"></div>
+      <div class="reveal">
+        <h3>和田 なごみ</h3>
+        <div class="role">院長／柔道整復師（国家資格）・整体歴18年</div>
+        <p>整形外科と接骨院で12年勤めたのち、2019年に開業しました。前の職場では1日40人を回していて、一人ひとりに向き合えないことがずっと引っかかっていました。</p>
+        <p>いまは1日8名まで。そのぶん、なぜそこがつらくなるのかを説明する時間をとっています。「通い続けないと戻る」ではなく、ご自身で保てる状態までお連れするのが目標です。</p>
+        <p style="font-size:12.5px">保有資格：柔道整復師／運動器リハビリテーションセラピスト／○○整体アカデミー認定</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="flow">
+  <div class="inner">
+    <div class="sec-head reveal">
+      <div class="en">FAQ</div>
+      <h2>よくあるご質問</h2>
+    </div>
+    <div class="faq reveal" id="faqList"></div>
+  </div>
+</section>
+
+<section class="apply" id="apply">
+  <div class="inner">
+    <div class="sec-head reveal">
+      <div class="en">RESERVE</div>
+      <h2>初回体験のお申し込み</h2>
+      <p>ご希望の日時を選んで、3項目ご記入いただくだけです。</p>
+    </div>
+    <div class="form-card reveal has-hint" data-hint="⚙ 予約枠の管理・申込の保存・確認メール（要サーバー）">
+      <form id="aForm">
+        <div class="field">
+          <label>ご希望の日時 <span class="req">必須</span></label>
+          <div class="slots" id="slots"></div>
+          <div class="err">日時をお選びください</div>
+        </div>
+        <div class="row2">
+          <div class="field"><label>お名前 <span class="req">必須</span></label><input type="text" id="nm" placeholder="山田 花子"><div class="err">ご入力ください</div></div>
+          <div class="field"><label>電話番号 <span class="req">必須</span></label><input type="tel" id="tel" placeholder="090-1234-5678"><div class="err">ご入力ください</div></div>
+        </div>
+        <div class="field"><label>いちばんつらい場所</label>
+          <select id="part"><option>肩・首</option><option>腰</option><option>背中</option><option>頭痛</option><option>そのほか／わからない</option></select></div>
+        <button class="btn" type="submit" style="width:100%;font-size:17px">この内容で申し込む</button>
+        <p style="text-align:center;font-size:12px;color:var(--dim);margin-top:14px">お電話（000-000-0000）でも承ります。</p>
+        <div style="text-align:center;margin-top:16px" class="has-hint" data-hint="⚙ LINE公式アカウントとの連携（要サーバー）">
+          <a class="btn line sm" href="#apply" id="lineBtn">LINEで予約・相談する</a>
+        </div>
+      </form>
+      <div class="done" id="done">
+        <div class="mk">✓</div>
+        <h3>お申し込みありがとうございます</h3>
+        <p id="doneTxt"></p>
+        <button class="btn out sm" id="again" style="margin-top:20px">もう一度ためす</button>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section>
+  <div class="inner">
+    <div class="sec-head reveal"><div class="en">ACCESS</div><h2>アクセス</h2></div>
+    <div class="acc">
+      <div class="reveal" style="border:2px solid var(--line);border-radius:16px;overflow:hidden">
+        <svg viewBox="0 0 420 260" width="100%">
+          <rect width="420" height="260" fill="#EFF3F6"/>
+          <path d="M0 160 H420 M170 0 V260 M0 60 H420" stroke="#E1E7EC" stroke-width="15"/>
+          <path d="M0 160 H420 M170 0 V260" stroke="#F8FAFB" stroke-width="8"/>
+          <rect x="40" y="90" width="80" height="55" fill="#E4EAEE"/>
+          <rect x="230" y="95" width="120" height="50" fill="#E4EAEE"/>
+          <rect x="230" y="195" width="80" height="45" fill="#DCEAE4"/>
+          <circle cx="170" cy="160" r="12" fill="#E8602C"/>
+          <circle cx="170" cy="160" r="24" fill="#E8602C" opacity=".18"/>
+          <text x="192" y="157" font-size="13" fill="#232830" font-family="serif">ほぐし処 なごみ</text>
+          <text x="192" y="173" font-size="10" fill="#68707C">○○駅 東口 徒歩3分</text>
+          <rect x="46" y="26" width="50" height="22" rx="4" fill="#17564E"/>
+          <text x="56" y="42" font-size="11" fill="#fff">駅</text>
+        </svg>
+      </div>
+      <div class="reveal">
+        <table>
+          <tr><th>院名</th><td>ほぐし処 なごみ</td></tr>
+          <tr><th>住所</th><td>〒000-0000 ○○県○○市なごみ町5-6-7 なごみビル 2F</td></tr>
+          <tr><th>電話</th><td>000-000-0000</td></tr>
+          <tr><th>営業時間</th><td>9:00–20:00（最終受付 19:00）</td></tr>
+          <tr><th>定休日</th><td>木曜</td></tr>
+          <tr><th>駐車場</th><td>2台（ビル裏）</td></tr>
+        </table>
+        <div style="margin-top:22px"><a class="btn" href="#apply">初回体験を申し込む →</a></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<footer class="site">
+  <b>ほぐし処 なごみ</b>
+  〒000-0000 ○○県○○市なごみ町5-6-7 なごみビル 2F<br>
+  TEL 000-000-0000／9:00–20:00（木曜定休）
+  <div class="fb">
+    <span>© 2026 ほぐし処 なごみ（架空の店舗です）</span>
+    <span>デザイン見本 G ／ 縦長1枚（LP）</span>
+  </div>
+</footer>
+
+<!-- ▼ メニューバーの代わりに、画面下のCTAが最後までついてきます -->
+<div class="fixcta">
+  <div class="in">
+    <div class="txt">初回体験 2,980円<small>今週の残り <span id="left3">3</span> 枠／当日予約OK</small></div>
+    <a class="tel" href="tel:0000000000">☎ 電話</a>
+    <a class="btn" href="#apply">申し込む →</a>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+/* デモ共通 */
+if(window.self!==window.top) document.documentElement.classList.add('embedded');
+document.querySelectorAll('[data-hint]').forEach(el=>{const b=document.createElement('span');b.className='hint-badge';b.textContent=el.dataset.hint;el.appendChild(b);});
+const hintBtn=document.getElementById('hintBtn');
+hintBtn.onclick=()=>{const on=document.body.classList.toggle('hints');
+  hintBtn.setAttribute('aria-pressed',on);
+  hintBtn.textContent=on?'⚙ 表示中（クリックで戻す）':'⚙ サーバーが要る機能を示す';
+  if(on) toast('サーバー（バックエンド）が要る箇所','緑の点線で囲まれた部分は、申込の受付・残り枠の管理・LINE連携などをサーバー側で行う機能です。');};
+let tt;function toast(t,b){const e=document.getElementById('toast');
+  e.innerHTML='<b>'+t+'</b>'+(b||'')+'<small>※これはデザイン見本です。実際の動作はしません。</small>';
+  e.classList.add('on');clearTimeout(tt);tt=setTimeout(()=>e.classList.remove('on'),5200);}
+function serverCall(ms){return new Promise(r=>setTimeout(r,ms||(600+Math.random()*500)));}
+const io=new IntersectionObserver(es=>es.forEach(e=>{if(e.isIntersecting){e.target.classList.add('in');io.unobserve(e.target);}}),{threshold:.08});
+document.querySelectorAll('.reveal').forEach(el=>io.observe(el));
+
+/* 読み進みぐあいのバー（1枚もののLPでは現在地の代わりになります） */
+addEventListener('scroll',()=>{
+  const h=document.documentElement.scrollHeight-innerHeight;
+  document.getElementById('prog').style.width=(h>0?scrollY/h*100:0)+'%';
+},{passive:true});
+
+/* 空き枠（本番はサーバーが返す値） */
+const DAYS=['木','金','土','日','月','火'];
+function slotState(k){let h=0;for(let i=0;i<k.length;i++)h=(h*37+k.charCodeAt(i))%9949;return h%10;}
+let picked=null;
+function drawSlots(){
+  const base=new Date(); base.setDate(base.getDate()+1);
+  let html='',left=0;
+  for(let i=0;i<6;i++){
+    const d=new Date(base); d.setDate(base.getDate()+i);
+    const W=['日','月','火','水','木','金','土'][d.getDay()];
+    ['10:00','14:00','18:00'].forEach(t=>{
+      const n=slotState(d.toDateString()+t); const full=n>6;
+      if(!full) left++;
+      html+=`<button type="button" class="slot" ${full?'disabled':''} aria-pressed="false" data-v="${d.getMonth()+1}/${d.getDate()}（${W}）${t}">
+        ${d.getMonth()+1}/${d.getDate()}（${W}）<small>${t}${full?' 満席':''}</small></button>`;
+    });
+  }
+  document.getElementById('slots').innerHTML=html;
+  ['left1','left2','left3'].forEach(id=>{const e=document.getElementById(id);if(e)e.textContent=Math.max(1,Math.min(left,9));});
+}
+drawSlots();
+document.getElementById('slots').onclick=e=>{const b=e.target.closest('.slot');if(!b||b.disabled)return;
+  document.querySelectorAll('.slot').forEach(x=>x.setAttribute('aria-pressed','false'));
+  b.setAttribute('aria-pressed','true'); picked=b.dataset.v;
+  b.closest('.field').classList.remove('bad');};
+
+/* 申込 */
+document.getElementById('aForm').onsubmit=async e=>{
+  e.preventDefault(); let ok=true;
+  if(!picked){document.getElementById('slots').closest('.field').classList.add('bad');ok=false;}
+  [['nm',v=>v.trim()],['tel',v=>v.trim().length>=8]].forEach(([id,t])=>{
+    const el=document.getElementById(id),bad=!t(el.value);el.closest('.field').classList.toggle('bad',bad);if(bad)ok=false;});
+  if(!ok){document.querySelector('.field.bad').scrollIntoView({behavior:'smooth',block:'center'});return;}
+  const btn=e.target.querySelector('button[type=submit]'),old=btn.textContent;
+  btn.innerHTML='<span class="spin"></span>送信中…';btn.disabled=true;
+  await serverCall(1200);btn.textContent=old;btn.disabled=false;
+  document.getElementById('doneTxt').innerHTML=`<b>${picked}</b> でお待ちしております。<br>${document.getElementById('tel').value} 宛にご確認のお電話をいたします。<br><br>受付番号：NG-${Math.random().toString(36).slice(2,7).toUpperCase()}`;
+  e.target.style.display='none';document.getElementById('done').classList.add('on');
+  document.getElementById('apply').scrollIntoView({behavior:'smooth',block:'start'});
+  toast('お申し込みを受け付けました','本番ではこの枠が埋まって他の方は選べなくなり、お店にも通知が届きます。');
+};
+document.getElementById('again').onclick=()=>{
+  document.getElementById('done').classList.remove('on');
+  document.getElementById('aForm').style.display='';picked=null;drawSlots();};
+document.getElementById('lineBtn').onclick=e=>{e.preventDefault();
+  toast('LINEでの予約に進みます','本番ではLINE公式アカウントの友だち追加に進み、トーク上で予約や相談ができるようになります。');};
+
+/* FAQ */
+const FAQ=[
+  ['痛くないですか？','強く押す施術はしません。痛みを我慢していただく必要はなく、強さは都度お尋ねします。翌日にもみ返しが出にくい方法です。'],
+  ['何回くらい通えばいいですか？','初回のあとに、いまの状態と目安の回数をお伝えします。多くの方は3〜5回で日常のつらさが軽くなっています。無理に続けていただく必要はありません。'],
+  ['服装はどうすればいいですか？','着替えとタオルはこちらでご用意しています。仕事帰りに手ぶらでお越しいただけます。'],
+  ['駐車場はありますか？','ビル裏に2台分あります。満車のときは近くのコインパーキングをご案内します。'],
+  ['当日の予約はできますか？','空きがあれば可能です。お急ぎの場合はお電話（000-000-0000）が確実です。'],
+  ['子どもを連れて行っても大丈夫ですか？','大丈夫です。ベビーカーのまま入れます。事前にお伝えいただけると、静かな時間帯をご案内できます。']
+];
+document.getElementById('faqList').innerHTML=FAQ.map(([q,a])=>`<div class="fi"><button class="fq">${q}</button><div class="fa">${a}</div></div>`).join('');
+document.getElementById('faqList').onclick=e=>{const b=e.target.closest('.fq');if(!b)return;b.parentElement.classList.toggle('open');};
+</script>
+</body>
+</html>

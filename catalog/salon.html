@@ -47,27 +47,62 @@ body.hints .has-hint{position:relative;outline:2px dashed #2C9E77;outline-offset
 .ph-3{background:radial-gradient(70% 90% at 50% 80%,#3E4A48 0%,transparent 60%),linear-gradient(20deg,#242B2A,#111413)}
 .ph-4{background:radial-gradient(90% 70% at 20% 70%,#574438 0%,transparent 60%),linear-gradient(140deg,#39302A,#17130F)}
 
-/* ヘッダー */
-header.site{position:fixed;top:42px;left:0;right:0;z-index:400;transition:.4s}
-html.embedded header.site{top:0}
-header.site.solid{border-bottom:1px solid var(--line)}
-header.site::before{content:"";position:absolute;inset:0;z-index:-1;background:rgba(18,16,14,.92);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);opacity:0;transition:opacity .4s}
-header.site.solid::before{opacity:1}
-.hd{max-width:1240px;margin:0 auto;padding:22px 26px;display:flex;align-items:center;gap:26px;transition:.4s}
-header.site.solid .hd{padding:13px 26px}
-.logo{font-family:var(--serif);font-size:22px;letter-spacing:.4em;text-decoration:none;text-indent:.4em}
-.logo small{display:block;font-family:var(--sans);font-size:8.5px;letter-spacing:.34em;color:var(--gold);text-indent:.34em;margin-top:2px}
-nav.main{margin-left:auto;display:flex;gap:30px;font-size:12px;letter-spacing:.18em}
-nav.main a{text-decoration:none;color:var(--tx-dim);transition:.3s;position:relative;padding-bottom:4px}
-nav.main a::after{content:"";position:absolute;left:0;right:100%;bottom:0;height:1px;background:var(--gold);transition:.35s}
-nav.main a:hover{color:var(--tx)}nav.main a:hover::after{right:0}
-.hd .cta{border:1px solid var(--gold);color:var(--gold);text-decoration:none;font-size:11.5px;letter-spacing:.2em;padding:11px 24px;transition:.3s}
-.hd .cta:hover{background:var(--gold);color:#12100E}
-.burger{display:none;margin-left:auto;background:none;border:0;color:var(--tx);font-size:20px;cursor:pointer;z-index:600}
-@media(max-width:940px){
-  nav.main{position:fixed;inset:0;background:var(--bg);flex-direction:column;justify-content:center;align-items:center;gap:30px;font-size:15px;clip-path:inset(0 0 0 100%);pointer-events:none;transition:clip-path .4s cubic-bezier(.4,0,.2,1);z-index:500;margin:0}
-  nav.main.open{clip-path:inset(0);pointer-events:auto}
-  .burger{display:block}.hd .cta{display:none}
+/* ▼ 構造のポイント：右端の細い縦バー＋全画面メニュー（横並びのメニューバーを置かない形） */
+:root{--rail:64px}
+body{padding-right:var(--rail)}
+.rail{position:fixed;top:42px;right:0;bottom:0;width:var(--rail);z-index:530;display:flex;flex-direction:column;align-items:center;
+  padding:16px 0 20px;overflow:hidden;border-left:1px solid var(--line);background:rgba(10,9,8,.55);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px)}
+html.embedded .rail{top:0}
+.menu-btn{background:none;border:1px solid var(--line);width:40px;height:40px;cursor:pointer;display:grid;place-content:center;gap:5px;transition:.3s;padding:0}
+.menu-btn span{display:block;width:16px;height:1px;background:var(--tx);transition:.35s}
+.menu-btn:hover{border-color:var(--gold)}
+.menu-btn:hover span{background:var(--gold)}
+body.navopen .menu-btn span:nth-child(1){transform:translateY(3px) rotate(45deg)}
+body.navopen .menu-btn span:nth-child(2){transform:translateY(-3px) rotate(-45deg)}
+/* 縦組みは writing-mode に頼らず1文字ずつ積む（端末のフォントによっては
+   縦組みメトリクスを持たず、漢字が重なって表示されることがあるため） */
+.v{display:flex;flex-direction:column;align-items:center;line-height:1;writing-mode:horizontal-tb}
+.v span{display:block;padding:.16em 0}
+.v span.rot{transform:rotate(90deg)}
+.rail-label{margin-top:14px;font-size:8.5px;letter-spacing:.28em;color:var(--tx-dim);writing-mode:vertical-rl}
+.rail-res{flex:none;margin:auto 0;font-family:var(--serif);font-size:14px;
+  color:var(--gold);text-decoration:none;border:1px solid var(--line);transition:.35s;
+  display:flex;align-items:center;justify-content:center;padding:20px 10px}
+.rail-res:hover{background:var(--gold);color:#12100E;border-color:var(--gold)}
+.rail-sns{display:flex;flex-direction:column;gap:12px;font-size:8.5px;letter-spacing:.2em;writing-mode:vertical-rl;color:var(--tx-dim)}
+.rail-sns a{text-decoration:none;transition:.3s}
+.rail-sns a:hover{color:var(--gold)}
+.brandmark{position:fixed;top:66px;left:30px;z-index:530;text-decoration:none;transition:.4s}
+html.embedded .brandmark{top:24px}
+.brandmark b{display:block;font-family:var(--serif);font-size:21px;letter-spacing:.4em;text-indent:.4em;font-weight:300}
+.brandmark small{display:block;font-size:8px;letter-spacing:.34em;color:var(--gold);margin-top:3px}
+
+/* 全画面メニュー */
+nav.main{position:fixed;inset:0;z-index:520;background:rgba(9,8,7,.97);display:flex;flex-direction:row-reverse;
+  justify-content:center;align-items:center;gap:clamp(22px,4vw,54px);
+  clip-path:inset(0 0 0 100%);pointer-events:none;transition:clip-path .6s cubic-bezier(.7,0,.2,1)}
+nav.main.open{clip-path:inset(0);pointer-events:auto}
+nav.main a{font-family:var(--serif);font-weight:300;font-size:clamp(15px,2vw,19px);
+  color:var(--tx-dim);text-decoration:none;transition:.35s;padding:8px 6px;
+  display:flex;flex-direction:column;align-items:center;opacity:0;transform:translateY(-20px)}
+nav.main.open a{opacity:1;transform:none;transition:opacity .5s,transform .5s,color .3s}
+nav.main.open a:nth-child(1){transition-delay:.16s} nav.main.open a:nth-child(2){transition-delay:.22s}
+nav.main.open a:nth-child(3){transition-delay:.28s} nav.main.open a:nth-child(4){transition-delay:.34s}
+nav.main.open a:nth-child(5){transition-delay:.40s} nav.main.open a:nth-child(6){transition-delay:.46s}
+nav.main a:hover{color:var(--gold)}
+nav.main a em{font-style:normal;font-family:var(--sans);font-size:8.5px;letter-spacing:.2em;color:var(--gold);opacity:.7;margin-bottom:16px;writing-mode:horizontal-tb}
+nav.main .nav-res{position:absolute;bottom:8vh;left:50%;height:auto;writing-mode:horizontal-tb;
+  letter-spacing:.22em;text-indent:.22em;color:var(--gold);transform:translateX(-50%) translateY(-16px)}
+nav.main.open .nav-res{transform:translateX(-50%);transition-delay:.52s}
+@media(max-width:700px){
+  :root{--rail:52px}
+  .brandmark b{font-size:17px}
+  .rail-label,.rail-sns{display:none}
+  nav.main{flex-direction:column-reverse;gap:20px}
+  nav.main a{font-size:17px}
+  nav.main .v{flex-direction:row}
+  nav.main .v span{padding:0}
+  nav.main a em{display:none}
 }
 
 /* ヒーロー */
@@ -106,9 +141,10 @@ section{padding:clamp(80px,11vw,150px) 26px;position:relative}
 /* コンセプト */
 .concept{display:grid;grid-template-columns:1fr 1fr;gap:70px;align-items:center}
 .concept .ph{aspect-ratio:3/4}
-.concept .vtxt{font-family:var(--serif);writing-mode:vertical-rl;font-size:clamp(17px,2.2vw,22px);letter-spacing:.4em;line-height:2.3;font-weight:300;height:340px;margin:0 auto}
+.concept .vtxt{font-family:var(--serif);font-size:clamp(17px,2.2vw,22px);font-weight:300;display:flex;flex-direction:row-reverse;justify-content:center;gap:clamp(18px,2.4vw,34px);margin:0 auto}
+.concept .vtxt .v span{padding:.22em 0}
 .concept p{font-size:13.5px;color:var(--tx-dim);letter-spacing:.08em;margin-top:34px}
-@media(max-width:900px){.concept{grid-template-columns:1fr;gap:44px}.concept .vtxt{height:280px}}
+@media(max-width:900px){.concept{grid-template-columns:1fr;gap:44px}.concept .vtxt{gap:16px}}
 
 /* メニュー・料金 */
 .price{background:var(--bg2)}
@@ -235,21 +271,28 @@ footer.site{border-top:1px solid var(--line);padding:70px 26px 32px;background:v
   <button class="demo-toggle" id="hintBtn" aria-pressed="false">⚙ サーバーが要る機能を示す</button>
 </div>
 
-<header class="site" id="hdr">
-  <div class="hd">
-    <a class="logo" href="#top">LUNE<small>HAIR &amp; SPA</small></a>
-    <button class="burger" id="burger" aria-label="メニュー">☰</button>
-    <nav class="main" id="nav">
-      <a href="#concept">CONCEPT</a>
-      <a href="#price">MENU</a>
-      <a href="#staff">STYLIST</a>
-      <a href="#gallery">STYLE</a>
-      <a href="#voice">VOICE</a>
-      <a href="#access">ACCESS</a>
-    </nav>
-    <a class="cta" href="#reserve">RESERVE</a>
+<!-- ▼ 上部に横並びのメニューバーを置かず、右端の縦バーと全画面メニューで構成 -->
+<a class="brandmark" href="#top"><b>LUNE</b><small>HAIR &amp; SPA</small></a>
+
+<div class="rail">
+  <button class="menu-btn" id="burger" aria-label="メニュー" aria-expanded="false"><span></span><span></span></button>
+  <span class="rail-label">MENU</span>
+  <a class="rail-res" href="#reserve"><span class="v" data-v="ご予約"></span></a>
+  <div class="rail-sns">
+    <a href="#" onclick="return false">INSTAGRAM</a>
+    <a href="tel:0000000000">TEL</a>
   </div>
-</header>
+</div>
+
+<nav class="main" id="nav">
+  <a href="#concept"><em>01</em><span class="v" data-v="コンセプト"></span></a>
+  <a href="#price"><em>02</em><span class="v" data-v="メニューと料金"></span></a>
+  <a href="#staff"><em>03</em><span class="v" data-v="スタイリスト"></span></a>
+  <a href="#gallery"><em>04</em><span class="v" data-v="スタイル集"></span></a>
+  <a href="#voice"><em>05</em><span class="v" data-v="お客さまの声"></span></a>
+  <a href="#access"><em>06</em><span class="v" data-v="アクセス"></span></a>
+  <a class="btn nav-res" href="#reserve">ご予約はこちら</a>
+</nav>
 
 <div class="hero" id="top">
   <div class="bgph"></div>
@@ -267,7 +310,12 @@ footer.site{border-top:1px solid var(--line);padding:70px 26px 32px;background:v
     <div class="concept">
       <div class="ph ph-1 reveal" data-label="PHOTO"></div>
       <div class="reveal">
-        <div class="vtxt">急がないこと、<br>削らないこと。<br>その人の時間に、<br>合わせること。</div>
+        <div class="vtxt">
+          <span class="v" data-v="急がないこと、"></span>
+          <span class="v" data-v="削らないこと。"></span>
+          <span class="v" data-v="その人の時間に、"></span>
+          <span class="v" data-v="合わせること。"></span>
+        </div>
         <p>一日にお迎えするのは八組まで。カウンセリングに二十分、仕上がりの説明に十分。ご自宅で再現できるところまでを、ひとつの施術と考えています。<br><br>薬剤は頭皮への刺激を抑えたものを基本に、髪の状態を見てその日ごとに調合します。</p>
       </div>
     </div>
@@ -495,12 +543,22 @@ function serverCall(ms){ return new Promise(r=>setTimeout(r, ms||(600+Math.rando
 const io=new IntersectionObserver(es=>es.forEach(e=>{ if(e.isIntersecting){e.target.classList.add('in');io.unobserve(e.target);} }),{threshold:.1});
 document.querySelectorAll('.reveal').forEach(el=>io.observe(el));
 
-/* ヘッダー */
-const hdr=document.getElementById('hdr');
-addEventListener('scroll',()=>hdr.classList.toggle('solid',scrollY>60));
+/* 縦組みの組み立て：1文字ずつ縦に積む（長音符などは回転させる） */
+const ROT=new Set(['ー','―','—','〜','～','（','）','「','」','『','』','【','】','：','；','…']);
+document.querySelectorAll('[data-v]').forEach(el=>{
+  el.innerHTML=[...el.dataset.v].map(c=>`<span${ROT.has(c)?' class="rot"':''}>${c}</span>`).join('');
+});
+
+/* 全画面メニューの開閉 */
 const nav=document.getElementById('nav'),burger=document.getElementById('burger');
-burger.onclick=()=>{ nav.classList.toggle('open'); burger.textContent=nav.classList.contains('open')?'×':'☰'; };
-nav.querySelectorAll('a').forEach(a=>a.onclick=()=>{nav.classList.remove('open');burger.textContent='☰';});
+function setNav(open){
+  nav.classList.toggle('open',open);
+  document.body.classList.toggle('navopen',open);
+  burger.setAttribute('aria-expanded',open);
+}
+burger.onclick=()=>setNav(!nav.classList.contains('open'));
+nav.querySelectorAll('a').forEach(a=>a.onclick=()=>setNav(false));
+addEventListener('keydown',e=>{ if(e.key==='Escape') setNav(false); });
 
 /* 料金 */
 const PRICE={
