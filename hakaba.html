@@ -66,6 +66,7 @@
   #hud .chip { color: var(--gold); }
   #hud .chip b { color: var(--ink); font-weight: 600; }
   #hud .chip.warn b, #hud .chip.warn { color: #ff9a92; }
+  #hud .chip.mode { color: #12100a; background: var(--gold); padding: 0 5px; border-radius: 2px; font-weight: 700; }
   #hud .clk { color: var(--ink); font-variant-numeric: tabular-nums; }
   #hud .clk.low { color: var(--gold); } #hud .clk.out { color: var(--blood); }
   #hud .lamp.off { color: #5c5468; }
@@ -255,6 +256,10 @@
   .btn.pri { background: var(--gold); color: #17130a; border-color: var(--gold); }
   .btn.pri:hover { background: #f4d789; }
   .pfoot .btn { letter-spacing: 0.03em; white-space: nowrap; min-width: 96px; }
+  .btns.trio .btn { min-width: 0; padding-left: 4px; padding-right: 4px; letter-spacing: 0.02em; }
+  .row.thin { padding: 5px 10px; font-size: 11.5px; }
+  .row.thin .nm { flex: 1; }
+  .row.thin .val { color: var(--ink); white-space: nowrap; }
   .btns.slim .btn { min-height: 34px; padding: 7px 12px; font-size: 11.5px; font-weight: 600; }
   .btn.sm { flex: none; min-width: 0; padding: 6px 12px; min-height: 30px; font-size: 11px; font-weight: 600;
     display: inline-flex; align-items: center; justify-content: center; }
@@ -264,6 +269,8 @@
   .stat { display: flex; gap: 14px; flex-wrap: wrap; font-size: 11px; color: var(--dim); margin-bottom: 10px; }
   .stat b { color: var(--gold); font-weight: 700; }
   .note { font-size: 10.5px; color: var(--dim); line-height: 1.9; margin-top: 10px; }
+  .lbl { font-size: 11px; letter-spacing: 0.12em; color: var(--gold); margin: 16px 0 7px; }
+  .pbody > .lbl:first-child { margin-top: 0; }
   .hr { height: 1px; background: var(--line); margin: 12px 0; }
   .center { text-align: center; }
   .big { font-size: 26px; color: var(--gold); font-weight: 800; letter-spacing: 0.06em; }
@@ -342,7 +349,7 @@ const hash = (x, y) => { let h = x * 374761393 + y * 668265263; h = (h ^ (h >> 1
     S.rec … 記録（最短返済日数など）                                   */
 const KEY = "yuusha_no_hakaba_v2";
 const DEBT0 = 100000, LIMIT0 = 30;
-const DEFAULT_SAVE = { g: null, dex: { hero: {}, item: {}, cause: {}, notes: [] }, rec: { best: 0, clears: 0, fails: 0, runs: 0, deaths: 0 }, opt: { mute: false } };
+const DEFAULT_SAVE = { g: null, dex: { hero: {}, item: {}, cause: {}, notes: [] }, rec: { best: 0, clears: 0, fails: 0, runs: 0, deaths: 0 }, opt: { mute: false, mode: "normal" } };
 let S = (() => {
   try {
     const raw = JSON.parse(localStorage.getItem(KEY) || "{}");
@@ -355,10 +362,20 @@ let S = (() => {
   } catch (e) { return JSON.parse(JSON.stringify(DEFAULT_SAVE)); }
 })();
 let G = S.g;
+/* 遊びかた ― ふつう／死なない／見学。検証や下見のための逃げ道。 */
+const MODE_NM = { normal: "ふつう", safe: "死なない", watch: "見学" };
+const MODE_DESC = {
+  normal: "そのまま。倒れればその日はまるごと夢になる。記録に残る。",
+  safe: "体力が尽きても倒れない。魔物は襲ってくるし品も落とすが、その日が消えることはない。",
+  watch: "魔物が追ってこない。水と食料も減らない。地形と品物を見て回るためのモード。"
+};
+const optMode = () => (S.opt && MODE_NM[S.opt.mode] ? S.opt.mode : "normal");
+const safeMode = () => optMode() !== "normal";
+const watchMode = () => optMode() === "watch";
 const save = () => { try { S.g = G; localStorage.setItem(KEY, JSON.stringify(S)); } catch (e) {} };
 function newGame() {
   G = S.g = {
-    day: 1, limit: LIMIT0, debt: DEBT0, gold: 0, paid: 0,
+    day: 1, limit: LIMIT0, debt: DEBT0, gold: 0, paid: 0, assist: 0,
     up: { lamp: 1, bag: 1, boot: 1, heart: 1, glove: 1, eye: 1, sup: 1 },
     inv: { potion: 1, smoke: 0 },
     stash: [], store: [],
@@ -1663,7 +1680,7 @@ function doFade(dir, cb) { fadeDir = dir; fadeCb = cb || null; if (dir > 0) fade
 /*  持って入った分だけ潜れる。聖堂の中では減らない。尽きれば動けなくなる。 */
 const SUPPLY_RATE = 0.5;                    // 1秒あたり
 function tickSupply(dt, inSafe) {
-  if (inSafe) return;
+  if (inSafe || watchMode()) return;
   P.st = clamp(P.st - SUPPLY_RATE * dt, 0, maxSupply());
 }
 
@@ -1733,6 +1750,7 @@ function enterLevel(pos, from) {
   }
 }
 function startRun(pos) {
+  if (safeMode()) G.assist = 1;                  // 一度でも使えば、その周は記録に残さない
   runSnap = { g: JSON.stringify(G), dex: JSON.stringify(S.dex) };
   run = { pos: null, cache: {}, bag: [], t: 0, escaped: false, askAt: -1, floors: 1, looted: 0, killer: null };
   P.hp = maxHearts(); P.invul = 0; P.lamp = true; P.smoke = 0;
@@ -1795,7 +1813,7 @@ function endRun(kind) {
 
 /* ---------- 傷つく ---------- */
 function hitPlayer(sx, sy, hard, who) {
-  if (P.invul > 0 || run.escaped) return;
+  if (P.invul > 0 || run.escaped || watchMode()) return;
   P.invul = 1.7; shake = 7;
   const a = Math.atan2(P.y - sy, P.x - sx);
   P.x += Math.cos(a) * 12; P.y += Math.sin(a) * 12;
@@ -1816,7 +1834,13 @@ function hitPlayer(sx, sy, hard, who) {
     dropItem(it, P.x, P.y);
     floatTxt(P.x, P.y - 14, itemName(it) + " を落とした", "#ff9a92");
   }
-  if (P.hp <= 0) endRun("faint");
+  if (P.hp <= 0) survive();
+}
+/* 死なないモードのときだけ、倒れる代わりに踏みとどまる */
+function survive() {
+  if (!safeMode()) { endRun("faint"); return; }
+  P.hp = 1; P.invul = 2.8; P.exT = 0; hudSig = "";
+  floatTxt(P.x, P.y - 18, "倒れずに済んだ", "#8fe3a0");
 }
 function canStand(x, y) {
   const r = 5;
@@ -1919,7 +1943,7 @@ function updatePlayer(dt) {
       P.exT = 0; P.hp--; flash = 0.5; shake = 5; SFX.hurt(); hudSig = "";
       run.killer = "飢えと渇き";
       floatTxt(P.x, P.y - 18, "腹が減った", "#ff9a92");
-      if (P.hp <= 0) endRun("faint");
+      if (P.hp <= 0) survive();
     }
   } else P.exT = 0;
 
@@ -2015,7 +2039,7 @@ function updateMons(dt) {
 
     if (t.boss && !run.escaped && dTiles < 2.2 && !uiOpen && !m.talked) { m.talked = true; askBoss(m); }
 
-    if (!passive && !run.escaped && P.hp > 0 && dTiles <= t.sight * sightMul && (t.phase || los(mtx, mty, ptx, pty))) {
+    if (!passive && !run.escaped && !watchMode() && P.hp > 0 && dTiles <= t.sight * sightMul && (t.phase || los(mtx, mty, ptx, pty))) {
       if (m.state !== "chase") { m.alert = 1.1; SFX.alert(); }
       m.state = "chase"; m.lost = 0; m.lx = ptx; m.ly = pty;
     } else if (m.state === "chase" && !passive) {
@@ -2945,7 +2969,7 @@ let isTouch = ("ontouchstart" in window) || navigator.maxTouchPoints > 0;
 const actions = {};
 /* パネルを ［見出し／本文／操作］ の三段に組み直す。
    スクロールするのは本文だけ、とじる手段はつねに画面内に置く。 */
-const CLOSERS = ["back", "resume", "titleback"];
+const CLOSERS = ["back", "resume", "titleback", "optback"];
 function buildSheet(p) {
   const kids = Array.prototype.slice.call(p.children);
   const head = document.createElement("div"); head.className = "phead";
@@ -3051,7 +3075,8 @@ function showTitle() {
     '<div class="btns" style="margin-top:6px">' +
     (cont ? '<div class="btn pri" data-a="cont">つづきから（' + G.day + "日目）</div>" : "") +
     '<div class="btn' + (cont ? "" : " pri") + '" data-a="newg">' + (cont ? "はじめから" : "はじめる") + "</div></div>" +
-    '<div class="btns" style="margin-top:8px"><div class="btn" data-a="help">あそびかた</div><div class="btn" data-a="dex">記録と図鑑</div></div>' +
+    '<div class="btns trio" style="margin-top:8px"><div class="btn" data-a="help">あそびかた</div>' +
+    '<div class="btn" data-a="dex">記録と図鑑</div><div class="btn" data-a="opt">設定</div></div>' +
     '<div class="note">' + rec + " ／ 勇者 " + dexHeroCount() + "/" + HEROES.length + " ・ 品物 " + dexItemCount() + " ・ 死因 " + dexCauseCount() + "/" + CAUSES.length + "</div>" +
     "</div>", true);
 }
@@ -3109,10 +3134,8 @@ function showHelp(tab) {
       const [k, nm] = t.split(":");
       return '<div class="tab' + (helpTab === k ? " on" : "") + '" data-a="help" data-i="' + k + '">' + nm + "</div>";
     }).join("") + "</div>" + body +
-    (scene === "town" || scene === "title"
-      ? '<div class="btns pin"><div class="btn" data-a="mute">音 ' + (muted ? "OFF" : "ON") + "</div>" +
-        (scene === "town" ? '<div class="btn" data-a="totitle">タイトルへ</div>' : "") + "</div>"
-      : "") +
+    '<div class="btns pin"><div class="btn" data-a="opt">設定</div>' +
+    (scene === "town" ? '<div class="btn" data-a="totitle">タイトルへ</div>' : "") + "</div>" +
     '<div class="btns"><div class="btn pri" data-a="back">もどる</div></div></div>');
 }
 actions.totitle = () => { save(); doFade(1, () => showTitle()); };
@@ -3129,7 +3152,7 @@ function showTown() {
   if (pendingCase) { const c = pendingCase; pendingCase = null; showCase(c); return; }
   if (G.ended === "fail") { endFail(); return; }
   if (G.debt <= 0 && !G.ended) { G.ended = "clear"; recordClear(); endClear(); return; }
-  if (G.day > G.limit && G.debt > 0) { G.ended = "fail"; S.rec.fails++; save(); endFail(); return; }
+  if (G.day > G.limit && G.debt > 0) { G.ended = "fail"; if (!G.assist) S.rec.fails++; save(); endFail(); return; }
   if (G.gift) {
     G.stash.push(G.gift);
     toast("店の前に置かれていた ― " + itemName(G.gift) + "（勇者からの贈り物）", "good");
@@ -3156,7 +3179,7 @@ actions.dive = () => {
     '<div class="nm">墓場の入口<small>地下 1 階から。上り階段でいつでも地上へ戻れる</small></div>' +
     '<div class="pr" style="color:#6f8f5a">★☆☆☆☆</div></div>';
   for (let d = SAFE_EVERY; d <= BOSS_FLOOR; d += SAFE_EVERY) {
-    if (d > (G.sanctMax || 0)) break;
+    if (!watchMode() && d > (G.sanctMax || 0)) break;   // 見学ならどこへでも
     const danger = "★".repeat(clamp(Math.ceil(d / 6), 1, 5)) + "☆".repeat(5 - clamp(Math.ceil(d / 6), 1, 5));
     const note = d >= 30 ? "最深部の聖堂" : d >= 20 ? "石の番人と亡霊の巣の只中" : d >= 15 ? "生きて戻る者は少ない" :
       d >= 10 ? "骸骨兵と亡霊" : "そろそろ本番だ";
@@ -3166,7 +3189,8 @@ actions.dive = () => {
   }
   openUI("dive", '<div class="panel"><h2>どこから潜る</h2>' +
     '<div class="sub">聖堂は5階ごとに挟まっている独立した階だ。<b>転移碑</b>で地上へ帰れて、<b>行ったことのある聖堂へは直接降りられる</b>。<br>' +
-    "階段は上下ともに使える。水と食料 " + supplyMin(G.up.sup) + " 分 ／ 背負える重さ " + bagCap() + " ／ 体力 " + maxHearts() + " ／ 防具 " + armorMax() + "</div>" +
+    "階段は上下ともに使える。水と食料 " + supplyMin(G.up.sup) + " 分 ／ 背負える重さ " + bagCap() + " ／ 体力 " + maxHearts() + " ／ 防具 " + armorMax() +
+    (watchMode() ? '<br><b style="color:var(--gold)">見学中 ― まだ行っていない聖堂にも降りられる</b>' : "") + "</div>" +
     '<div class="list" style="max-height:44vh;overflow:auto">' + rows + "</div>" +
     '<div class="btns"><div class="btn" data-a="back">やめる</div></div></div>');
 };
@@ -3363,6 +3387,38 @@ actions.pay = d => {
   if (G.debt <= 0) { G.ended = "clear"; recordClear(); endClear(); return; }
   showGuild();
 };
+
+/* ---------- 設定 ---------- */
+let optFrom = "";
+actions.opt = () => { optFrom = uiKind; showOpt(); };
+actions.optback = () => {
+  if (optFrom === "help") showHelp();
+  else if (optFrom === "pause") showPause();
+  else actions.back({});
+};
+actions.setmute = d => { muted = d.i === "1"; S.opt.mute = muted; save(); if (!muted) SFX.ui(); showOpt(); };
+actions.setmode = d => { S.opt.mode = d.i; save(); if (safeMode() && G) { G.assist = 1; save(); } showOpt(); };
+function showOpt() {
+  const m = optMode();
+  openUI("opt", '<div class="panel"><h2>設定</h2>' +
+    '<div class="sub">遊びかたは、いつでも変えられる。</div>' +
+    '<div class="lbl">音</div>' +
+    '<div class="btns"><div class="btn' + (muted ? "" : " pri") + '" data-a="setmute" data-i="0">鳴らす</div>' +
+    '<div class="btn' + (muted ? " pri" : "") + '" data-a="setmute" data-i="1">消す</div></div>' +
+    '<div class="lbl">遊びかた</div>' +
+    '<div class="btns trio">' + ["normal", "safe", "watch"].map(k =>
+      '<div class="btn' + (m === k ? " pri" : "") + '" data-a="setmode" data-i="' + k + '">' + MODE_NM[k] + "</div>").join("") + "</div>" +
+    '<div class="note">' + MODE_DESC[m] + "</div>" +
+    '<div class="list" style="margin-top:10px">' +
+    [["倒れる", m === "normal" ? "その日は夢になる" : "倒れない"],
+     ["魔物", m === "watch" ? "気づかない" : "見つかれば追う"],
+     ["水と食料", m === "watch" ? "減らない" : "潜るあいだ減る"],
+     ["記録", m === "normal" ? "残る" : "この周は残さない"]]
+      .map(r => '<div class="row thin"><div class="nm">' + r[0] + '</div><div class="val">' + r[1] + "</div></div>").join("") + "</div>" +
+    (G && G.assist && m === "normal" ? '<div class="note" style="color:#ff9a92">この周はすでに練習を使ったので、ふつうに戻しても記録には残りません。</div>' : "") +
+    (scene === "town" ? '<div class="btns pin"><div class="btn" data-a="totitle">タイトルへ</div></div>' : "") +
+    '<div class="btns"><div class="btn pri" data-a="optback">もどる</div></div></div>');
+}
 
 /* ---------- 図鑑 ---------- */
 let dexTab = "hero";
@@ -3572,11 +3628,11 @@ function showPause() {
     "<span>荷 <b>" + run.bag.length + " 点 " + bagWeight().toFixed(1) + "/" + bagCap() + "</b></span>" +
     "<span>見積り <b>" + estMark() + money(estSum(run.bag)) + "</b> G</span></div>" +
     '<div class="btns"><div class="btn pri" data-a="resume">つづける</div><div class="btn" data-a="help">あそびかた</div></div>' +
-    '<div class="btns" style="margin-top:8px"><div class="btn" data-a="mute">音 ' + (muted ? "OFF" : "ON") + "</div>" +
+    '<div class="btns" style="margin-top:8px"><div class="btn" data-a="opt">設定</div>' +
     '<div class="btn" data-a="closeask">とじる</div></div></div>');
 }
 actions.resume = () => closeUI();
-actions.mute = () => { muted = !muted; S.opt.mute = muted; save(); if (uiKind === "help") showHelp(); else showPause(); };
+actions.mute = () => { muted = !muted; S.opt.mute = muted; save(); showPause(); };
 let itemTab = "tool";
 function showItems(tab) {
   itemTab = tab || itemTab;
@@ -3685,6 +3741,7 @@ actions.town = () => showTown();
 
 /* ---------- 結末 ---------- */
 function recordClear() {
+  if (G.assist) { save(); return; }              // 練習・見学の周は記録に混ぜない
   S.rec.clears++;
   if (!S.rec.best || G.day < S.rec.best) S.rec.best = G.day;
   save();
@@ -3697,7 +3754,7 @@ function endClear() {
   openUI("clear", '<div class="panel center">' +
     '<h2 style="justify-content:center">借金完済</h2>' +
     '<div class="big" style="margin:10px 0">' + days + " 日</div>" +
-    '<div class="sub">評価：' + rank + (best && days < best ? "（自己最短を更新）" : best ? "／ 最短記録 " + Math.min(best, days) + " 日" : "") + "</div>" +
+    '<div class="sub">評価：' + (G.assist ? MODE_NM[optMode()] + " ― 記録には残らない" : rank + (best && days < best ? "（自己最短を更新）" : best ? "／ 最短記録 " + Math.min(best, days) + " 日" : "")) + "</div>" +
     "<p>受付の女は判を押し、証文を破いた。<br>これであんたは自由だ。明日から何をしてもいい。</p>" +
     (truth ? '<p class="q" style="margin-top:10px">……もっとも、この街がどうやって回っているかを、あんたはもう知ってしまった。<br>知ったところで、腹は膨れない。明日もまた、降りるとしよう。</p>'
       : '<p class="q" style="margin-top:10px">墓場にはまだ、拾われていない物がある。<br>誰が、どうして死んだのか ― 気にしなければ、それまでの話だが。</p>') +
@@ -3723,7 +3780,8 @@ let hudSig = "";
 function updateHUD() {
   if (scene !== "dungeon" || !run) { if (HUD.innerHTML) { HUD.innerHTML = ""; BAGEL.innerHTML = ""; hudSig = ""; } return; }
   const secs = Math.max(0, Math.ceil(P.st / SUPPLY_RATE));
-  const sig = [P.hp, P.armor, run.pos.d, run.pos.s, run.bag.length, P.lamp, G.day, secs,
+  const md = optMode();
+  const sig = [md, P.hp, P.armor, run.pos.d, run.pos.s, run.bag.length, P.lamp, G.day, secs,
     G.inv.potion, G.inv.smoke, run.bag.map(i => i.k).join(",")].join("|");
   if (sig === hudSig) return;
   hudSig = sig;
@@ -3734,6 +3792,7 @@ function updateHUD() {
     '<span class="chip">' + (run.pos.s ? "第" + sanctNo(run.pos.d) + "聖堂" : "地下 <b>" + run.pos.d + "</b> 階") + "</span>" +
     '<span class="sep"></span>' +
     '<span class="chip">' + G.day + " 日目</span>" +
+    (md === "normal" ? "" : '<span class="chip mode">' + MODE_NM[md] + "</span>") +
     '<span class="brk"></span>' +
     '<span class="chip">食 <span class="stam ' + (P.st <= 0 ? "out" : P.st < maxSupply() * 0.3 ? "low" : "") + '">' +
     '<i style="width:' + Math.round(clamp(P.st / maxSupply(), 0, 1) * 100) + '%"></i></span> ' +
