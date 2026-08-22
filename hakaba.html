@@ -251,7 +251,7 @@ const hash = (x, y) => { let h = x * 374761393 + y * 668265263; h = (h ^ (h >> 1
     S.rec … 記録（最短返済日数など）                                   */
 const KEY = "yuusha_no_hakaba_v2";
 const DEBT0 = 100000, LIMIT0 = 30;
-const DEFAULT_SAVE = { g: null, dex: { hero: {}, item: {}, cause: {}, notes: [] }, rec: { best: 0, clears: 0, fails: 0, runs: 0 }, opt: { mute: false } };
+const DEFAULT_SAVE = { g: null, dex: { hero: {}, item: {}, cause: {}, notes: [] }, rec: { best: 0, clears: 0, fails: 0, runs: 0, deaths: 0 }, opt: { mute: false } };
 let S = (() => {
   try {
     const raw = JSON.parse(localStorage.getItem(KEY) || "{}");
@@ -1142,6 +1142,7 @@ let warm = new Float32Array(MW * MH);
 let flow = new Int16Array(MW * MH);
 let rooms = [], torches = [], corpses = [], mons = [], loose = [], parts = [], floaters = [];
 let hero = null, floorCv = null, bossRoom = null, cleanerT = -1, safeRoom = null, campfire = null;
+let runSnap = null;
 
 const idx = (x, y) => y * MW + x;
 const inb = (x, y) => x >= 0 && y >= 0 && x < MW && y < MH;
@@ -1514,7 +1515,9 @@ function enterFloor(depth) {
   if (info.safe && run.floors > 1) toast("野営地。ひと息つける", "good");
 }
 function startRun(depth) {
-  run = { depth, bag: [], t: 0, escaped: false, exitAsk: 0, downAsk: 0, floors: 1, kills: 0, looted: 0 };
+  // 死んだ日はまるごと夢になる。潜る前の姿を控えておく
+  runSnap = { g: JSON.stringify(G), dex: JSON.stringify(S.dex) };
+  run = { depth, bag: [], t: 0, escaped: false, exitAsk: 0, downAsk: 0, floors: 1, kills: 0, looted: 0, killer: null };
   P.hp = maxHearts(); P.invul = 0; P.lamp = true; P.smoke = 0;
   P.st = maxStam(); P.tired = 0; P.exT = 0; P.armor = armorMax();
   enterFloor(depth);
@@ -1539,23 +1542,31 @@ function dropItem(it, x, y) { loose.push({ it, x, y, vx: rnd(-24, 24), vy: rnd(-
 function endRun(kind) {
   if (!run || run.escaped) return;
   run.escaped = true;
-  let kept = run.bag.slice(), lost = [];
+  const depth = run.depth, floors = run.floors, killer = run.killer;
+
   if (kind === "faint") {
-    kept = [];
-    for (const it of run.bag) (chance(0.5) ? kept : lost).push(it);
+    // 力尽きた日は、まるごと無かったことになる ― 過ぎるのは一日だけ
+    const day = G.day;
+    if (runSnap) { G = S.g = JSON.parse(runSnap.g); S.dex = JSON.parse(runSnap.dex); }
+    G.day = day + 1;
+    S.rec.deaths = (S.rec.deaths || 0) + 1;
+    rollMarket(); save();
+    doFade(1, () => { showDream(depth, floors, killer); });
+    SFX.faint();
+    return;
   }
+  const kept = run.bag.slice();
   for (const it of kept) G.stash.push(it);
-  const depth = run.depth, floors = run.floors;
   G.day++;
   rollMarket();
   if (G.deepest >= 12) addSusp(1);
   save();
-  doFade(1, () => { showResult(kind, kept, lost, depth, floors); });
-  if (kind === "faint") SFX.faint(); else SFX.escape();
+  doFade(1, () => { showResult(kind, kept, [], depth, floors); });
+  SFX.escape();
 }
 
 /* ---------- 傷つく ---------- */
-function hitPlayer(sx, sy, hard) {
+function hitPlayer(sx, sy, hard, who) {
   if (P.invul > 0 || run.escaped) return;
   P.invul = 1.7; shake = 7;
   const a = Math.atan2(P.y - sy, P.x - sx);
@@ -1570,6 +1581,7 @@ function hitPlayer(sx, sy, hard) {
     return;
   }
   P.hp--; flash = 0.5; SFX.hurt(); useStam(ST_HIT);
+  if (who) run.killer = who;
   for (let i = 0; i < 10; i++) addPart(P.x, P.y, { vx: rnd(-40, 40), vy: rnd(-50, 10), life: 0.5, max: 0.5, col: "#b4413a", sz: 2 });
   if (run.bag.length && (hard || chance(0.5))) {
     const it = run.bag.splice(ri(0, run.bag.length - 1), 1)[0];
@@ -1667,6 +1679,7 @@ function updatePlayer(dt) {
     P.exT += dt;
     if (P.exT >= 25) {
       P.exT = 0; P.hp--; flash = 0.5; shake = 5; SFX.hurt(); hudSig = "";
+      run.killer = "疲れと空腹";
       floatTxt(P.x, P.y - 18, "力が入らない", "#ff9a92");
       if (P.hp <= 0) endRun("faint");
     }
@@ -1800,7 +1813,7 @@ function updateMons(dt) {
       if (monFree(nx, m.y)) m.x = nx; else m.dirx = -m.dirx, m.cd = Math.min(m.cd, 0.2);
       if (monFree(m.x, ny)) m.y = ny; else m.diry = -m.diry, m.cd = Math.min(m.cd, 0.2);
     }
-    if (!passive && !run.escaped && P.hp > 0 && dist2(m.x, m.y, P.x, P.y) < 136) hitPlayer(m.x, m.y, false);
+    if (!passive && !run.escaped && P.hp > 0 && dist2(m.x, m.y, P.x, P.y) < 136) hitPlayer(m.x, m.y, false, t.nm);
 
     if (hero && hero.hp > 0 && hero.state !== "hostile" && !passive && dist2(m.x, m.y, hero.x, hero.y) < 290) {
       m.hp -= dt * 9; m.hurt = 0.15; hero.hp -= dt * 3.4; hero.hurt = 0.15; hero.atk = 0.25;
@@ -1859,7 +1872,7 @@ function updateHero(dt) {
     if (step) { tx = step.x * TILE + 8; ty = step.y * TILE + 8; } else { tx = P.x; ty = P.y; }
     sp = h.cleaner ? 46 : 44;
     if (!run.escaped && dist2(h.x, h.y, P.x, P.y) < 160 && P.invul <= 0) {
-      hitPlayer(h.x, h.y, true);
+      hitPlayer(h.x, h.y, true, h.cleaner ? "黒い外套の男" : "勇者 " + h.name);
       if (h.cleaner) floatTxt(h.x, h.y - 18, "「見なかったことにはできんな」", "#ff9a92");
     }
   } else if (h.state === "follow") {
@@ -2560,7 +2573,7 @@ actions.help = () => {
     "・<b>灯り</b>を消せば見つかりにくいが、自分も見えない<br>" +
     "・回収は<b>物音</b>を立てる。近くの魔物が寄ってくる<br>" +
     "・拾った<b>防具</b>は身につけられる。殴られを肩代わりするが、その分傷んで売値が落ちる<br>" +
-    "・気絶すると荷の半分を落とす<br>" +
+    "・力尽きると、その日はまるごと<b>夢</b>になる。拾った物は残らず、過ぎるのは一日だけ<br>" +
     "・品物には持ち主がいた。誰の、どんな死に方だったかは<b>図鑑</b>に残る</p>" +
     '<div class="hr"></div>' +
     '<div class="sub" style="margin:0">' + (isTouch ? "左の輪で移動 ／ 調べる・灯り・道具のボタン" :
@@ -2868,7 +2881,7 @@ function showDex(tab) {
       '<div class="note">気になったことを書き留めておく手帳。埋めなくても、借金は返せる。</div>';
   }
   openUI("dex", '<div class="panel"><h2>記録と図鑑</h2>' +
-    '<div class="sub">最短返済 ' + (S.rec.best || "―") + " 日 ／ 完済 " + S.rec.clears + " 回 ／ 力尽きた回 " + S.rec.fails + "</div>" +
+    '<div class="sub">最短返済 ' + (S.rec.best || "―") + " 日 ／ 完済 " + S.rec.clears + " 回 ／ 期限切れ " + S.rec.fails + " 回 ／ 夢 " + (S.rec.deaths || 0) + " 回</div>" +
     '<div class="tabs">' +
     ["hero:勇者", "item:品物", "cause:死因", "note:手記", "case:手帳"].map(t => {
       const [k, nm] = t.split(":");
@@ -3040,10 +3053,8 @@ actions.pause2 = () => showPause();
 function showResult(kind, kept, lost, depth, floors) {
   scene = "result";
   const total = kept.reduce((a, b) => a + sellPrice(b), 0);
-  const head = kind === "faint" ? "気を失った" : kind === "rope" ? "縄梯子で脱出" : "生きて帰った";
-  const sub = kind === "faint"
-    ? "誰かが地上まで運んでくれたらしい。荷は、半分どこかへ消えた。"
-    : "梯子を登りきる。夜の風が、墓場のにおいを流していく。";
+  const head = kind === "rope" ? "縄梯子で脱出" : "生きて帰った";
+  const sub = "梯子を登りきる。夜の風が、墓場のにおいを流していく。";
   const over = G.day > G.limit && G.debt > 0;
   openUI("result", '<div class="panel">' +
     "<h2>" + head + "</h2>" +
@@ -3059,6 +3070,23 @@ function showResult(kind, kept, lost, depth, floors) {
     (over ? '<div class="btn pri" data-a="town">地上へ</div>'
       : '<div class="btn pri" data-a="toshop">店で売る</div><div class="btn" data-a="town">地上へ</div>') +
     "</div></div>");
+}
+function showDream(depth, floors, killer) {
+  scene = "result";
+  const who = killer || "何か";
+  const line = killer === "疲れと空腹" ? "地下 " + depth + " 階で、疲れと空腹で動けなくなった気がする"
+    : "地下 " + depth + " 階で、" + who + "に殺された気がする";
+  openUI("dream", '<div class="panel">' +
+    '<h2>夢か</h2>' +
+    '<div class="sub">目を開けると、いつもの寝床の上だった。窓の外はもう暗い。</div>' +
+    "<p>「……" + line + "」</p>" +
+    '<p class="q" style="margin-top:10px">背負い袋の中身は、潜る前のままだ。傷もない。使ったはずの薬も減っていない。<br>' +
+    "拾ったはずの品は、ひとつも無い。あれは全部、見ただけの夢だったらしい。</p>" +
+    '<div class="hr"></div>' +
+    '<div class="center" style="color:var(--dim);font-size:12px">消えたのは、一日ぶんの時間だけ。</div>' +
+    '<div class="stat center" style="justify-content:center;margin-top:10px"><span>' + G.day + " 日目になった</span>" +
+    (G.debt > 0 ? "<span>借金 <b>" + money(G.debt) + "</b> G</span><span>期限まで <b>" + Math.max(0, daysLeft()) + "</b> 日</span>" : "") + "</div>" +
+    '<div class="btns" style="margin-top:14px"><div class="btn pri" data-a="town">起きる</div></div></div>');
 }
 actions.toshop = () => { scene = "town"; showShop("sell"); };
 actions.town = () => showTown();
