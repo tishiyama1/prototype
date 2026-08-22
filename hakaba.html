@@ -2110,8 +2110,20 @@ function endRun(kind) {
 }
 
 /* ---------- 傷つく ---------- */
+const CALM_UI = ["items", "pause", "dex", "help", "opt", "log"];
+const inSanctNow = () => scene === "dungeon" && run && inSafeZone(Math.floor(P.x / TILE), Math.floor(P.y / TILE));
+/* 潜っている最中に画面を開いても墓場は待たない。そのことを常に出しておく */
+function timeNote() {
+  if (scene !== "dungeon" || !run || run.escaped) return "";
+  return inSanctNow()
+    ? '<div class="sub" id="tnote" style="color:#8fe3a0;margin-bottom:8px">聖堂の中 ― 水も食料も減らない。魔物も入ってこない。整理はここで。</div>'
+    : '<div class="sub" id="tnote" style="color:#ff9a92;margin-bottom:8px">時間は止まっていない ― 残り ' + supplyClock() + '。魔物も動いている</div>';
+}
+const supplyClock = () => { const sc2 = Math.max(0, Math.ceil(P.st / SUPPLY_RATE)); return Math.floor(sc2 / 60) + ":" + String(sc2 % 60).padStart(2, "0"); };
 function hitPlayer(sx, sy, hard, who) {
   if (P.invul > 0 || run.escaped || watchMode()) return;
+  if (mapOpen) { mapOpen = false; }
+  if (uiOpen && CALM_UI.indexOf(uiKind) >= 0) { closeUI(); toast("襲われた ― 手を止めている場合ではない", "bad"); }
   P.invul = 1.7; shake = 7;
   const a = Math.atan2(P.y - sy, P.x - sx);
   P.x += Math.cos(a) * 12; P.y += Math.sin(a) * 12;
@@ -2195,9 +2207,10 @@ function inputVec() {
 }
 const actionHeld = () => !mapOpen && !!(keys["z"] || keys[" "] || keys["enter"] || touchA);
 
-function updatePlayer(dt) {
-  const v = inputVec();
+function updatePlayer(dt, frozen) {
+  const v = frozen ? { x: 0, y: 0, m: 0 } : inputVec();
   const moving = v.m > 0.06;
+  if (frozen) { P.looting = null; P.lootT = 0; P.anim = 0; }
   if (P.looting) {
     if (moving) { P.looting.prog = 0; P.looting = null; }
     else if (!actionHeld()) { P.looting.prog = Math.max(0, P.looting.prog - dt * 1.4); if (P.looting.prog <= 0) P.looting = null; }
@@ -2250,7 +2263,7 @@ function updatePlayer(dt) {
     l.t += dt; l.pick -= dt;
     l.x += l.vx * dt; l.y += l.vy * dt; l.vy += 160 * dt;
     if (l.vy > 0 && l.t > 0.28) { l.vy = 0; l.vx *= 0.6; }
-    if (l.pick <= 0 && dist2(l.x, l.y, P.x, P.y) < 132) {
+    if (!frozen && l.pick <= 0 && dist2(l.x, l.y, P.x, P.y) < 132) {
       if (addToBag(l.it)) { loose.splice(i, 1); SFX.get_(); floatTxt(P.x, P.y - 16, itemName(l.it), "#e8c46a"); }
       else if (P.heavyT <= 0) {
         P.heavyT = 2.5;
@@ -2259,12 +2272,12 @@ function updatePlayer(dt) {
       }
     }
   }
-  const near = nearestRemain();
+  const near = frozen ? null : nearestRemain();
   if (near && actionHeld() && !P.looting && !uiOpen) { P.looting = near; P.lootT = 0.4; }
 
   const ptx = Math.floor(P.x / TILE), pty = Math.floor(P.y / TILE);
   const ti = idx(ptx, pty), tile = map[ti];
-  if (!uiOpen && run.askAt !== ti) {
+  if (!frozen && run.askAt !== ti) {
     if (tile === T_EXIT) { run.askAt = ti; askExit(); }
     else if (tile === T_DOWN) { run.askAt = ti; askDown(); }
     else if (tile === T_UP) { run.askAt = ti; askUp(); }
@@ -3838,7 +3851,7 @@ function showDex(tab) {
   openUI("dex", '<div class="panel"><h2>記録と図鑑</h2>' +
     '<div class="sub">最短返済 ' + (S.rec.best || "―") + " 日 ／ 完済 " + S.rec.clears + " 回 ／ 期限切れ " + S.rec.fails + " 回 ／ 夢 " + (S.rec.deaths || 0) + " 回" +
     (S.rec.boss ? " ／ 主に会った " + S.rec.boss + " 回" : "") +
-    (S.rec.ends ? " ／ " + Object.keys(S.rec.ends).map(k => ENDINGS[k].nm + "END").join("・") : "") + "</div>" +
+    (S.rec.ends ? " ／ " + Object.keys(S.rec.ends).map(k => ENDINGS[k].nm + "END").join("・") : "") + "</div>" + timeNote() +
     '<div class="tabs">' +
     ["log:ログ", "hero:勇者", "mon:魔物", "item:品物", "cause:所見", "note:手記", "case:手帳"].map(t => {
       const [k, nm] = t.split(":");
@@ -4031,7 +4044,7 @@ function showTalk(lines, done) {
 
 /* ---------- 中断 ---------- */
 function showPause() {
-  openUI("pause", '<div class="panel"><h2>中断</h2>' +
+  openUI("pause", '<div class="panel"><h2>中断</h2>' + timeNote() +
     '<div class="stat"><span>' + G.day + " 日目</span><span>" + levelName(run.pos) + "</span>" +
     "<span>荷 <b>" + run.bag.length + " 点 " + bagWeight().toFixed(1) + "/" + bagCap() + "</b></span>" +
     "<span>見積り <b>" + estMark() + money(estSum(run.bag)) + "</b> G</span></div>" +
@@ -4072,7 +4085,7 @@ function showItems(tab) {
       body += '<div class="note">捨てた品はその場に落ちる。拾い直すこともできるが、階を離れれば戻らない。</div>';
     }
   }
-  openUI("items", '<div class="panel"><h2>' + (itemTab === "tool" ? "道具" : "荷を整理する") + "</h2>" +
+  openUI("items", '<div class="panel"><h2>' + (itemTab === "tool" ? "道具" : "荷を整理する") + "</h2>" + timeNote() +
     '<div class="tabs"><div class="tab' + (itemTab === "tool" ? " on" : "") + '" data-a="itab" data-i="tool">道具</div>' +
     '<div class="tab' + (itemTab === "bag" ? " on" : "") + '" data-a="itab" data-i="bag">荷（' + run.bag.length + "）</div></div>" +
     body +
@@ -4258,6 +4271,8 @@ function updateHUD() {
   for (const it of run.bag) h += '<i style="background-image:url(' + iconURL[KIND[it.k].ico] + ')"></i>';
   BAGEL.innerHTML = h;
   BAGEL.className = bagWeight() >= bagCap() * 0.85 ? "full" : "";
+  const tn = document.getElementById("tnote");       // 開いている画面の掲示も進める
+  if (tn && !inSanctNow()) tn.textContent = "時間は止まっていない ― 残り " + supplyClock() + "。魔物も動いている";
 }
 
 /* 手元のボタンにも状態を出す ― 灯りの点灯、道具の残り、拾えるものが目の前にあるか */
@@ -4429,9 +4444,10 @@ function frame(now) {
   flash = Math.max(0, flash - dt * 2.2);
 
   if (scene === "dungeon" && run) {
-    if (!uiOpen && !mapOpen && !run.escaped) {
+    if (!run.escaped) {                          // 画面を開いても墓場は待たない
+      const frozen = uiOpen || mapOpen;          // 止まるのは手だけ
       run.t += dt;
-      updatePlayer(dt);
+      updatePlayer(dt, frozen);
       updateMons(dt);
       updateHero(dt);
     }
