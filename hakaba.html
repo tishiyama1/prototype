@@ -705,6 +705,102 @@ const KING_A = [
   "................"
 ];
 
+const RA_PAL = { "0": "#140f14", "1": "#3a3038", "2": "#5c4e56", "3": "#7d6c76", "6": "#e0524a" };
+const RAT_A = [
+  "................",
+  "................",
+  "................",
+  "................",
+  "................",
+  "................",
+  "..00........00..",
+  ".0330......0330.",
+  ".03330000003330.",
+  "0333333333333330",
+  "0322222222222330",
+  "0326222222222330",
+  "0322222222222330",
+  ".03322222222330.",
+  "..00330..03300..",
+  "................"
+];
+const SP_PAL = { "0": "#100c16", "1": "#2c2136", "2": "#4a3a58", "3": "#6d5580", "6": "#c8f050" };
+const SPIDER_A = [
+  "................",
+  "................",
+  "..0..........0..",
+  "...0........0...",
+  "....0.0000.0....",
+  "..0..033330..0..",
+  "...0.0322230.0..",
+  "....003622230...",
+  "....0032222300..",
+  "...0.03222230.0.",
+  "..0..0033300..0.",
+  "....0......0....",
+  "...0........0...",
+  "..0..........0..",
+  "................",
+  "................"
+];
+const WI_PAL = { "0": "#2a1206", "3": "#ff9a3c", "6": "#ffb84a", "7": "#fff0b0" };
+const WISP_A = [
+  "................",
+  "................",
+  "......0000......",
+  ".....077770.....",
+  "....07777770....",
+  "....07677670....",
+  "....07777770....",
+  "....06777760....",
+  ".....066660.....",
+  "......0660......",
+  "......0..0......",
+  "................",
+  "................",
+  "................",
+  "................",
+  "................"
+];
+const WO_PAL = { "0": "#1a1208", "2": "#8a7448", "3": "#c2a765", "6": "#e0703c" };
+const WORM_A = [
+  "................",
+  "................",
+  "................",
+  "................",
+  "....00000000....",
+  "..003333333300..",
+  ".03222332233230.",
+  "0362222222222630",
+  "0322222222222230",
+  ".03222332233230.",
+  "..003333333300..",
+  "....00000000....",
+  "................",
+  "................",
+  "................",
+  "................"
+];
+const WR_PAL = { "0": "#06050b", "1": "#241d33", "6": "#b08cff" };
+const WRAITH_A = [
+  "................",
+  "......0000......",
+  ".....011110.....",
+  "....01611610....",
+  "....01111110....",
+  "...0111111110...",
+  "..011111111110..",
+  "..011111111110..",
+  ".01111111111110.",
+  ".01111111111110.",
+  ".01111111111110.",
+  "..011111111110..",
+  "...0111111110...",
+  "....0.0..0.0....",
+  "................",
+  "................"
+];
+
 /* 墓場の飾り */
 const D_PAL = { "0": "#0d0b12", "1": "#2c2938", "2": "#454154", "3": "#6d6880", "4": "#c9c2b0", "5": "#8b8298", "6": "#ff9a3c", "7": "#ffe08a", "8": "#5b4326" };
 const DOOR = [
@@ -902,6 +998,11 @@ function buildSprites() {
   SPR.ghost = [makeSprite(GHOST_A, GH_PAL), makeSprite(GHOST_A, GH_PAL)];
   SPR.golem = [makeSprite(GOLEM_A, GO_PAL), makeSprite(GOLEM_A, Object.assign({}, GO_PAL, { "6": "#ffd06a" }))];
   SPR.king = [makeSprite(KING_A, KI_PAL), makeSprite(KING_A, Object.assign({}, KI_PAL, { "6": "#ffb0b0" }))];
+  SPR.rat = [makeSprite(RAT_A, RA_PAL), makeSprite(walk(RAT_A, "..00330..03300..", "................"), RA_PAL)];
+  SPR.spider = [makeSprite(SPIDER_A, SP_PAL), makeSprite(SPIDER_A, Object.assign({}, SP_PAL, { "6": "#e8ff90" }))];
+  SPR.wisp = [makeSprite(WISP_A, WI_PAL), makeSprite(WISP_A, Object.assign({}, WI_PAL, { "6": "#ff7a2c", "7": "#ffd88a" }))];
+  SPR.worm = [makeSprite(WORM_A, WO_PAL), makeSprite(WORM_A, Object.assign({}, WO_PAL, { "3": "#d8bd78" }))];
+  SPR.wraith = [makeSprite(WRAITH_A, WR_PAL), makeSprite(WRAITH_A, Object.assign({}, WR_PAL, { "6": "#d8c0ff" }))];
   SPR.grave = makeSprite(GRAVE, D_PAL);
   SPR.door = makeSprite(DOOR, D_PAL);
   SPR.bones = makeSprite(BONES, D_PAL);
@@ -1136,6 +1237,11 @@ const MTYPE = {
   bone:  { nm: "骸骨兵",   spr: "bone",  spd: 30, sight: 6.2, hp: 14, dMin: 2,  dMax: 14, w: 3, wander: 0.9, gold: 0.3, atk: ["blade"] },
   ghost: { nm: "亡霊",     spr: "ghost", spd: 23, sight: 5.6, hp: 18, dMin: 6,  dMax: 30, w: 2, phase: true, wander: 0.6, gold: 0.35, atk: ["magic"] },
   golem: { nm: "石の番人", spr: "golem", spd: 19, sight: 9.0, hp: 34, dMin: 10, dMax: 30, w: 2, wander: 0.5, gold: 0.5, atk: ["blunt", "crush"] },
+  rat:    { nm: "墓ねずみ", spr: "rat",    spd: 40, sight: 4.0, hp: 4,  dMin: 1,  dMax: 9,  w: 3, erratic: true, wander: 1.4, gold: 0.15, atk: ["bite"] },
+  spider: { nm: "糸蜘蛛",   spr: "spider", spd: 27, sight: 5.2, hp: 11, dMin: 3,  dMax: 17, w: 3, wander: 0.8, gold: 0.3, atk: ["bite", "poison"] },
+  wisp:   { nm: "燐火",     spr: "wisp",   spd: 26, sight: 6.6, hp: 12, dMin: 7,  dMax: 22, w: 2, phase: true, wander: 1.1, gold: 0.4, atk: ["fire"] },
+  worm:   { nm: "骨喰い蟲", spr: "worm",   spd: 17, sight: 4.8, hp: 26, dMin: 12, dMax: 26, w: 2, wander: 0.6, gold: 0.4, atk: ["bite", "crush"] },
+  wraith: { nm: "影法師",   spr: "wraith", spd: 34, sight: 7.4, hp: 22, dMin: 17, dMax: 30, w: 2, phase: true, wander: 0.5, gold: 0.55, atk: ["magic"] },
   king:  { nm: "ダンジョンの主", spr: "king", spd: 30, sight: 10, hp: 120, dMin: 99, dMax: 99, w: 0, phase: true, wander: 0.3, boss: true, atk: ["crush", "magic"] }
 };
 const MON_ATK_NM = { blade: "斬撃", blunt: "打撃", bite: "咬傷", poison: "毒・酸", fire: "火炎", magic: "魔法", crush: "圧潰" };
@@ -1417,6 +1523,24 @@ const GUILD_LINE = [
   "「妙な品ばかり持ち込むね。どこで拾ったか、覚えてるかい」",
   "「……そろそろ、休んだらどうだ。あんたのためを思って言っている」"
 ];
+
+/* 5階ごとに石の色と匂いが変わる。深さの実感はここで作る */
+const THEMES = [
+  { nm: "石畳の墓所", wb: "#15121d", w1: "#282133", w2: "#2c2539", w3: "#332b41", wl: "#39324a", wd: "#191524",
+    fb: "#1a1725", f1: "#332c44", f2: "#2d2739", f3: "#3a3249", sp: "#3b3450", ms: "#3d5a3c", cr: "#211c2b" },
+  { nm: "苔むした水路", wb: "#101a16", w1: "#1f342a", w2: "#243a2e", w3: "#2c4636", wl: "#365040", wd: "#0e1a14",
+    fb: "#141f1a", f1: "#26382c", f2: "#203026", f3: "#2c4234", sp: "#356048", ms: "#4f8a4a", cr: "#16241c" },
+  { nm: "骨の回廊", wb: "#1a1712", w1: "#38312a", w2: "#3f382f", w3: "#4a4238", wl: "#5a5145", wd: "#1c1811",
+    fb: "#221e18", f1: "#443c30", f2: "#3a3328", f3: "#4d4436", sp: "#6b6046", ms: "#5a5a3a", cr: "#2a241a" },
+  { nm: "焼けた坑道", wb: "#1c1210", w1: "#3a221c", w2: "#442720", w3: "#522f24", wl: "#63392a", wd: "#180e0c",
+    fb: "#211511", f1: "#472a20", f2: "#3a231b", f3: "#523026", sp: "#7a4028", ms: "#6a4a20", cr: "#2a1a14" },
+  { nm: "氷雨の層", wb: "#111a22", w1: "#22323f", w2: "#283a49", w3: "#314554", wl: "#3d5568", wd: "#0d151c",
+    fb: "#15202a", f1: "#2a3c4a", f2: "#22323e", f3: "#324656", sp: "#4a6f88", ms: "#3f6a7a", cr: "#1a2731" },
+  { nm: "黒曜の底", wb: "#0d0a14", w1: "#1d1628", w2: "#231b30", w3: "#2c2140", wl: "#3a2c54", wd: "#0a0710",
+    fb: "#120e1a", f1: "#241c33", f2: "#1c1628", f3: "#2c2240", sp: "#4a3a70", ms: "#3a2a5a", cr: "#171122" }
+];
+const themeOf = d => THEMES[clamp(Math.floor((d - 1) / SAFE_EVERY), 0, THEMES.length - 1)];
+let TH = THEMES[0];
 
 /* ============================================================
    ダンジョン生成
@@ -1830,7 +1954,16 @@ function addPart(x, y, o) {
 function floatTxt(x, y, txt, col) {
   floaters.push({ x, y, txt: String(txt).replace(/<[^>]*>/g, ""), col: col || "#e8c46a", life: 1.4 });
 }
+/* 浮き文字は流れて消える。読み返せるように、同じ内容をログにも残す。 */
+function logAdd(t, lines, cls) {
+  if (!S.log) S.log = [];
+  S.log.push({ d: G ? G.day : 0,
+    f: (scene === "dungeon" && run && run.pos) ? levelName(run.pos) : "地上",
+    t: t, l: (lines || []).filter(Boolean), c: cls || "" });
+  if (S.log.length > 160) S.log.splice(0, S.log.length - 160);
+}
 function toast(txt, cls) {
+  logAdd(txt, null, cls);
   const d = document.createElement("div");
   d.textContent = txt; if (cls) d.className = cls;
   TOAST.appendChild(d);
@@ -1929,7 +2062,7 @@ function goDown() {
   const next = p.s ? { d: p.d + 1, s: false }
     : hasSanctBelow(p.d) ? { d: p.d, s: true } : { d: p.d + 1, s: false };
   run.floors++;
-  doFade(1, () => { enterLevel(next, "down"); SFX.descend(); toast(levelName(next), "good"); });
+  doFade(1, () => { enterLevel(next, "down"); SFX.descend(); toast(levelName(next) + (next.s ? "" : " ― " + themeOf(next.d).nm), "good"); });
 }
 function goUp() {
   const p = run.pos;
@@ -1937,7 +2070,7 @@ function goUp() {
   const next = p.s ? { d: p.d, s: false }
     : hasSanctBelow(p.d - 1) ? { d: p.d - 1, s: true } : { d: p.d - 1, s: false };
   run.floors++;
-  doFade(1, () => { enterLevel(next, "up"); SFX.descend(); toast(levelName(next), "good"); });
+  doFade(1, () => { enterLevel(next, "up"); SFX.descend(); toast(levelName(next) + (next.s ? "" : " ― " + themeOf(next.d).nm), "good"); });
 }
 const bagFull = () => bagWeight() >= bagCap();
 const canCarry = it => bagWeight() + itemWt(it) <= bagCap() + 0.001;
@@ -2154,6 +2287,7 @@ const remainLabel = c => c.type === "blood" ? "血痕" : c.type === "memo" ? "�
 function finishLoot(c) {
   c.looted = true; P.looting = null; run.looted++;
   SFX.loot();
+  const logLines = [];
   if (c.hero) {
     dexHero(c.hero);
     const odd = !explainable(c.hero.cz, c.hero.floor);
@@ -2161,7 +2295,14 @@ function finishLoot(c) {
     floatTxt(c.x + 8, c.y - 13, "所見：" + causeNm(c.hero.cz), odd ? "#ff9a92" : "#93876f");
     const sl = situList(c.hero.sc);
     for (let i = 0; i < Math.min(2, sl.length); i++) floatTxt(c.x + 8, c.y - 4 + i * 9, SITU[sl[i]], "#93876f");
-    if (odd) { G.story.oddDeath = (G.story.oddDeath || 0) + 1; toast("この階の魔物では、この傷は説明がつかない", "bad"); }
+    logLines.push("勇者 " + c.hero.name + "（" + c.hero.cls + " Lv" + c.hero.lv + "）");
+    logLines.push("所見：" + causeNm(c.hero.cz));
+    for (const k of sl) logLines.push("・" + SITU[k]);
+    if (odd) {
+      G.story.oddDeath = (G.story.oddDeath || 0) + 1;
+      logLines.push("※ 地下" + c.hero.floor + "階の魔物では、この傷は説明がつかない");
+      toast("この階の魔物では、この傷は説明がつかない", "bad");
+    }
     if (c.hero.tr === "hum") G.story.humanKill = (G.story.humanKill || 0) + 1;
   }
   if (c.memo) {
@@ -2173,15 +2314,20 @@ function finishLoot(c) {
     if (c.hero) { /* 記録だけ残る */ }
   }
   if (c.type === "carcass") {
+    const mn = c.mon && MTYPE[c.mon] ? MTYPE[c.mon].nm : "何か";
     floatTxt(c.x + 8, c.y - 6, "魔物の死骸だ。誰かが倒したらしい", "#9aa2b8");
+    logLines.push(mn + "の死骸。誰かが倒したらしい");
     if (c.mon) dexMon(c.mon, run.pos.d);
   }
+  if (c.type === "blood") logLines.push("誰かが死んだ跡だ");
   if (c.type === "nothing" || c.type === "stripped") {
-    floatTxt(c.x + 8, c.y - 6, c.type === "stripped" ? "身ぐるみ剥がされている" : "何も残っていない", "#93876f");
+    const t2 = c.type === "stripped" ? "身ぐるみ剥がされている" : "何も残っていない";
+    floatTxt(c.x + 8, c.y - 6, t2, "#93876f");
+    logLines.push(t2);
   }
   let got = 0, full = false;
   for (const it of c.items) {
-    if (addToBag(it)) { got++; floatTxt(c.x + 8, c.y - 30 - got * 9, itemName(it) + " " + estPlain(it), rarOf(it) >= 2 ? "#e29ce0" : "#e8c46a"); }
+    if (addToBag(it)) { got++; logLines.push("拾った：" + itemName(it) + " " + estPlain(it)); floatTxt(c.x + 8, c.y - 30 - got * 9, itemName(it) + " " + estPlain(it), rarOf(it) >= 2 ? "#e29ce0" : "#e8c46a"); }
     else { full = true; dropItem(it, c.x + 8, c.y + 8); }
   }
   if (full) toast("これ以上は背負えない", "bad");
@@ -2190,6 +2336,7 @@ function finishLoot(c) {
   if (c.story === "order") { G.story.order++; save(); }
   if (c.type === "chest") { G.story.chest = 1; }
   for (let i = 0; i < 14; i++) addPart(c.x + 8, c.y + 8, { vx: rnd(-30, 30), vy: rnd(-50, -6), life: rnd(0.4, 0.9), max: 0.9, col: "#e8c46a", sz: 1 });
+  if (logLines.length) logAdd(remainLabel(c) + " を調べた", logLines, c.hero && !explainable(c.hero.cz, c.hero.floor) ? "bad" : "");
   checkCases();
 }
 
@@ -2398,6 +2545,7 @@ let pendingCase = null;
    描画
    ============================================================ */
 function prerenderFloor() {
+  TH = themeOf(run && run.pos ? run.pos.d : 1);
   floorCv = document.createElement("canvas");
   floorCv.width = MW * TILE; floorCv.height = MH * TILE;
   const c = floorCv.getContext("2d");
@@ -2438,30 +2586,30 @@ function prerenderFloor() {
       continue;
     }
     if (t === T_WALL) {
-      c.fillStyle = "#15121d"; c.fillRect(px, py, TILE, TILE);
+      c.fillStyle = TH.wb; c.fillRect(px, py, TILE, TILE);
       for (let r = 0; r < 4; r++) {
         const off = (r % 2) ? 8 : 0;
         for (let b = -1; b < 2; b++) {
           const bx = off + b * 8;
           if (bx < 0 || bx >= 16) continue;
           const h = hash(x * 7 + b + r * 3, y * 11 + r);
-          c.fillStyle = h < 0.45 ? "#282133" : h < 0.85 ? "#2c2539" : "#332b41";
+          c.fillStyle = h < 0.45 ? TH.w1 : h < 0.85 ? TH.w2 : TH.w3;
           c.fillRect(px + bx, py + r * 4, 7, 3);
         }
       }
       if (!isWall(x, y + 1)) { // 床に面した壁の下辺
-        c.fillStyle = "#39324a"; c.fillRect(px, py + 12, TILE, 1);
-        c.fillStyle = "#191524"; c.fillRect(px, py + 13, TILE, 3);
+        c.fillStyle = TH.wl; c.fillRect(px, py + 12, TILE, 1);
+        c.fillStyle = TH.wd; c.fillRect(px, py + 13, TILE, 3);
       }
     } else {
-      c.fillStyle = "#1a1725"; c.fillRect(px, py, TILE, TILE);
+      c.fillStyle = TH.fb; c.fillRect(px, py, TILE, TILE);
       for (let sy = 0; sy < 2; sy++) for (let sx = 0; sx < 2; sx++) {
         const h = hash(x * 2 + sx, y * 2 + sy);
-        c.fillStyle = h < 0.34 ? "#332c44" : h < 0.7 ? "#2d2739" : "#3a3249";
+        c.fillStyle = h < 0.34 ? TH.f1 : h < 0.7 ? TH.f2 : TH.f3;
         c.fillRect(px + sx * 8, py + sy * 8, 7, 7);
-        if (h > 0.93) { c.fillStyle = "#3b3450"; c.fillRect(px + sx * 8 + 1, py + sy * 8 + 1, 3, 1); }
-        if (h < 0.05) { c.fillStyle = "#3d5a3c"; c.fillRect(px + sx * 8 + 2, py + sy * 8 + 3, 3, 2); }
-        if (h > 0.86 && h < 0.9) { c.fillStyle = "#211c2b"; c.fillRect(px + sx * 8 + 2, py + sy * 8 + 4, 4, 1); }
+        if (h > 0.93) { c.fillStyle = TH.sp; c.fillRect(px + sx * 8 + 1, py + sy * 8 + 1, 3, 1); }
+        if (h < 0.05) { c.fillStyle = TH.ms; c.fillRect(px + sx * 8 + 2, py + sy * 8 + 3, 3, 2); }
+        if (h > 0.86 && h < 0.9) { c.fillStyle = TH.cr; c.fillRect(px + sx * 8 + 2, py + sy * 8 + 4, 4, 1); }
       }
     }
   }
@@ -2904,7 +3052,7 @@ function drawFullMap() {
   }
   for (const c of corpses) if (!c.looted && seen[idx(c.tx, c.ty)]) mark(c.tx, c.ty, "#ffd86b", false);
   if (Math.floor(time * 4) % 2) mark(Math.floor(P.x / TILE), Math.floor(P.y / TILE), "#ffffff", true);
-  wtext("地　図 ― " + levelName(run.pos), VW / 2, 20, "#e8c46a", 12);
+  wtext("地　図 ― " + levelName(run.pos) + (run.pos.s ? "" : "（" + themeOf(run.pos.d).nm + "）"), VW / 2, 20, "#e8c46a", 11);
   wtext("下り ● 上り ● 転移碑 ● 遺留品 ●", VW / 2, y0 + h + 16, "#93876f", 9);
   wtext(isTouch ? "［地図］でとじる" : "M でとじる", VW / 2, y0 + h + 30, "#5a5266", 9);
 }
@@ -3666,6 +3814,13 @@ function showDex(tab) {
         t.atk.map(a => MON_ATK_NM[a]).join("・") + " ／ " + (d.n || 1) + " 体</small></div></div>";
     }).join("") + "</div>" +
       '<div class="note">見かけた魔物だけが載る。どの階に、どんな手口の魔物がいるか ― それが分かると、死体の所見の読み方が変わる。</div>';
+  } else if (dexTab === "log") {
+    const lg = (S.log || []).slice().reverse();
+    body = lg.length ? '<div class="list">' + lg.map(e =>
+      '<div class="row' + (e.c === "bad" ? " rar2" : "") + '"><div class="nm">' + e.t +
+      '<small>' + e.d + " 日目 ／ " + e.f + (e.l.length ? "<br>" + e.l.join("<br>") : "") + "</small></div></div>").join("") + "</div>"
+      : '<p class="q">まだ何も起きていない。</p>';
+    body += '<div class="btns" style="margin-top:10px"><div class="btn sm" data-a="logclear">ログを消す</div></div>';
   } else if (dexTab === "note") {
     body = S.dex.notes.length ? '<div class="list" style="max-height:52vh;overflow:auto">' + S.dex.notes.map(n =>
       '<div class="row"><div class="ico" style="background-image:url(' + iconURL.note + ')"></div><div class="nm" style="font-size:11.5px">「' + n + '」</div></div>').join("") + "</div>"
@@ -3685,12 +3840,14 @@ function showDex(tab) {
     (S.rec.boss ? " ／ 主に会った " + S.rec.boss + " 回" : "") +
     (S.rec.ends ? " ／ " + Object.keys(S.rec.ends).map(k => ENDINGS[k].nm + "END").join("・") : "") + "</div>" +
     '<div class="tabs">' +
-    ["hero:勇者", "mon:魔物", "item:品物", "cause:所見", "note:手記", "case:手帳"].map(t => {
+    ["log:ログ", "hero:勇者", "mon:魔物", "item:品物", "cause:所見", "note:手記", "case:手帳"].map(t => {
       const [k, nm] = t.split(":");
       return '<div class="tab' + (dexTab === k ? " on" : "") + '" data-a="dex" data-i="' + k + '">' + nm + "</div>";
     }).join("") + "</div>" + body +
     '<div class="btns" style="margin-top:12px"><div class="btn" data-a="back">もどる</div></div></div>');
 }
+actions.logclear = () => { S.log = []; save(); showDex("log"); };
+actions.log = () => showDex("log");
 actions.recase = d => { const c = CASES.find(x => x.id === d.i); if (c) showCase(c, true); };
 
 /* ---------- 物語 ---------- */
@@ -3810,6 +3967,11 @@ actions.hLeave = () => { closeUI(); rememberHero(hero); floatTxt(hero.x, hero.y 
 
 /* 最深部の番人 */
 function askBoss(m) {
+  const again = (S.rec.boss || 0) >= 1;
+  G.story.boss = 1;
+  S.rec.boss = (S.rec.boss || 0) + 1;
+  save();
+  if (again) { showTalk([["ダンジョンの主", "……また来たのか"]], bossChoice); return; }
   const lines = [
     ["ダンジョンの主", "……人か。"],
     ["ダンジョンの主", "久しいな。どれほど待ったか、もう数えていない。"],
@@ -3824,18 +3986,18 @@ function askBoss(m) {
     ["俺（拾い屋）", "いや。拾い屋だ。死んだ奴の荷物を集めて売ってる。"],
     ["ダンジョンの主", "そうか。……それでも、来たのはお前が最初だ。"]
   ];
-  G.story.boss = 1;
-  S.rec.boss = (S.rec.boss || 0) + 1;
-  save();
   showTalk(lines, bossChoice);
 }
 function bossChoice() {
+  const again = (S.rec.boss || 0) >= 2;
   openUI("boss", '<div class="panel"><h2>ダンジョンの主</h2>' +
-    '<div class="sub">主はゆっくりと立ち上がった。天井に頭が届きそうだ。</div>' +
-    "<p>「役目は役目だ。ここを通す訳にはいかない」<br>「……どうする」</p>" +
-    '<p class="q">（こっちは剣を売る側で、振る側じゃない）</p>' +
-    '<div class="btns" style="margin-top:12px"><div class="btn" data-a="bossFlee">引き返す</div>' +
-    '<div class="btn warn" data-a="bossFight">斬りかかる</div></div></div>');
+    (again
+      ? '<div class="sub">主は座ったまま、こちらを見ている。</div>'
+      : '<div class="sub">主はゆっくりと立ち上がった。天井に頭が届きそうだ。</div>' +
+        "<p>「役目は役目だ。ここを通す訳にはいかない」<br>「……どうする」</p>" +
+        '<p class="q">（こっちは剣を売る側で、振る側じゃない）</p>') +
+    '<div class="btns" style="margin-top:12px"><div class="btn" data-a="bossFlee">帰る</div>' +
+    '<div class="btn warn" data-a="bossFight">戦う</div></div></div>');
 }
 actions.bossFlee = () => {
   closeUI();
@@ -3873,8 +4035,8 @@ function showPause() {
     '<div class="stat"><span>' + G.day + " 日目</span><span>" + levelName(run.pos) + "</span>" +
     "<span>荷 <b>" + run.bag.length + " 点 " + bagWeight().toFixed(1) + "/" + bagCap() + "</b></span>" +
     "<span>見積り <b>" + estMark() + money(estSum(run.bag)) + "</b> G</span></div>" +
-    '<div class="btns"><div class="btn pri" data-a="resume">つづける</div><div class="btn" data-a="help">あそびかた</div></div>' +
-    '<div class="btns" style="margin-top:8px"><div class="btn" data-a="opt">設定</div>' +
+    '<div class="btns"><div class="btn pri" data-a="resume">つづける</div><div class="btn" data-a="log">ログ</div></div>' +
+    '<div class="btns" style="margin-top:8px"><div class="btn" data-a="help">あそびかた</div><div class="btn" data-a="opt">設定</div>' +
     '<div class="btn" data-a="closeask">とじる</div></div></div>');
 }
 actions.resume = () => closeUI();
@@ -3914,7 +4076,8 @@ function showItems(tab) {
     '<div class="tabs"><div class="tab' + (itemTab === "tool" ? " on" : "") + '" data-a="itab" data-i="tool">道具</div>' +
     '<div class="tab' + (itemTab === "bag" ? " on" : "") + '" data-a="itab" data-i="bag">荷（' + run.bag.length + "）</div></div>" +
     body +
-    '<div class="btns" style="margin-top:12px"><div class="btn pri" data-a="resume">とじる</div><div class="btn" data-a="pause2">中断</div></div></div>');
+    '<div class="btns" style="margin-top:12px"><div class="btn pri" data-a="resume">とじる</div><div class="btn" data-a="log">ログ</div>' +
+    '<div class="btn" data-a="pause2">中断</div></div></div>');
 }
 actions.itab = d => showItems(d.i);
 actions.dropIt = d => {
