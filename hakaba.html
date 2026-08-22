@@ -1095,6 +1095,12 @@ const estMark = () => eyeSharp() ? "" : "およそ ";
 const confMark = u => u < 0.12 ? "◎" : u < 0.30 ? "○" : u < 0.55 ? "△" : "？";
 const confCls = u => u < 0.12 ? "c1" : u < 0.30 ? "c2" : u < 0.55 ? "c3" : "c4";
 const confTxt = u => u < 0.12 ? "ほぼ確か" : u < 0.30 ? "だいたい" : u < 0.55 ? "怪しい" : "見当もつかない";
+/* 画面（canvas）に描く用 ― ただの文字列 */
+function estPlain(it) {
+  const a = appraise(it);
+  return (eyeSharp() ? "" : "≈") + money(a.v) + " G" + (eyeSharp() ? "" : " " + confMark(a.unc));
+}
+/* 一覧（DOM）用 ― 確かさに色をつける */
 function estTxt(it) {
   const a = appraise(it);
   return (eyeSharp() ? "" : "≈") + money(a.v) + " G" +
@@ -1563,7 +1569,9 @@ let touchVec = { x: 0, y: 0 }, touchA = false;
 function addPart(x, y, o) {
   parts.push(Object.assign({ x, y, vx: 0, vy: 0, life: 0.5, max: 0.5, col: "#fff", sz: 1, type: "dot" }, o));
 }
-function floatTxt(x, y, txt, col) { floaters.push({ x, y, txt, col: col || "#e8c46a", life: 1.4 }); }
+function floatTxt(x, y, txt, col) {
+  floaters.push({ x, y, txt: String(txt).replace(/<[^>]*>/g, ""), col: col || "#e8c46a", life: 1.4 });
+}
 function toast(txt, cls) {
   const d = document.createElement("div");
   d.textContent = txt; if (cls) d.className = cls;
@@ -1896,7 +1904,7 @@ function finishLoot(c) {
   }
   let got = 0, full = false;
   for (const it of c.items) {
-    if (addToBag(it)) { got++; floatTxt(c.x + 8, c.y - 30 - got * 9, itemName(it) + (it.q >= 2 ? "（" + qualNm(it) + "）" : "") + " " + estTxt(it), rarOf(it) >= 2 ? "#e29ce0" : "#e8c46a"); }
+    if (addToBag(it)) { got++; floatTxt(c.x + 8, c.y - 30 - got * 9, itemName(it) + " " + estPlain(it), rarOf(it) >= 2 ? "#e29ce0" : "#e8c46a"); }
     else { full = true; dropItem(it, c.x + 8, c.y + 8); }
   }
   if (full) toast("これ以上は背負えない", "bad");
