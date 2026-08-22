@@ -349,7 +349,7 @@ const hash = (x, y) => { let h = x * 374761393 + y * 668265263; h = (h ^ (h >> 1
     S.rec … 記録（最短返済日数など）                                   */
 const KEY = "yuusha_no_hakaba_v2";
 const DEBT0 = 100000, LIMIT0 = 30;
-const DEFAULT_SAVE = { g: null, dex: { hero: {}, item: {}, cause: {}, notes: [] }, rec: { best: 0, clears: 0, fails: 0, runs: 0, deaths: 0 }, opt: { mute: false, mode: "normal" } };
+const DEFAULT_SAVE = { g: null, dex: { hero: {}, item: {}, cause: {}, notes: [] }, rec: { best: 0, clears: 0, fails: 0, runs: 0, deaths: 0, boss: 0 }, opt: { mute: false, mode: "normal" } };
 let S = (() => {
   try {
     const raw = JSON.parse(localStorage.getItem(KEY) || "{}");
@@ -707,6 +707,24 @@ const KING_A = [
 
 /* 墓場の飾り */
 const D_PAL = { "0": "#0d0b12", "1": "#2c2938", "2": "#454154", "3": "#6d6880", "4": "#c9c2b0", "5": "#8b8298", "6": "#ff9a3c", "7": "#ffe08a", "8": "#5b4326" };
+const DOOR = [
+  "0000000000000000",
+  "0333333333333330",
+  "0301111111111030",
+  "0308888888888030",
+  "0308811881188030",
+  "0308811881188030",
+  "0301111111111030",
+  "0308844884488030",
+  "0308844884488030",
+  "0301111111111030",
+  "0308811881188030",
+  "0308811881188030",
+  "0308888888888030",
+  "0301111111111030",
+  "0333333333333330",
+  "0000000000000000"
+];
 const GRAVE = [
   "................",
   "................",
@@ -885,6 +903,7 @@ function buildSprites() {
   SPR.golem = [makeSprite(GOLEM_A, GO_PAL), makeSprite(GOLEM_A, Object.assign({}, GO_PAL, { "6": "#ffd06a" }))];
   SPR.king = [makeSprite(KING_A, KI_PAL), makeSprite(KING_A, Object.assign({}, KI_PAL, { "6": "#ffb0b0" }))];
   SPR.grave = makeSprite(GRAVE, D_PAL);
+  SPR.door = makeSprite(DOOR, D_PAL);
   SPR.bones = makeSprite(BONES, D_PAL);
   SPR.sconce = makeSprite(SCONCE, D_PAL);
   SPR.pillar = makeSprite(PILLAR, D_PAL);
@@ -1301,12 +1320,13 @@ const CASES = [
           "依頼主の署名はない。だが、紙の隅に、あの徽章と同じ刻印が押してある。"]
   },
   {
-    id: "c5", ttl: "CASE 05 ― 最深部", need: g => g.story.boss >= 1,
-    hint: "地下30階まで降りる",
-    txt: ["番人は、俺が最初の来訪者だと言った。",
-          "つまり、この百年、誰ひとりここへ辿り着いていない。勇者は全員、途中で止められていた。",
+    id: "c5", ttl: "CASE 05 ― 扉の手前",
+    need: g => g.deepest >= BOSS_FLOOR && ["c2", "c3", "c4"].filter(id => g.story.done.indexOf(id) >= 0).length >= 2,
+    hint: "地下30階まで降り、CASE 02〜04 のうち二つを埋める",
+    txt: ["地下三十階。大部屋へ続く扉の、こちら側の小部屋。",
+          "勇者がひとり転がっていた。後ろから、左肩の高さで斬られている。あの傷だ。",
+          "扉には手も届いている。つまり、ここまで来た者はいた。着く直前で、止められていた。",
           "ダンジョンが攻略されれば、勇者は来なくなる。宿も、武器屋も、酒場も、治療院も、ギルドも干上がる。",
-          "だからギルドは、勇者がここへ着かないようにしていた。街の飯のタネを守るために。",
           "……なるほどな。よくできた仕組みだ。",
           "で、俺の借金はどうなる？　誰も返してはくれないらしい。明日もまた、降りるとしよう。"]
   }
@@ -1333,7 +1353,7 @@ const BOSS_FLOOR = 30;
 const SAFE_EVERY = 5;                                   // 5階ごとに聖堂フロアを挟む
 const hasSanctBelow = d => d % SAFE_EVERY === 0;        // その階の下に聖堂があるか
 const nextSanct = d => Math.min(Math.ceil(d / SAFE_EVERY) * SAFE_EVERY, BOSS_FLOOR);
-const D_NONE = 0, D_GRAVE = 1, D_BONES = 2, D_PILLAR = 3, D_SCONCE = 4;
+const D_NONE = 0, D_GRAVE = 1, D_BONES = 2, D_PILLAR = 3, D_SCONCE = 4, D_DOOR = 5;
 
 let map = new Uint8Array(MW * MH);
 let deco = new Uint8Array(MW * MH);
@@ -1342,7 +1362,7 @@ let light = new Float32Array(MW * MH);
 let warm = new Float32Array(MW * MH);
 let flow = new Int16Array(MW * MH);
 let rooms = [], torches = [], corpses = [], mons = [], loose = [], parts = [], floaters = [];
-let hero = null, floorCv = null, bossRoom = null, cleanerT = -1, safeRoom = null, altar = null;
+let hero = null, floorCv = null, bossRoom = null, cleanerT = -1, safeRoom = null, altar = null, bossGate = null;
 let runSnap = null;
 
 const idx = (x, y) => y * MW + x;
@@ -1370,7 +1390,7 @@ function carveV(y0, y1, x) { for (let y = Math.min(y0, y1); y <= Math.max(y0, y1
 function genLayout(pos) {
   lseed = seedFor(pos);
   map.fill(T_WALL); deco.fill(D_NONE); seen.fill(0);
-  rooms = []; torches = []; safeRoom = null; altar = null;
+  rooms = []; torches = []; safeRoom = null; altar = null; bossGate = null;
   let tries = 0;
   while (rooms.length < 11 && tries < 260) {
     tries++;
@@ -1416,11 +1436,47 @@ function genLayout(pos) {
   }
 }
 
+/* 最深部 ― 小部屋（前室）から扉をくぐって大部屋（玄室）へ。番人は奥にいる */
+function layoutBoss(depth) {
+  lseed = seedFor({ d: depth, s: false });
+  map.fill(T_WALL); deco.fill(D_NONE); seen.fill(0);
+  rooms = []; torches = []; safeRoom = null; altar = null;
+  const cx = Math.floor(MW / 2);
+  const hw = 27, hh = 15, hx = cx - Math.floor(hw / 2), hy = 3;
+  const hall = { x: hx, y: hy, w: hw, h: hh, cx, cy: Math.floor(hy + hh / 2) };
+  const aw = 11, ah = 7, ax = cx - Math.floor(aw / 2), ay = hy + hh + 4;
+  const ante = { x: ax, y: ay, w: aw, h: ah, cx, cy: Math.floor(ay + ah / 2) };
+  carveRoom(hall); carveRoom(ante);
+  carveV(hy + hh, ay - 1, cx);                     // 扉の通路
+  rooms.push(ante, hall);                          // rooms[0] は入ってくる小部屋
+  bossGate = { x: cx, y: hy + hh + 2 };
+  deco[idx(cx - 1, bossGate.y)] = D_DOOR;
+  deco[idx(cx + 1, bossGate.y)] = D_DOOR;
+  for (const t of [[cx - 1, bossGate.y - 2], [cx + 1, bossGate.y - 2]]) {
+    deco[idx(t[0], t[1])] = D_SCONCE; torches.push({ x: t[0], y: t[1], ph: lrand() * 9 });
+  }
+  for (let i = 0; i < 4; i++) {                    // 玄室 ― 柱を二列
+    const py = hy + 3 + i * 3;
+    deco[idx(hx + 3, py)] = D_PILLAR;
+    deco[idx(hx + hw - 4, py)] = D_PILLAR;
+  }
+  for (const x of [hx + 5, hx + 13, hx + 21]) {    // 玄室の松明
+    deco[idx(x, hy - 1)] = D_SCONCE; torches.push({ x, y: hy - 1, ph: lrand() * 9 });
+  }
+  for (const x of [ax + 2, ax + aw - 3]) {         // 前室の松明
+    deco[idx(x, ay - 1)] = D_SCONCE; torches.push({ x, y: ay - 1, ph: lrand() * 9 });
+  }
+  deco[idx(hx + 2, hy + hh - 2)] = D_BONES;
+  deco[idx(hx + hw - 3, hy + hh - 2)] = D_BONES;
+  map[idx(cx, ay + ah - 2)] = T_UP; deco[idx(cx, ay + ah - 2)] = D_NONE;     // 上へ
+  map[idx(cx, hy + 1)] = T_DOWN; deco[idx(cx, hy + 1)] = D_NONE;             // 奥の聖堂へ
+}
+
 /* 聖堂 ― 5階ごとの独立したフロア。魔物も遺留品もない */
 function layoutSanctuary(depth) {
   lseed = seedFor({ d: depth, s: true });
   map.fill(T_WALL); deco.fill(D_NONE); seen.fill(0);
-  rooms = []; torches = [];
+  rooms = []; torches = []; bossGate = null;
   const w = 13, h = 19;                                      // 縦に長い身廊
   const x0 = Math.floor((MW - w) / 2), y0 = Math.floor((MH - h) / 2);
   const hall = { x: x0, y: y0, w, h, cx: Math.floor(x0 + w / 2), cy: Math.floor(y0 + h / 2) };
@@ -1502,10 +1558,31 @@ function makeRemain(depth, tx, ty, opt) {
   return r;
 }
 
+/* 最深部の中身 ― 前室には必ず他殺の勇者、玄室には番人 */
+function populateBossFloor(depth) {
+  corpses = []; mons = []; loose = []; hero = null;
+  const ante = rooms[0], hall = rooms[1];
+  bossRoom = hall;
+  // 前室 ― 扉のこちら側で、後ろから斬られている
+  const ap = freeSpotIn({ x: ante.x + 1, y: ante.y + 1, w: ante.w - 2, h: ante.h - 3, cx: ante.cx, cy: ante.cy }, null);
+  corpses.push(makeRemain(depth, ap.x, ap.y, { type: "body", cz: "murder", fresh: true, boost: 0.6 }));
+  // 玄室 ― 番人と、その足元の宝
+  spawnMon("king", hall.cx, hall.y + 4);
+  const cp = { x: hall.cx, y: hall.y + 6 };
+  const chest = makeRemain(depth, cp.x, cp.y, { type: "gear" });
+  chest.type = "chest";
+  chest.items = [makeItem(depth, { kind: "kingsword", q: 4, wear: 0.05 }), makeItem(depth, { boost: 1 }), makeItem(depth, { cat: "val", boost: 1 })];
+  corpses.push(chest);
+  for (let i = 0; i < 3; i++) {                    // 辿り着けなかった者たち
+    const p = freeSpotIn({ x: hall.x + 2, y: hall.y + 8, w: hall.w - 4, h: hall.h - 10, cx: hall.cx, cy: hall.cy }, corpses);
+    corpses.push(makeRemain(depth, p.x, p.y, { boost: 0.4 }));
+  }
+}
+
 /* その日ぶんの中身（遺留品・魔物・勇者）を置く */
 function populateFloor(depth) {
+  if (depth >= BOSS_FLOOR) { populateBossFloor(depth); return; }
   corpses = []; mons = []; loose = []; hero = null;
-  const boss = depth >= BOSS_FLOOR;
   const upRoom = rooms[0];
   const pool = rooms.length > 1 ? rooms.slice(1) : rooms;
 
@@ -1531,16 +1608,7 @@ function populateFloor(depth) {
     if (metGhost && i === 0) { opt.type = "body"; opt.hi = metGhost.hi; opt.cz = metGhost.cz; opt.fresh = true; opt.boost = 0.4; }
     corpses.push(makeRemain(depth, p.x, p.y, opt));
   }
-  if (boss) {
-    const br = farthestRoom(upRoom);
-    bossRoom = br;
-    spawnMon("king", br.cx, br.cy);
-    const p = freeSpotIn(br, corpses);
-    const chest = makeRemain(depth, p.x, p.y, { type: "gear" });
-    chest.type = "chest";
-    chest.items = [makeItem(depth, { kind: "kingsword", q: 4, wear: 0.05 }), makeItem(depth, { boost: 1 }), makeItem(depth, { cat: "val", boost: 1 })];
-    corpses.push(chest);
-  } else bossRoom = null;
+  bossRoom = null;
 
   const avail = Object.keys(MTYPE).filter(k => MTYPE[k].w > 0 && MTYPE[k].minD <= depth);
   const nm = clamp(3 + Math.floor(depth * 0.85), 3, 18);
@@ -1551,7 +1619,7 @@ function populateFloor(depth) {
     const p = freeSpotIn(r, mons);
     spawnMon(pick(bag), p.x, p.y, depth);
   }
-  if (depth >= 2 && !boss && chance(0.42)) {
+  if (depth >= 2 && chance(0.42)) {
     const r = pick(pool);
     const p = freeSpotIn(r, mons);
     const hi = ri(0, HEROES.length - 1);
@@ -1717,7 +1785,9 @@ function cacheLevel() {
   run.cache[levelKey(run.pos)] = { corpses, mons, loose, hero, cleanerT, bossRoom };
 }
 function buildLevel(pos) {
-  if (pos.s) layoutSanctuary(pos.d); else genLayout(pos);
+  if (pos.s) layoutSanctuary(pos.d);
+  else if (pos.d >= BOSS_FLOOR) layoutBoss(pos.d);
+  else genLayout(pos);
   loadMem(pos);
   if (pos.s) { corpses = []; mons = []; loose = []; hero = null; cleanerT = -1; bossRoom = null; }
   else {
@@ -2305,6 +2375,7 @@ function prerenderFloor() {
     else if (d === D_BONES) drawTo(c, SPR.bones, px, py);
     else if (d === D_PILLAR) drawTo(c, inSafeZone(x, y) ? SPR.pillarLight : SPR.pillar, px, py);
     else if (d === D_SCONCE) drawTo(c, SPR.sconce, px, py);
+    else if (d === D_DOOR) drawTo(c, SPR.door, px, py);
   }
 }
 function drawTo(c, s, x, y) { c.drawImage(s, Math.round(x), Math.round(y)); }
@@ -2629,6 +2700,9 @@ function drawDungeon(dt) {
   }
   if (altar && Math.hypot(P.x / TILE - altar.x, P.y / TILE - altar.y) < 8) {
     wtext("聖堂", altar.x * TILE + 8, altar.y * TILE - 14, "#dfe8ff", 10);
+  }
+  if (bossGate && Math.hypot(P.x / TILE - bossGate.x, P.y / TILE - bossGate.y) < 7) {
+    wtext("扉 ― この奥が最深部だ", bossGate.x * TILE + 8, bossGate.y * TILE - 14, "#e8c46a", 9);
   }
   // 浮き文字
   for (const f of floaters) {
@@ -3181,7 +3255,7 @@ actions.dive = () => {
   for (let d = SAFE_EVERY; d <= BOSS_FLOOR; d += SAFE_EVERY) {
     if (!watchMode() && d > (G.sanctMax || 0)) break;   // 見学ならどこへでも
     const danger = "★".repeat(clamp(Math.ceil(d / 6), 1, 5)) + "☆".repeat(5 - clamp(Math.ceil(d / 6), 1, 5));
-    const note = d >= 30 ? "最深部の聖堂" : d >= 20 ? "石の番人と亡霊の巣の只中" : d >= 15 ? "生きて戻る者は少ない" :
+    const note = d >= BOSS_FLOOR ? "最深部の扉の、その先" : d >= 20 ? "石の番人と亡霊の巣の只中" : d >= 15 ? "生きて戻る者は少ない" :
       d >= 10 ? "骸骨兵と亡霊" : "そろそろ本番だ";
     rows += '<div class="row" data-a="dive2" data-d="' + d + '" data-s="1" style="cursor:pointer">' +
       '<div class="nm">第' + sanctNo(d) + "聖堂<small>地下 " + d + " 階の下 ／ " + note + "</small></div>" +
@@ -3464,7 +3538,8 @@ function showDex(tab) {
       '<div class="note">気になったことを書き留めておく手帳。埋めなくても、借金は返せる。</div>';
   }
   openUI("dex", '<div class="panel"><h2>記録と図鑑</h2>' +
-    '<div class="sub">最短返済 ' + (S.rec.best || "―") + " 日 ／ 完済 " + S.rec.clears + " 回 ／ 期限切れ " + S.rec.fails + " 回 ／ 夢 " + (S.rec.deaths || 0) + " 回</div>" +
+    '<div class="sub">最短返済 ' + (S.rec.best || "―") + " 日 ／ 完済 " + S.rec.clears + " 回 ／ 期限切れ " + S.rec.fails + " 回 ／ 夢 " + (S.rec.deaths || 0) + " 回" +
+    (S.rec.boss ? " ／ 番人に会った " + S.rec.boss + " 回" : "") + "</div>" +
     '<div class="tabs">' +
     ["hero:勇者", "item:品物", "cause:死因", "note:手記", "case:手帳"].map(t => {
       const [k, nm] = t.split(":");
@@ -3500,6 +3575,7 @@ function askDown() {
   const next = p.s ? { d: p.d + 1, s: false } : hasSanctBelow(p.d) ? { d: p.d, s: true } : { d: p.d + 1, s: false };
   const ns = nextSanct(next.s ? next.d : next.d);
   const gap = next.s ? "次は聖堂だ。ひと息つける"
+    : !next.s && next.d >= BOSS_FLOOR ? "ここから先が最深部だ。扉の向こうに何かいる"
     : "次の聖堂は 第" + sanctNo(ns) + "聖堂（地下 " + ns + " 階の下・あと " + (ns - next.d + 1) + " 層）";
   openUI("down", '<div class="panel"><h2>下り階段</h2>' +
     '<div class="sub">' + levelName(next) + " へ降りられる。<br>" + gap + "。</div>" +
@@ -3583,31 +3659,47 @@ actions.hLeave = () => { closeUI(); rememberHero(hero); floatTxt(hero.x, hero.y 
 
 /* 最深部の番人 */
 function askBoss(m) {
-  openUI("boss", '<div class="panel"><h2>最深部</h2>' +
-    '<div class="sub">扉の向こうは、思ったより静かだった。番人はそこに座っていた。</div>' +
-    "<p>「……？」</p>" +
-    '<p class="q">（勇者を待ち構えているはずの、最深部の番人だ）</p>' +
-    '<div class="btns" style="margin-top:12px"><div class="btn pri" data-a="bossTalk">話しかける</div>' +
+  const lines = [
+    ["番人", "……人か。"],
+    ["番人", "久しいな。どれほど待ったか、もう数えていない。"],
+    ["俺（拾い屋）", "……あんた、ずっとここに？"],
+    ["番人", "そういう役目だ。勇者を待って、ここに座っている。"],
+    ["番人", "だが誰も来ない。ひとりも、だ。"],
+    ["俺（拾い屋）", "……そうか。"],
+    ["番人", "お前は勇者か。"],
+    ["俺（拾い屋）", "いや。拾い屋だ。死んだ奴の荷物を集めて売ってる。"],
+    ["番人", "そうか。……それでも、来たのはお前が最初だ。"]
+  ];
+  G.story.boss = 1;
+  S.rec.boss = (S.rec.boss || 0) + 1;
+  save();
+  showTalk(lines, bossChoice);
+}
+function bossChoice() {
+  openUI("boss", '<div class="panel"><h2>最深部の番人</h2>' +
+    '<div class="sub">番人はゆっくりと立ち上がった。天井に頭が届きそうだ。</div>' +
+    "<p>「役目は役目だ。ここを通す訳にはいかない」<br>「……どうする」</p>" +
+    '<p class="q">（こっちは剣を売る側で、振る側じゃない）</p>' +
+    '<div class="btns" style="margin-top:12px"><div class="btn" data-a="bossFlee">引き返す</div>' +
     '<div class="btn warn" data-a="bossFight">斬りかかる</div></div></div>');
 }
-actions.bossTalk = () => {
+actions.bossFlee = () => {
   closeUI();
-  const lines = [
-    ["俺（拾い屋）", "ここまで来た勇者は、今まで何人いた？"],
-    ["番人", "……お前が、最初だ。"],
-    ["俺（拾い屋）", "冗談だろう。上では毎日、誰かが最深部を目指してる。"],
-    ["番人", "百年、誰も来ない。だから私は、ずっと座っている。"],
-    ["俺（拾い屋）", "……そうか。みんな、途中で止められてたのか。"],
-    ["番人", "止める？　誰が。"],
-    ["俺（拾い屋）", "……街の連中だよ。飯のタネを守るためにな。"]
-  ];
-  G.story.boss = 1; save();
-  showTalk(lines, () => { checkCases(); if (pendingCase) { const c = pendingCase; pendingCase = null; showCase(c); } });
+  toast("番人に背を向けた ― 追ってはこない", "good");
+  showTalk([["番人", "……そうか。達者でな。"]], () => endRun("escape"));
 };
 actions.bossFight = () => {
   closeUI();
-  for (const m of mons) if (MTYPE[m.type].boss) { m.angry = true; m.talked = true; }
-  toast("番人が立ち上がった", "bad"); SFX.alert();
+  for (const mm of mons) if (MTYPE[mm.type].boss) { mm.angry = true; mm.talked = true; }
+  run.killer = "最深部の番人";
+  SFX.alert(); flash = 1; shake = 12;
+  showTalk([
+    ["番人", "そうか。"],
+    ["―", "拾い屋の手には、売り物の剣しかなかった。振り方も知らない。"]
+  ], () => {
+    if (safeMode()) { toast("本来ならここで死んでいる", "bad"); endRun("escape"); return; }
+    P.hp = 0; endRun("faint");
+  });
 };
 function showTalk(lines, done) {
   let i = 0;
