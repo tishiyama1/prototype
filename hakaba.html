@@ -97,10 +97,10 @@
 
   /* ---------- touch controls ---------- */
   #pad { position: fixed; inset: 0; pointer-events: none; display: none; z-index: 3; }
-  body.portrait #app { align-items: flex-start; padding-top: 2vh; }
+  body.portrait #app { align-items: flex-start; padding-top: max(0px, env(safe-area-inset-top)); }
   #pad.on { display: block; }
   .stick {
-    position: absolute; left: 5vw; bottom: 4vh; width: 132px; height: 132px;
+    position: absolute; left: 5vw; bottom: calc(4vh + env(safe-area-inset-bottom)); width: 132px; height: 132px;
     border-radius: 50%; background: rgba(20,16,26,0.4); border: 1px solid rgba(232,196,106,0.18);
     pointer-events: auto;
   }
@@ -115,10 +115,10 @@
     text-align: center; line-height: 1.25;
   }
   .abtn:active { background: rgba(232,196,106,0.3); }
-  #bA { right: 5vw; bottom: 10vh; width: 84px; height: 84px; font-size: 13px; }
-  #bB { right: calc(5vw + 92px); bottom: 4vh; width: 58px; height: 58px; }
-  #bC { right: 5vw; bottom: 2vh; width: 58px; height: 58px; font-size: 11px; }
-  #bD { right: calc(5vw + 92px); bottom: calc(4vh + 68px); width: 58px; height: 58px; font-size: 11px; }
+  #bA { right: 5vw; bottom: calc(9vh + env(safe-area-inset-bottom)); width: 86px; height: 86px; font-size: 13px; }
+  #bB { right: calc(5vw + 94px); bottom: calc(3vh + env(safe-area-inset-bottom)); width: 60px; height: 60px; }
+  #bC { right: 5vw; bottom: calc(1.5vh + env(safe-area-inset-bottom)); width: 60px; height: 60px; font-size: 11px; }
+  #bD { right: calc(5vw + 94px); bottom: calc(3vh + 70px + env(safe-area-inset-bottom)); width: 60px; height: 60px; font-size: 11px; }
 
   /* ---------- overlay UI ---------- */
   #ui {
@@ -1660,6 +1660,21 @@ function canStand(x, y) {
          !blocked(Math.floor((x + r) / TILE), Math.floor((y + r) / TILE));
 }
 
+/* ---------- 灯り ---------- */
+/*  消すと感知距離が半分になる。追われている最中でも、相手から離れていれば
+    それだけ早く見失わせられる（すぐ隣にいる相手には効かない）。          */
+function toggleLamp() {
+  P.lamp = !P.lamp; SFX.ui(); hudSig = "";
+  if (P.lamp || !run || run.escaped) return;
+  let shook = 0;
+  for (const m of mons) {
+    if (m.dead > 0 || m.state !== "chase") continue;
+    const d = Math.hypot(m.x - P.x, m.y - P.y) / TILE;
+    if (d > 2.5) { m.lost = Math.max(m.lost || 0, 1.5); shook++; }
+  }
+  if (shook) floatTxt(P.x, P.y - 18, "気配を消した", "#cfd6e6");
+}
+
 /* ---------- 道具 ---------- */
 function useSmoke() {
   if (G.inv.smoke <= 0) { SFX.deny(); toast("煙玉がない", "bad"); return; }
@@ -1833,7 +1848,11 @@ function updateMons(dt) {
       m.state = "chase"; m.lost = 0; m.lx = ptx; m.ly = pty;
     } else if (m.state === "chase" && !passive) {
       m.lost = (m.lost || 0) + dt;
-      if (m.lost > 2.4) { m.state = "search"; m.cd = 3; }
+      if (m.lost > (P.lamp ? 2.4 : 1.2)) {          // 暗ければ早く見失う
+        m.state = "search"; m.cd = 3; m.alert = 0;
+        tone(420, 260, 0.12, "sine", 0.045);
+        if (Math.hypot(m.x - P.x, m.y - P.y) / TILE < 9) floatTxt(m.x, m.y - 26, "見失った", "#cfe6b6");
+      }
     }
     if (passive) m.state = "patrol";
 
@@ -2694,7 +2713,7 @@ actions.help = () => {
     "・5階ごとに<b>聖堂の階</b>が挟まっている。魔物は入ってこられず、<b>転移碑</b>で地上へ帰れる<br>" +
     "・持って入れる<b>水と食料</b>が、そのまま<b>潜っていられる時間</b>。聖堂の中では減らない<br>" +
     "・尽きると足が鈍り、やがて倒れる。途中で足すことはできない<br>" +
-    "・<b>灯り</b>を消せば見つかりにくいが、自分も見えない<br>" +
+    "・<b>灯り</b>を消すと感知距離が半分になり、見失われるのも早い（自分も見えなくなる）。<br>　追われていても、<b>3マスほど離れてから消せば1秒ほどで撒ける</b>。すぐ隣では効かない<br>" +
     "・回収は<b>物音</b>を立てる。近くの魔物が寄ってくる<br>" +
     "・拾った<b>防具</b>は身につけられる。殴られを肩代わりするが、その分傷んで売値が落ちる<br>" +
     "・力尽きると、その日はまるごと<b>夢</b>になる。拾った物は残らず、過ぎるのは一日だけ<br>" +
@@ -3306,7 +3325,7 @@ addEventListener("keydown", e => {
   if ([" ", "arrowup", "arrowdown", "arrowleft", "arrowright"].indexOf(k) >= 0) e.preventDefault();
   if (!keys[k]) {
     if (scene === "dungeon" && !uiOpen) {
-      if ((k === "x" || k === "c" || k === "shift") && !mapOpen) { P.lamp = !P.lamp; SFX.ui(); hudSig = ""; }
+      if ((k === "x" || k === "c" || k === "shift") && !mapOpen) toggleLamp();
       if (k === "1") usePotion();
       if (k === "2") useSmoke();
       if (k === "escape") { if (mapOpen) mapOpen = false; else showPause(); }
@@ -3358,7 +3377,7 @@ function bindBtn(el, down, up) {
   el.addEventListener("mouseup", e => { e.preventDefault(); if (up) up(); });
 }
 bindBtn($("bA"), () => { touchA = true; }, () => { touchA = false; });
-bindBtn($("bB"), () => { if (scene === "dungeon" && !uiOpen) { P.lamp = !P.lamp; SFX.ui(); hudSig = ""; } });
+bindBtn($("bB"), () => { if (scene === "dungeon" && !uiOpen && !mapOpen) toggleLamp(); });
 bindBtn($("bC"), () => { if (scene === "dungeon" && !uiOpen) showItems(); });
 bindBtn($("bD"), () => { if (scene === "dungeon" && !uiOpen) { mapOpen = !mapOpen; SFX.ui(); } });
 
@@ -3367,12 +3386,20 @@ bindBtn($("bD"), () => { if (scene === "dungeon" && !uiOpen) { mapOpen = !mapOpe
    ============================================================ */
 const stage = $("stage");
 function resize() {
-  const w = innerWidth, h = innerHeight;
+  const vv = window.visualViewport;
+  const w = Math.round(vv ? vv.width : innerWidth), h = Math.round(vv ? vv.height : innerHeight);
   const portrait = h > w * 1.05;
   document.body.classList.toggle("portrait", portrait);
-  const availH = (portrait && isTouch) ? h * 0.66 : h * 0.98;
-  let sc = Math.min((w - 8) / VW, availH / VH);
-  sc = sc >= 2 ? Math.floor(sc * 2) / 2 : Math.max(0.5, sc);
+  let sc;
+  if (portrait) {
+    // 幅いっぱいに広げ、操作エリアぶんが足りなければそのぶんだけ縮める
+    const padH = isTouch ? Math.min(250, Math.max(170, h * 0.26)) : 0;
+    sc = w / VW;
+    if (VH * sc > h - padH) sc = (h - padH) / VH;
+  } else {
+    sc = Math.min(w * 0.94 / VW, h * 0.96 / VH);
+  }
+  sc = Math.max(0.5, sc);
   const cw = Math.round(VW * sc), ch = Math.round(VH * sc);
   SCALE = sc; DPR = Math.min(2, window.devicePixelRatio || 1);
   cv.style.width = cw + "px"; cv.style.height = ch + "px";
@@ -3383,6 +3410,10 @@ function resize() {
 }
 addEventListener("resize", resize);
 addEventListener("orientationchange", () => setTimeout(resize, 200));
+if (window.visualViewport) {
+  visualViewport.addEventListener("resize", resize);
+  visualViewport.addEventListener("scroll", resize);
+}
 
 let last = performance.now();
 function frame(now) {
