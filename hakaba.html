@@ -1101,7 +1101,7 @@ const CAUSES = [
   { id: "melt",   nm: "溶解",             atk: "melt",  susp: true },
   { id: "magic",  nm: "魔法による損傷",   atk: "magic", susp: true },
   { id: "blunt",  nm: "鈍器による外傷",   atk: "blunt" },
-  { id: "bite",   nm: "噛殺",             atk: "bite" },
+  { id: "bite",   nm: "咬傷",             atk: "bite" },
   { id: "poison", nm: "毒",               atk: null },
   { id: "burn",   nm: "火傷",             atk: null },
   { id: "crush",  nm: "圧死",             atk: "crush" },
@@ -1245,7 +1245,7 @@ const MTYPE = {
   worm:   { nm: "骨喰い蟲", spr: "worm",  spd: 22, sight: 0,   hp: 26, dMin: 12, dMax: 26, w: 2, wander: 0.7, gold: 0.4,  ai: "scavenge", atk: ["bite"] },
   wraith: { nm: "影法師",   spr: "wraith", spd: 32, sight: 7.4, hp: 22, dMin: 17, dMax: 30, w: 2, phase: true, wander: 0.5, gold: 0.55, ai: "chase", atk: ["magic"] },
   king:   { nm: "ダンジョンの主", spr: "king", spd: 30, sight: 10, hp: 120, dMin: 99, dMax: 99, w: 0, phase: true, wander: 0.3, boss: true, ai: "chase", atk: ["crush", "magic"] }
-};const MON_ATK_NM = { blade: "斬撃", blunt: "打撃", bite: "噛みつき", melt: "溶解", poison: "毒", fire: "火炎", magic: "魔法", crush: "圧潰" };
+};const MON_ATK_NM = { blade: "斬撃", blunt: "打撃", bite: "咬傷", melt: "溶解", poison: "毒", fire: "火炎", magic: "魔法", crush: "圧潰" };
 /* 行動特性 ― 図鑑にも出す */
 const MON_AI_NM = {
   chase:    "見つけると追ってくる",
