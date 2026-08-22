@@ -169,7 +169,10 @@
   }
   .qb.q0 { color: #7c7488; } .qb.q1 { color: #9aa2b8; } .qb.q2 { color: #8fd0ff; }
   .qb.q3 { color: #e8c46a; } .qb.q4 { color: #e29ce0; }
-  .qb.qe { color: #ff9a7a; }
+  .qb.qe { color: #ff9a7a; } .qb.qu { color: #8f7fb8; border-style: dashed; }
+  .cf { display: inline-block; width: 14px; text-align: center; font-size: 11px; }
+  .cf.c1 { color: #8fe3a0; } .cf.c2 { color: #8fd0ff; }
+  .cf.c3 { color: #e8c46a; } .cf.c4 { color: #ff9a92; }
   .row .pr { color: var(--gold); font-size: 12px; white-space: nowrap; }
   .row.rar1 { border-color: rgba(140,200,255,0.3); }
   .row.rar2 { border-color: rgba(232,196,106,0.45); background: rgba(232,196,106,0.05); }
@@ -838,13 +841,13 @@ const KIND = {
   amulet:     { nm: "護符",             cat: "acc",    base: 760, wt: 0.3,  def: [2, 5],   ico: "ring",   w: 2, minD: 6 },
   ring:       { nm: "魔法の指輪",       cat: "acc",    base: 1050, wt: 0.2, def: [2, 6],   ico: "ring",   w: 2, minD: 3 },
 
-  potion:     { nm: "ポーション",       cat: "use",    base: 140, wt: 0.5,  ico: "potion", w: 4, use: "potion" },
-  elixir:     { nm: "万能薬",           cat: "use",    base: 460, wt: 0.5,  ico: "potion", w: 1, minD: 8, use: "potion" },
-  oil:        { nm: "ランプ油",         cat: "use",    base: 110, wt: 0.6,  ico: "lamp",   w: 3 },
+  potion:     { nm: "ポーション",       cat: "use",    base: 140, wt: 0.5, appr: 0.2,  ico: "potion", w: 4, use: "potion" },
+  elixir:     { nm: "万能薬",           cat: "use",    base: 460, wt: 0.5, appr: 0.45,  ico: "potion", w: 1, minD: 8, use: "potion" },
+  oil:        { nm: "ランプ油",         cat: "use",    base: 110, wt: 0.6, appr: 0.15,  ico: "lamp",   w: 3 },
 
-  coin:       { nm: "銀貨袋",           cat: "val",    base: 380, wt: 1.2,  ico: "coin",   w: 4 },
-  jewel:      { nm: "宝石",             cat: "val",    base: 820, wt: 0.4,  ico: "gem",    w: 3, minD: 4 },
-  goldbar:    { nm: "金の延べ棒",       cat: "val",    base: 1900, wt: 3.2, ico: "coin",   w: 1, minD: 12 },
+  coin:       { nm: "銀貨袋",           cat: "val",    base: 380, wt: 1.2, appr: 0.15,  ico: "coin",   w: 4 },
+  jewel:      { nm: "宝石",             cat: "val",    base: 820, wt: 0.4, appr: 1.15,  ico: "gem",    w: 3, minD: 4 },
+  goldbar:    { nm: "金の延べ棒",       cat: "val",    base: 1900, wt: 3.2, appr: 0.3, ico: "coin",   w: 1, minD: 12 },
 
   /* 見た目は普通の品。集めると何かが見えてくる */
   badge:      { nm: "銀の徽章",         cat: "rel",    base: 260, wt: 0.2,  ico: "badge",  story: "badge" },
@@ -991,7 +994,7 @@ const UPG = {
   heart: { nm: "お守り",   ico: "heart", desc: "耐えられる回数", max: 4, cost: [1300, 3000, 6400],       val: d => (2 + d) + " つ" },
   glove: { nm: "革手袋",   ico: "glove", desc: "回収の速さ",     max: 4, cost: [850, 2000, 4000],        val: d => (1.5 - (d - 1) * 0.32).toFixed(2) + " 秒" },
   eye:   { nm: "目利き",   ico: "eye",   desc: "買取価格と見立ての精度", max: 4, cost: [1000, 2500, 5000],
-           val: d => "+" + Math.round((d - 1) * 12) + "% ／ 誤差 " + (EYE_ERR[d - 1] > 0 ? "±" + Math.round(EYE_ERR[d - 1] * 100) + "%" : "なし") },
+           val: d => "+" + Math.round((d - 1) * 12) + "% ／ 見立て " + ["当てずっぽう", "おおまか", "かなり正確", "寸分たがわず"][d - 1] },
   sup:   { nm: "水と食料",  ico: "ration", desc: "もぐっていられる時間", max: 5, cost: [700, 1600, 3300, 6200], val: d => supplyMin(d) + " 分" },
 };
 const GOODS = [
@@ -1021,12 +1024,14 @@ const marketArrow = c => { const m = marketOf(c); return m > 1.12 ? "▲高値" 
 /* ---------- 品物 ---------- */
 const itemName = it => KIND[it.k].nm;                    // 品名は種類そのもの
 const qualNm = it => QUAL[it.q].nm;
-function itemSub(it) {
+function itemSub(it, blind) {
   const k = KIND[it.k], p = [];
   if (k.wt) p.push("重さ " + (k.wt || 1).toFixed(1));
   if (k.cat !== "use" && k.cat !== "val" && k.cat !== "rel") p.push(wearNm(it.wear));
-  if (k.atk) p.push("攻 " + itemAtk(it));
-  if (k.def) p.push("防 " + itemDef(it));
+  if (!blind) {
+    if (k.atk) p.push("攻 " + itemAtk(it));
+    if (k.def) p.push("防 " + itemDef(it));
+  }
   return p.join(" ・ ");
 }
 const itemAtk = it => KIND[it.k].atk ? Math.max(1, Math.round((it.base_a + ENCH[it.e].atk) * (1 - it.wear * 0.5))) : 0;
@@ -1037,25 +1042,70 @@ function priceOf(it) {
   const v = PRICE_K * k.base * QUAL[it.q].mul * ENCH[it.e].mul * (1 - it.wear * 0.68) * (1 + it.d * 0.04);
   return Math.max(1, Math.round(v));
 }
-/* 目利きの腕。潜っているあいだの見立ては、腕が悪いほどぶれる */
-const EYE_ERR = [0.35, 0.20, 0.10, 0];
-const eyeErr = () => EYE_ERR[clamp(G.up.eye, 1, EYE_ERR.length) - 1];
-function estPrice(it) {
-  const p = sellPrice(it), e = eyeErr();
-  if (e <= 0) return p;
-  const bias = ((it.mr === undefined ? 0.5 : it.mr) * 2 - 1) * e;    // 品ごとに一定のずれ
-  const v = p * (1 + bias);
-  const step = v > 800 ? 50 : v > 200 ? 20 : 5;                      // ざっくりした見立て
-  return Math.max(1, Math.round(v / step) * step);
+/* ---------- 目利き ― 値踏みは成分ごとに難しさが違う ----------
+   種類の相場はだいたい頭に入っている。品質もある程度は見れば分かる。
+   だが付与（エンチャント）は、腕が悪いうちは有無すら怪しい。
+   そして「持ち主の死因」による裏の補正は、最後まで見立てに入らない。      */
+const EYE = [
+  { base: 0.10, qmiss: 0.60, wear: 0.22, ench: 0.75 },   // Lv1
+  { base: 0.06, qmiss: 0.40, wear: 0.14, ench: 0.48 },   // Lv2
+  { base: 0.03, qmiss: 0.20, wear: 0.06, ench: 0.22 },   // Lv3
+  { base: 0.00, qmiss: 0.00, wear: 0.00, ench: 0.00 }    // Lv4
+];
+/* 品によって値踏みのしやすさが違う。銀貨は数えれば分かるが、宝石や指輪には目が要る */
+const APPR_CAT = { weapon: 1, shield: 1, armor: 1, helm: 0.9, acc: 1.3, use: 0.3, val: 0.8, rel: 0.6 };
+const apprHard = k => (k.appr !== undefined ? k.appr : (APPR_CAT[k.cat] || 1));
+const eyeLv = () => clamp(G.up.eye, 1, EYE.length);
+const eyeE = () => EYE[eyeLv() - 1];
+const eyeSharp = () => eyeE().qmiss === 0 && eyeE().base === 0;
+/* 品ごとに固定のずれ（同じ品を何度見ても同じ見立てになる） */
+const rr = (it, k) => { const v = Math.sin((it.u || 1) * 12.9898 + k * 78.233 + (it.mr || 0) * 3.7) * 43758.5453; return v - Math.floor(v); };
+
+function appraise(it) {
+  const k = KIND[it.k], h = apprHard(k), E0 = eyeE();
+  const E = { base: E0.base * h, qmiss: E0.qmiss * h, wear: E0.wear * h, ench: E0.ench * h };
+  // 「持ち主の死因」による裏の補正は、腕が上がっても見立てには入らない
+  if (eyeSharp()) return { v: Math.round(sellBase(it)), q: it.q, ench: it.e ? "known" : "none", unc: 0 };
+  // 種類の相場 ― ほぼ分かる
+  let v = PRICE_K * k.base * (1 + (rr(it, 1) * 2 - 1) * E.base);
+  // 品質 ― 見れば分かる。ただし、たまに一段読み違える
+  let q = it.q;
+  if (rr(it, 2) < E.qmiss) q = clamp(q + (rr(it, 3) < 0.5 ? -1 : 1) * (rr(it, 4) < 0.22 ? 2 : 1), 0, QUAL.length - 1);
+  v *= QUAL[q].mul;
+  // 付与 ― いちばん読めない
+  let ench = "none";
+  if (it.e) {
+    if (rr(it, 5) < E.ench) { ench = "unknown"; v *= 1.3; }        // 何かあるのは分かるが、中身までは
+    else { ench = "known"; v *= ENCH[it.e].mul; }
+  } else if (rr(it, 6) < E.ench * 0.4) { ench = "maybe"; v *= 1.18; }  // ありそうに見えてしまう
+  // 損耗 ― 傷は見えるが、正確ではない
+  const hasWear = k.cat !== "use" && k.cat !== "val" && k.cat !== "rel";
+  const w = hasWear ? clamp(it.wear + (rr(it, 7) * 2 - 1) * E.wear, 0, 1) : 0;
+  v *= (1 - w * 0.68);
+  v *= (1 + it.d * 0.04) * marketOf(k.cat) * shopMul();
+  const step = v > 800 ? 50 : v > 200 ? 20 : 5;                    // 見立ては桁が粗い
+  let unc = E.base + E.qmiss * 0.42 + (hasWear ? E.wear * 0.68 : 0);
+  unc += it.e ? E.ench * 0.55 : E.ench * 0.07;
+  if (ench === "unknown" || ench === "maybe") unc += 0.12;
+  return { v: Math.max(1, Math.round(v / step) * step), q, ench, unc };
 }
+const estPrice = it => appraise(it).v;
 const estSum = arr => arr.reduce((a, b) => a + estPrice(b), 0);
-const estMark = () => eyeErr() > 0 ? "およそ " : "";
-const estTxt = it => (eyeErr() > 0 ? "≈" : "") + money(estPrice(it)) + " G";
+const estMark = () => eyeSharp() ? "" : "およそ ";
+const confMark = u => u < 0.12 ? "◎" : u < 0.30 ? "○" : u < 0.55 ? "△" : "？";
+const confCls = u => u < 0.12 ? "c1" : u < 0.30 ? "c2" : u < 0.55 ? "c3" : "c4";
+const confTxt = u => u < 0.12 ? "ほぼ確か" : u < 0.30 ? "だいたい" : u < 0.55 ? "怪しい" : "見当もつかない";
+function estTxt(it) {
+  const a = appraise(it);
+  return (eyeSharp() ? "" : "≈") + money(a.v) + " G" +
+    (eyeSharp() ? "" : ' <span class="cf ' + confCls(a.unc) + '" title="' + confTxt(a.unc) + '">' + confMark(a.unc) + "</span>");
+}
 
 /* 買取価格。死因による内部補正はここに混ぜ込むが、表には出さない */
+const sellBase = it => priceOf(it) * marketOf(KIND[it.k].cat) * shopMul();   // 見立てで届く範囲
 function sellPrice(it) {
-  let v = priceOf(it) * marketOf(KIND[it.k].cat) * shopMul();
-  if (it.cz === "murder") v *= it.mb;
+  let v = sellBase(it);
+  if (it.cz === "murder") v *= it.mb;                                        // 表には出ない補正
   return Math.max(1, Math.round(v));
 }
 const rarOf = it => it.q >= 4 ? 3 : it.q >= 3 ? 2 : (it.q >= 2 || it.e) ? 1 : 0;
@@ -1081,7 +1131,8 @@ function makeItem(depth, opt) {
     q = roll < 2 ? 4 : roll < 11 ? 3 : roll < 28 ? 2 : roll < 62 ? 1 : 0;
   }
   let e = 0;
-  if (!k.use && !k.story && chance(0.06 + depth * 0.012 + (opt.boost || 0) * 0.14)) e = ri(1, ENCH.length - 1);
+  const gearCat = k.cat === "weapon" || k.cat === "shield" || k.cat === "armor" || k.cat === "helm" || k.cat === "acc";
+  if (gearCat && chance(0.06 + depth * 0.012 + (opt.boost || 0) * 0.14)) e = ri(1, ENCH.length - 1);
   let wear = opt.wear !== undefined ? opt.wear : clamp(rnd(0.02, 0.55) + rnd(0, depth * 0.012), 0, 0.96);
   if (k.cat === "use" || k.cat === "val" || k.cat === "rel") wear = 0;
   const it = {
@@ -2703,11 +2754,17 @@ const gold = () => G.gold.toLocaleString("ja-JP");
 const money = n => Math.round(n).toLocaleString("ja-JP");
 
 const QCLS = ["q0", "q1", "q2", "q3", "q4"];
-function itemRow(it, right, cls, owner) {
-  let sub = itemSub(it);
+function itemRow(it, right, cls, owner, blind) {
+  const a = blind ? appraise(it) : null;
+  let sub = itemSub(it, blind);
   if (owner && it.hi >= 0 && S.dex.hero[it.hi]) sub += "<br>元の持ち主：" + HEROES[it.hi].n + "（" + HEROES[it.hi].c + "）";
-  const badge = '<span class="qb ' + QCLS[it.q] + '">' + qualNm(it) + "</span>" +
-    (it.e ? '<span class="qb qe">' + ENCH[it.e].nm + "</span>" : "");
+  const q = a ? a.q : it.q;
+  const badge = '<span class="qb ' + QCLS[q] + '">' + QUAL[q].nm + (a && a.q !== it.q ? "" : "") + "</span>" +
+    (a
+      ? (a.ench === "known" ? '<span class="qb qe">' + ENCH[it.e].nm + "</span>"
+        : a.ench === "unknown" ? '<span class="qb qu">何か付いている</span>'
+        : a.ench === "maybe" ? '<span class="qb qu">付与あり？</span>' : "")
+      : (it.e ? '<span class="qb qe">' + ENCH[it.e].nm + "</span>" : ""));
   return '<div class="row rar' + rarOf(it) + (cls ? " " + cls : "") + '">' +
     '<div class="ico" style="background-image:url(' + iconURL[KIND[it.k].ico] + ')"></div>' +
     '<div class="nm">' + itemName(it) + " " + badge + "<small>" + sub + "</small></div>" +
@@ -2755,7 +2812,8 @@ actions.help = () => {
     "・回収は<b>物音</b>を立てる。近くの魔物が寄ってくる<br>" +
     "・拾った<b>防具</b>は身につけられる。殴られを肩代わりするが、その分傷んで売値が落ちる<br>" +
     "・持てるのは<b>重さ</b>まで。重い鎧か、軽くて高い指輪か ― <b>道具ボタンの「荷」で捨てて</b>入れ替えられる<br>" +
-    "・暗がりでの値踏みは当てにならない。<b>目利き</b>を上げると見立ての誤差が縮み、買取も高くなる<br>" +
+    "・暗がりでの値踏みは当てにならない。<b>種類の相場は読めても、品質は取り違え、付与はまず見抜けない</b><br>" +
+    "　銀貨は数えれば分かるが、宝石や指輪は目が要る。<b>目利き</b>を上げると誤差が縮み、買取も高くなる<br>" +
     "・力尽きると、その日はまるごと<b>夢</b>になる。拾った物は残らず、過ぎるのは一日だけ<br>" +
     "・<b>地形は変わらない</b>。歩いた地図は日をまたいで残る。変わるのは遺留品と魔物のほう<br>" +
     "・品物には持ち主がいた。誰の、どんな死に方だったかは<b>図鑑</b>に残る</p>" +
@@ -3250,8 +3308,10 @@ function showItems(tab) {
     const total = estSum(run.bag);
     body = '<div class="stat"><span>重さ <b>' + bagWeight().toFixed(1) + "/" + bagCap() + "</b></span>" +
       "<span>" + run.bag.length + " 点</span><span>見積り <b>" + estMark() + money(total) + "</b> G</span></div>" +
-      (eyeErr() > 0 ? '<div class="note" style="margin:0 0 8px">目利き Lv' + G.up.eye + " ― 暗がりでの見立ては ±" +
-        Math.round(eyeErr() * 100) + "% ほどぶれる。値打ちは店に出すまで分からない。</div>" : "");
+      (eyeSharp() ? "" : '<div class="note" style="margin:0 0 8px">目利き Lv' + eyeLv() +
+        " ― 種類の相場は読めるが、品質は取り違え、付与はほとんど見抜けない。<br>" +
+        '<span class="cf c1">◎</span>ほぼ確か <span class="cf c2">○</span>だいたい ' +
+        '<span class="cf c3">△</span>怪しい <span class="cf c4">？</span>見当もつかない</div>');
     if (!run.bag.length) body += '<p class="q">まだ何も拾っていない。</p>';
     else {
       body += '<div class="btns" style="margin-bottom:8px"><div class="btn sm" data-a="sortBag" data-i="eff">割の悪い順</div>' +
@@ -3259,7 +3319,7 @@ function showItems(tab) {
         '<div class="btn sm" data-a="sortBag" data-i="val">高い順</div></div>';
       body += '<div class="list" style="max-height:42vh;overflow:auto">' + run.bag.map((it, i) =>
         itemRow(it, estTxt(it) +
-          '<span class="btn sm warn" data-a="dropIt" data-i="' + i + '" style="margin-left:8px">捨てる</span>')).join("") + "</div>";
+          '<span class="btn sm warn" data-a="dropIt" data-i="' + i + '" style="margin-left:8px">捨てる</span>', "", false, true)).join("") + "</div>";
       body += '<div class="note">捨てた品はその場に落ちる。拾い直すこともできるが、階を離れれば戻らない。</div>';
     }
   }
@@ -3307,7 +3367,7 @@ function showResult(kind, kept, lost, depth, floors) {
     (lost && lost.length ? '<div class="note" style="color:#ff9a92">落とした品：' + lost.map(itemName).join("、") + "</div>" : "") +
     '<div class="hr"></div>' +
     '<div class="center big">' + money(total) + " G</div>" +
-    (eyeErr() > 0 && kept.length
+    (!eyeSharp() && kept.length
       ? '<div class="center" style="font-size:11px;color:var(--dim);margin-top:4px">暗がりでの見立ては ' + money(est) + " G だった ― " +
         (gap === 0 ? "ちょうどだ" : (gap > 0 ? "<b style=\"color:#8fe3a0\">+" + money(gap) : "<b style=\"color:#ff9a92\">" + money(gap)) + " G</b> の読み違い") + "</div>"
       : "") +
