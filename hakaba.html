@@ -865,12 +865,12 @@ const QUAL = [
 ];
 const ENCH = [
   { nm: "",     mul: 1.00, atk: 0,  def: 0 },
-  { nm: "炎の", mul: 1.55, atk: 5,  def: 0 },
-  { nm: "氷の", mul: 1.50, atk: 4,  def: 1 },
-  { nm: "雷の", mul: 1.62, atk: 6,  def: 0 },
-  { nm: "守の", mul: 1.48, atk: 0,  def: 4 },
-  { nm: "幸の", mul: 1.70, atk: 1,  def: 1 },
-  { nm: "呪の", mul: 0.62, atk: 3,  def: -2 }
+  { nm: "炎",   mul: 1.55, atk: 5,  def: 0 },
+  { nm: "氷",   mul: 1.50, atk: 4,  def: 1 },
+  { nm: "雷",   mul: 1.62, atk: 6,  def: 0 },
+  { nm: "守り", mul: 1.48, atk: 0,  def: 4 },
+  { nm: "幸運", mul: 1.70, atk: 1,  def: 1 },
+  { nm: "呪い", mul: 0.62, atk: 3,  def: -2 }
 ];
 const wearNm = w => w < 0.12 ? "新品同様" : w < 0.32 ? "良好" : w < 0.55 ? "やや傷み" : w < 0.78 ? "傷だらけ" : w < 0.98 ? "ぼろぼろ" : "壊れている";
 
@@ -990,7 +990,8 @@ const UPG = {
   boot:  { nm: "革の靴",   ico: "boot",  desc: "歩く速さ",       max: 5, cost: [700, 1700, 3500, 6600],  val: d => "×" + (1 + (d - 1) * 0.13).toFixed(2) },
   heart: { nm: "お守り",   ico: "heart", desc: "耐えられる回数", max: 4, cost: [1300, 3000, 6400],       val: d => (2 + d) + " つ" },
   glove: { nm: "革手袋",   ico: "glove", desc: "回収の速さ",     max: 4, cost: [850, 2000, 4000],        val: d => (1.5 - (d - 1) * 0.32).toFixed(2) + " 秒" },
-  eye:   { nm: "目利き",   ico: "eye",   desc: "買取価格",       max: 4, cost: [1000, 2500, 5000],       val: d => "+" + Math.round((d - 1) * 12) + "%" },
+  eye:   { nm: "目利き",   ico: "eye",   desc: "買取価格と見立ての精度", max: 4, cost: [1000, 2500, 5000],
+           val: d => "+" + Math.round((d - 1) * 12) + "% ／ 誤差 " + (EYE_ERR[d - 1] > 0 ? "±" + Math.round(EYE_ERR[d - 1] * 100) + "%" : "なし") },
   sup:   { nm: "水と食料",  ico: "ration", desc: "もぐっていられる時間", max: 5, cost: [700, 1600, 3300, 6200], val: d => supplyMin(d) + " 分" },
 };
 const GOODS = [
@@ -1022,7 +1023,6 @@ const itemName = it => KIND[it.k].nm;                    // 品名は種類そ�
 const qualNm = it => QUAL[it.q].nm;
 function itemSub(it) {
   const k = KIND[it.k], p = [];
-  if (it.e) p.push("《" + ENCH[it.e].nm + "》");
   if (k.wt) p.push("重さ " + (k.wt || 1).toFixed(1));
   if (k.cat !== "use" && k.cat !== "val" && k.cat !== "rel") p.push(wearNm(it.wear));
   if (k.atk) p.push("攻 " + itemAtk(it));
@@ -1037,6 +1037,21 @@ function priceOf(it) {
   const v = PRICE_K * k.base * QUAL[it.q].mul * ENCH[it.e].mul * (1 - it.wear * 0.68) * (1 + it.d * 0.04);
   return Math.max(1, Math.round(v));
 }
+/* 目利きの腕。潜っているあいだの見立ては、腕が悪いほどぶれる */
+const EYE_ERR = [0.35, 0.20, 0.10, 0];
+const eyeErr = () => EYE_ERR[clamp(G.up.eye, 1, EYE_ERR.length) - 1];
+function estPrice(it) {
+  const p = sellPrice(it), e = eyeErr();
+  if (e <= 0) return p;
+  const bias = ((it.mr === undefined ? 0.5 : it.mr) * 2 - 1) * e;    // 品ごとに一定のずれ
+  const v = p * (1 + bias);
+  const step = v > 800 ? 50 : v > 200 ? 20 : 5;                      // ざっくりした見立て
+  return Math.max(1, Math.round(v / step) * step);
+}
+const estSum = arr => arr.reduce((a, b) => a + estPrice(b), 0);
+const estMark = () => eyeErr() > 0 ? "およそ " : "";
+const estTxt = it => (eyeErr() > 0 ? "≈" : "") + money(estPrice(it)) + " G";
+
 /* 買取価格。死因による内部補正はここに混ぜ込むが、表には出さない */
 function sellPrice(it) {
   let v = priceOf(it) * marketOf(KIND[it.k].cat) * shopMul();
@@ -1075,7 +1090,8 @@ function makeItem(depth, opt) {
     base_d: k.def ? ri(k.def[0], k.def[1]) + Math.round(q * 1.2) : 0,
     hi: opt.hi === undefined ? -1 : opt.hi,
     cz: opt.cz || null,
-    mb: +rnd(1.2, 1.4).toFixed(3)
+    mb: +rnd(1.2, 1.4).toFixed(3),
+    mr: +Math.random().toFixed(3)
   };
   return it;
 }
@@ -1829,7 +1845,7 @@ function finishLoot(c) {
   }
   let got = 0, full = false;
   for (const it of c.items) {
-    if (addToBag(it)) { got++; floatTxt(c.x + 8, c.y - 30 - got * 9, itemName(it) + (it.q >= 2 ? "（" + qualNm(it) + "）" : "") + " +" + sellPrice(it), rarOf(it) >= 2 ? "#e29ce0" : "#e8c46a"); }
+    if (addToBag(it)) { got++; floatTxt(c.x + 8, c.y - 30 - got * 9, itemName(it) + (it.q >= 2 ? "（" + qualNm(it) + "）" : "") + " " + estTxt(it), rarOf(it) >= 2 ? "#e29ce0" : "#e8c46a"); }
     else { full = true; dropItem(it, c.x + 8, c.y + 8); }
   }
   if (full) toast("これ以上は背負えない", "bad");
@@ -2739,6 +2755,7 @@ actions.help = () => {
     "・回収は<b>物音</b>を立てる。近くの魔物が寄ってくる<br>" +
     "・拾った<b>防具</b>は身につけられる。殴られを肩代わりするが、その分傷んで売値が落ちる<br>" +
     "・持てるのは<b>重さ</b>まで。重い鎧か、軽くて高い指輪か ― <b>道具ボタンの「荷」で捨てて</b>入れ替えられる<br>" +
+    "・暗がりでの値踏みは当てにならない。<b>目利き</b>を上げると見立ての誤差が縮み、買取も高くなる<br>" +
     "・力尽きると、その日はまるごと<b>夢</b>になる。拾った物は残らず、過ぎるのは一日だけ<br>" +
     "・<b>地形は変わらない</b>。歩いた地図は日をまたいで残る。変わるのは遺留品と魔物のほう<br>" +
     "・品物には持ち主がいた。誰の、どんな死に方だったかは<b>図鑑</b>に残る</p>" +
@@ -3069,7 +3086,7 @@ function showCase(c, replay) {
 
 /* ---------- ダンジョン内の問い ---------- */
 function askExit() {
-  const total = run.bag.reduce((a, b) => a + sellPrice(b), 0);
+  const total = estSum(run.bag);
   openUI("exit", '<div class="panel"><h2>転移碑</h2>' +
     '<div class="sub">石碑の紋に手を触れれば、荷ごと地上へ送られる。今日はそこで終わりだ。</div>' +
     '<div class="stat"><span>' + levelName(run.pos) + "</span><span>荷 <b>" + run.bag.length + " 点 " + bagWeight().toFixed(1) + "/" + bagCap() + "</b></span>" +
@@ -3096,7 +3113,7 @@ actions.godown = () => { closeUI(); goDown(); };
 function askUp() {
   const p = run.pos;
   if (!p.s && p.d <= 1) {
-    const total = run.bag.reduce((a, b) => a + sellPrice(b), 0);
+    const total = estSum(run.bag);
     openUI("up", '<div class="panel"><h2>地上への出口</h2>' +
       '<div class="sub">墓場の入口だ。ここを出れば、今日は終わりになる。</div>' +
       '<div class="stat"><span>荷 <b>' + run.bag.length + " 点 " + bagWeight().toFixed(1) + "/" + bagCap() + "</b></span><span>見積り <b>" + money(total) + "</b> G</span></div>" +
@@ -3210,7 +3227,7 @@ function showPause() {
   openUI("pause", '<div class="panel"><h2>中断</h2>' +
     '<div class="stat"><span>' + G.day + " 日目</span><span>" + levelName(run.pos) + "</span>" +
     "<span>荷 <b>" + run.bag.length + " 点 " + bagWeight().toFixed(1) + "/" + bagCap() + "</b></span>" +
-    "<span>見積り <b>" + money(run.bag.reduce((a, b) => a + sellPrice(b), 0)) + "</b> G</span></div>" +
+    "<span>見積り <b>" + estMark() + money(estSum(run.bag)) + "</b> G</span></div>" +
     '<div class="btns"><div class="btn pri" data-a="resume">つづける</div><div class="btn" data-a="help">あそびかた</div></div>' +
     '<div class="btns" style="margin-top:8px"><div class="btn" data-a="mute">音 ' + (muted ? "OFF" : "ON") + "</div>" +
     '<div class="btn" data-a="closeask">とじる</div></div></div>');
@@ -3230,16 +3247,18 @@ function showItems(tab) {
       row("potion", "potion", "ポーション", "体力を1つ回復", "uPot") +
       row("smoke", "smoke", "煙玉", "追跡を振り切る", "uSmk") + "</div>";
   } else {
-    const total = run.bag.reduce((a, b) => a + sellPrice(b), 0);
+    const total = estSum(run.bag);
     body = '<div class="stat"><span>重さ <b>' + bagWeight().toFixed(1) + "/" + bagCap() + "</b></span>" +
-      "<span>" + run.bag.length + " 点</span><span>見積り <b>" + money(total) + "</b> G</span></div>";
+      "<span>" + run.bag.length + " 点</span><span>見積り <b>" + estMark() + money(total) + "</b> G</span></div>" +
+      (eyeErr() > 0 ? '<div class="note" style="margin:0 0 8px">目利き Lv' + G.up.eye + " ― 暗がりでの見立ては ±" +
+        Math.round(eyeErr() * 100) + "% ほどぶれる。値打ちは店に出すまで分からない。</div>" : "");
     if (!run.bag.length) body += '<p class="q">まだ何も拾っていない。</p>';
     else {
       body += '<div class="btns" style="margin-bottom:8px"><div class="btn sm" data-a="sortBag" data-i="eff">割の悪い順</div>' +
         '<div class="btn sm" data-a="sortBag" data-i="wt">重い順</div>' +
         '<div class="btn sm" data-a="sortBag" data-i="val">高い順</div></div>';
       body += '<div class="list" style="max-height:42vh;overflow:auto">' + run.bag.map((it, i) =>
-        itemRow(it, money(sellPrice(it)) + " G" +
+        itemRow(it, estTxt(it) +
           '<span class="btn sm warn" data-a="dropIt" data-i="' + i + '" style="margin-left:8px">捨てる</span>')).join("") + "</div>";
       body += '<div class="note">捨てた品はその場に落ちる。拾い直すこともできるが、階を離れれば戻らない。</div>';
     }
@@ -3263,8 +3282,8 @@ actions.dropIt = d => {
 actions.sortBag = d => {
   const k = d.i;
   run.bag.sort((a, b) => k === "wt" ? itemWt(b) - itemWt(a)
-    : k === "val" ? sellPrice(b) - sellPrice(a)
-    : (sellPrice(a) / itemWt(a)) - (sellPrice(b) / itemWt(b)));
+    : k === "val" ? estPrice(b) - estPrice(a)
+    : (estPrice(a) / itemWt(a)) - (estPrice(b) / itemWt(b)));   // 並べ替えも見立てのまま
   showItems("bag");
 };
 actions.uPot = () => { closeUI(); usePotion(); };
@@ -3275,6 +3294,8 @@ actions.pause2 = () => showPause();
 function showResult(kind, kept, lost, depth, floors) {
   scene = "result";
   const total = kept.reduce((a, b) => a + sellPrice(b), 0);
+  const est = estSum(kept);
+  const gap = total - est;
   const head = "生きて帰った";
   const sub = "梯子を登りきる。夜の風が、墓場のにおいを流していく。";
   const over = G.day > G.limit && G.debt > 0;
@@ -3285,7 +3306,11 @@ function showResult(kind, kept, lost, depth, floors) {
       : '<p class="q">持ち帰った品はない。</p>') +
     (lost && lost.length ? '<div class="note" style="color:#ff9a92">落とした品：' + lost.map(itemName).join("、") + "</div>" : "") +
     '<div class="hr"></div>' +
-    '<div class="center big">見積り ' + money(total) + " G</div>" +
+    '<div class="center big">' + money(total) + " G</div>" +
+    (eyeErr() > 0 && kept.length
+      ? '<div class="center" style="font-size:11px;color:var(--dim);margin-top:4px">暗がりでの見立ては ' + money(est) + " G だった ― " +
+        (gap === 0 ? "ちょうどだ" : (gap > 0 ? "<b style=\"color:#8fe3a0\">+" + money(gap) : "<b style=\"color:#ff9a92\">" + money(gap)) + " G</b> の読み違い") + "</div>"
+      : "") +
     '<div class="stat center" style="justify-content:center;margin-top:10px"><span>' + G.day + " 日目になった</span>" +
     (G.debt > 0 ? "<span>借金 <b>" + money(G.debt) + "</b> G</span><span>期限まで <b>" + Math.max(0, daysLeft()) + "</b> 日</span>" : "") + "</div>" +
     '<div class="btns" style="margin-top:14px">' +
