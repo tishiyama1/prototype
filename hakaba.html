@@ -65,6 +65,9 @@
   #hud .sep { flex: 1; }
   #hud .chip { color: var(--gold); }
   #hud .chip b { color: var(--ink); font-weight: 600; }
+  #hud .chip.warn b, #hud .chip.warn { color: #ff9a92; }
+  #hud .clk { color: var(--ink); font-variant-numeric: tabular-nums; }
+  #hud .clk.low { color: var(--gold); } #hud .clk.out { color: var(--blood); }
   #hud .lamp.off { color: #5c5468; }
   #hud .stam { display: inline-block; width: 52px; height: 6px; vertical-align: middle;
     background: rgba(255,255,255,0.10); border: 1px solid rgba(255,255,255,0.20); }
@@ -81,14 +84,14 @@
     background-repeat: no-repeat; background-position: center; background-size: 11px 11px;
     image-rendering: pixelated;
   }
-  #bag i.empty { border-color: rgba(255,255,255,0.08); background-image: none !important; }
+  #bag.full i { border-color: rgba(180,65,58,0.55); }
 
   #toasts {
     position: absolute; left: 6px; right: 6px; bottom: 26px; display: flex; flex-direction: column;
     align-items: flex-end; gap: 3px; pointer-events: none;
   }
   #toasts div {
-    font-size: 10px; padding: 2px 6px; max-width: 100%; border-radius: 2px;
+    font-size: 11.5px; padding: 3px 8px; max-width: 100%; border-radius: 2px;
     background: rgba(8,6,12,0.82); border-left: 2px solid var(--gold);
     animation: toastIn 0.22s ease both; text-shadow: 0 1px 2px #000;
   }
@@ -112,10 +115,20 @@
   .abtn {
     position: absolute; pointer-events: auto; width: 66px; height: 66px; border-radius: 50%;
     background: rgba(20,16,26,0.5); border: 1px solid rgba(232,196,106,0.3);
-    color: var(--ink); font-size: 11px; display: flex; align-items: center; justify-content: center;
+    color: var(--ink); font-size: 11px;
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
     text-align: center; line-height: 1.25;
   }
   .abtn:active { background: rgba(232,196,106,0.3); }
+  .abtn small { display: block; font-size: 9.5px; font-weight: 400; letter-spacing: 0; color: var(--dim); margin-top: 1px; }
+  .abtn.off { color: #6a6276; border-color: rgba(232,196,106,0.12); }
+  .abtn.off small { color: #4d4657; }
+  .abtn.on { border-color: rgba(232,196,106,0.65); background: rgba(232,196,106,0.18); }
+  .abtn.hot {                                    /* 拾えるものが目の前にある */
+    border-color: rgba(232,196,106,0.9); background: rgba(232,196,106,0.24); color: #fff3d4;
+    box-shadow: 0 0 16px rgba(232,196,106,0.35);
+  }
+  .abtn.hot small { color: #e8c46a; }
   #bA { right: 5vw; bottom: calc(9vh + env(safe-area-inset-bottom)); width: 86px; height: 86px; font-size: 13px; }
   #bB { right: calc(5vw + 94px); bottom: calc(3vh + env(safe-area-inset-bottom)); width: 60px; height: 60px; }
   #bC { right: 5vw; bottom: calc(1.5vh + env(safe-area-inset-bottom)); width: 60px; height: 60px; font-size: 11px; }
@@ -217,6 +230,11 @@
   .row.rar2 { border-color: rgba(232,196,106,0.45); background: rgba(232,196,106,0.05); }
   .row.rar3 { border-color: rgba(226,120,220,0.5); background: rgba(226,120,220,0.06); }
   .row.locked { opacity: 0.42; }
+  .row[data-a] { cursor: pointer; }
+  .row[data-a]::after { content: "›"; flex: none; color: var(--dim); font-size: 16px; line-height: 1; margin-left: 2px; }
+  .row[data-a]:hover { background: rgba(232,196,106,0.07); border-color: rgba(232,196,106,0.32); }
+  .row[data-a]:hover::after { color: var(--gold); }
+  .row[data-a]:active { background: rgba(232,196,106,0.14); }
 
   .btns { display: flex; gap: 8px; flex-wrap: wrap; }
   .btn {
@@ -248,6 +266,16 @@
     border: 1px solid rgba(255,255,255,0.2); background: rgba(255,255,255,0.05); color: var(--ink);
   }
   .qbar { height: 4px; background: rgba(255,255,255,0.08); margin-top: 4px; }
+
+  /* 横持ちになったら遊べないので、そう言う */
+  #rot {
+    display: none; position: fixed; inset: 0; z-index: 60; padding: 24px;
+    align-items: center; justify-content: center; text-align: center;
+    background: #07060b; color: var(--ink);
+  }
+  body.rotate #rot { display: flex; }
+  #rot b { display: block; font-size: 15px; letter-spacing: 0.14em; color: var(--gold); }
+  #rot small { display: block; margin-top: 8px; font-size: 11px; color: var(--dim); letter-spacing: 0.06em; }
   .qbar i { display: block; height: 100%; background: var(--gold); }
 </style>
 </head>
@@ -271,6 +299,7 @@
   </div>
   <div id="ui"></div>
 </div>
+<div id="rot"><div><b>画面を縦にしてください</b><small>『勇者の墓場』は縦持ち専用です</small></div></div>
 <script>
 "use strict";
 /* ============================================================
@@ -3074,8 +3103,13 @@ function showHelp(tab) {
       const [k, nm] = t.split(":");
       return '<div class="tab' + (helpTab === k ? " on" : "") + '" data-a="help" data-i="' + k + '">' + nm + "</div>";
     }).join("") + "</div>" + body +
+    (scene === "town" || scene === "title"
+      ? '<div class="btns pin"><div class="btn" data-a="mute">音 ' + (muted ? "OFF" : "ON") + "</div>" +
+        (scene === "town" ? '<div class="btn" data-a="totitle">タイトルへ</div>' : "") + "</div>"
+      : "") +
     '<div class="btns"><div class="btn pri" data-a="back">もどる</div></div></div>');
 }
+actions.totitle = () => { save(); doFade(1, () => showTitle()); };
 actions.back = () => {
   if (scene === "title") showTitle();
   else if (scene === "dungeon" && run && !run.escaped) closeUI();
@@ -3536,7 +3570,7 @@ function showPause() {
     '<div class="btn" data-a="closeask">とじる</div></div></div>');
 }
 actions.resume = () => closeUI();
-actions.mute = () => { muted = !muted; S.opt.mute = muted; save(); showPause(); };
+actions.mute = () => { muted = !muted; S.opt.mute = muted; save(); if (uiKind === "help") showHelp(); else showPause(); };
 let itemTab = "tool";
 function showItems(tab) {
   itemTab = tab || itemTab;
@@ -3682,7 +3716,8 @@ function endFail() {
 let hudSig = "";
 function updateHUD() {
   if (scene !== "dungeon" || !run) { if (HUD.innerHTML) { HUD.innerHTML = ""; BAGEL.innerHTML = ""; hudSig = ""; } return; }
-  const sig = [P.hp, P.armor, run.pos.d, run.pos.s, run.bag.length, P.lamp, G.day, Math.ceil(P.st / 3),
+  const secs = Math.max(0, Math.ceil(P.st / SUPPLY_RATE));
+  const sig = [P.hp, P.armor, run.pos.d, run.pos.s, run.bag.length, P.lamp, G.day, secs,
     G.inv.potion, G.inv.smoke, run.bag.map(i => i.k).join(",")].join("|");
   if (sig === hudSig) return;
   hudSig = sig;
@@ -3695,16 +3730,34 @@ function updateHUD() {
     '<span class="chip">' + G.day + " 日目</span>" +
     '<span class="brk"></span>' +
     '<span class="chip">食 <span class="stam ' + (P.st <= 0 ? "out" : P.st < maxSupply() * 0.3 ? "low" : "") + '">' +
-    '<i style="width:' + Math.round(clamp(P.st / maxSupply(), 0, 1) * 100) + '%"></i></span>' +
+    '<i style="width:' + Math.round(clamp(P.st / maxSupply(), 0, 1) * 100) + '%"></i></span> ' +
+    '<span class="clk ' + (P.st <= 0 ? "out" : P.st < maxSupply() * 0.3 ? "low" : "") + '">' +
+    Math.floor(secs / 60) + ":" + String(secs % 60).padStart(2, "0") + "</span>" +
     (P.tired ? ' <b style="color:#ff9a92">飢</b>' : "") + "</span>" +
-    '<span class="chip">荷 <b>' + bagWeight().toFixed(1) + "/" + bagCap() + "</b></span>" +
+    '<span class="chip' + (bagWeight() >= bagCap() ? " warn" : "") + '">荷 <b>' + bagWeight().toFixed(1) + "/" + bagCap() + "</b></span>" +
     '<span class="lamp ' + (P.lamp ? "" : "off") + '">' + (P.lamp ? "灯●" : "灯○") + "</span>" +
     '<span class="chip">薬 <b>' + G.inv.potion + "</b> 煙 <b>" + G.inv.smoke + "</b></span>";
   let h = "";
   for (const it of run.bag) h += '<i style="background-image:url(' + iconURL[KIND[it.k].ico] + ')"></i>';
-  const room = Math.max(0, Math.round((bagCap() - bagWeight()) / 1.5));
-  for (let i = 0; i < Math.min(room, 8); i++) h += '<i class="empty"></i>';
   BAGEL.innerHTML = h;
+  BAGEL.className = bagWeight() >= bagCap() * 0.85 ? "full" : "";
+}
+
+/* 手元のボタンにも状態を出す ― 灯りの点灯、道具の残り、拾えるものが目の前にあるか */
+let padSig = "";
+function updatePad() {
+  const live = scene === "dungeon" && run && G && !uiOpen;
+  if (!live) { padSig = ""; return; }
+  const near = mapOpen ? null : nearestRemain();
+  const sig = [P.lamp, G.inv.potion, G.inv.smoke, near ? 1 : 0, mapOpen ? 1 : 0].join("|");
+  if (sig === padSig) return;
+  padSig = sig;
+  $("bA").innerHTML = near ? "回収<small>長押し</small>" : "調べる";
+  $("bA").classList.toggle("hot", !!near);
+  $("bB").innerHTML = "灯り<small>" + (P.lamp ? "●つけた" : "○消した") + "</small>";
+  $("bB").classList.toggle("off", !P.lamp);
+  $("bC").innerHTML = "道具<small>薬" + G.inv.potion + " 煙" + G.inv.smoke + "</small>";
+  $("bD").classList.toggle("on", !!mapOpen);
 }
 
 /* ============================================================
@@ -3811,6 +3864,7 @@ function resize() {
   PAD.style.height = h + "px"; PAD.style.top = top + "px";
   const portrait = h > w * 1.05;
   document.body.classList.toggle("portrait", portrait);
+  document.body.classList.toggle("rotate", isTouch && !portrait && h < 520);
   let sc;
   if (portrait) {
     const padH = isTouch ? clamp(h * 0.24, 140, 230) : 0;   // 操作エリア
@@ -3865,7 +3919,7 @@ function frame(now) {
     drawTown();
     if (scene === "title") { g.fillStyle = "rgba(4,3,8,0.45)"; g.fillRect(0, 0, VW, VH); }
   }
-  updateHUD();
+  updateHUD(); updatePad();
   PAD.classList.toggle("on", isTouch && scene === "dungeon" && !uiOpen);
 
   // フェード
