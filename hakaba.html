@@ -57,8 +57,8 @@
     display: flex; align-items: center; gap: 6px; flex-wrap: wrap;
     padding: 5px 7px;
     font-size: 10.5px; letter-spacing: 0.02em; line-height: 1.5;
-    background: linear-gradient(180deg, rgba(6,5,10,0.88), rgba(6,5,10,0.0));
-    pointer-events: none; text-shadow: 0 1px 2px #000;
+    background: linear-gradient(180deg, rgba(6,5,10,0.92) 0%, rgba(6,5,10,0.8) 62%, rgba(6,5,10,0) 100%);
+    pointer-events: none; text-shadow: 0 1px 2px #000, 0 0 6px #000;
   }
   #hud .hearts { letter-spacing: 0px; color: var(--blood); font-size: 12px; }
   #hud .brk { flex-basis: 100%; height: 0; }
@@ -100,16 +100,22 @@
   @keyframes toastIn { from { opacity: 0; transform: translateX(10px); } to { opacity: 1; transform: none; } }
 
   /* ---------- touch controls ---------- */
-  #pad { position: fixed; left: 0; right: 0; top: 0; height: 100%; pointer-events: none; display: none; z-index: 3; }
+  /* 位置は vh ではなく下端からの px で決める。vh は iOS だとツールバー
+     ぶんずれるので、盤面と重なってしまう。高さは JS が実測して空ける。 */
+  #pad {
+    position: fixed; left: 0; right: 0; top: 0; height: 100%; z-index: 3;
+    pointer-events: none; opacity: 0; transition: opacity 0.15s;
+  }
   body.portrait #app { align-items: flex-start; padding-top: max(4px, env(safe-area-inset-top)); }
-  #pad.on { display: block; }
+  #pad.on { opacity: 1; }
+  #pad:not(.on) * { pointer-events: none; }
   .stick {
-    position: absolute; left: 5vw; bottom: calc(4vh + env(safe-area-inset-bottom)); width: 132px; height: 132px;
+    position: absolute; left: 16px; bottom: calc(10px + env(safe-area-inset-bottom)); width: 118px; height: 118px;
     border-radius: 50%; background: rgba(20,16,26,0.4); border: 1px solid rgba(232,196,106,0.18);
     pointer-events: auto;
   }
   .stick .knob {
-    position: absolute; left: 50%; top: 50%; width: 46px; height: 46px; margin: -23px 0 0 -23px;
+    position: absolute; left: 50%; top: 50%; width: 44px; height: 44px; margin: -22px 0 0 -22px;
     border-radius: 50%; background: rgba(232,196,106,0.28); border: 1px solid rgba(232,196,106,0.45);
   }
   .abtn {
@@ -129,10 +135,10 @@
     box-shadow: 0 0 16px rgba(232,196,106,0.35);
   }
   .abtn.hot small { color: #e8c46a; }
-  #bA { right: 5vw; bottom: calc(9vh + env(safe-area-inset-bottom)); width: 86px; height: 86px; font-size: 13px; }
-  #bB { right: calc(5vw + 94px); bottom: calc(3vh + env(safe-area-inset-bottom)); width: 60px; height: 60px; }
-  #bC { right: 5vw; bottom: calc(1.5vh + env(safe-area-inset-bottom)); width: 60px; height: 60px; font-size: 11px; }
-  #bD { right: calc(5vw + 94px); bottom: calc(3vh + 70px + env(safe-area-inset-bottom)); width: 60px; height: 60px; font-size: 11px; }
+  #bA { right: 12px;  bottom: calc(64px + env(safe-area-inset-bottom)); width: 82px; height: 82px; font-size: 12.5px; }
+  #bB { right: 100px; bottom: calc(10px + env(safe-area-inset-bottom)); width: 56px; height: 56px; }
+  #bC { right: 20px;  bottom: calc(4px  + env(safe-area-inset-bottom)); width: 56px; height: 56px; font-size: 11px; }
+  #bD { right: 108px; bottom: calc(74px + env(safe-area-inset-bottom)); width: 56px; height: 56px; font-size: 11px; }
 
   /* ---------- overlay UI ---------- */
   #ui {
@@ -3853,6 +3859,17 @@ stage.addEventListener("pointermove", ev => {
   stage.style.cursor = h ? "pointer" : "";
 });
 stage.addEventListener("pointerleave", () => { townHover = null; stage.style.cursor = ""; });
+/* 操作エリアがほんとうに要る高さを、ボタンの実寸から測る。
+   数字を決め打ちにすると CSS を触るたびに盤面と重なる。 */
+function padNeed() {
+  const pb = PAD.getBoundingClientRect().bottom;
+  let n = 0;
+  for (const el of [stick, $("bA"), $("bB"), $("bC"), $("bD")]) {
+    const r = el.getBoundingClientRect();
+    if (r.height) n = Math.max(n, pb - r.top);
+  }
+  return n ? Math.ceil(n) + 8 : 160;
+}
 function resize() {
   const vv = window.visualViewport;
   const w = Math.round(vv ? vv.width : innerWidth);
@@ -3867,7 +3884,7 @@ function resize() {
   document.body.classList.toggle("rotate", isTouch && !portrait && h < 520);
   let sc;
   if (portrait) {
-    const padH = isTouch ? clamp(h * 0.24, 140, 230) : 0;   // 操作エリア
+    const padH = isTouch ? padNeed() : 0;                   // 操作エリアの実寸
     sc = w / VW;                                            // まず幅いっぱい
     if (VH * sc > h - padH) sc = (h - padH) / VH;            // 収まらないぶんだけ縮める
   } else {
