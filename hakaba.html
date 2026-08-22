@@ -163,6 +163,16 @@
   }
   .row .nm { flex: 1; line-height: 1.5; }
   .row .nm small { display: block; color: var(--dim); font-size: 10.5px; letter-spacing: 0.04em; }
+  .qb {
+    display: inline-block; margin-left: 5px; padding: 0 5px; font-size: 9.5px; line-height: 15px;
+    border-radius: 2px; vertical-align: 1px; border: 1px solid currentColor; opacity: 0.9;
+  }
+  .qb.q0 { color: #7c7488; } .qb.q1 { color: #9aa2b8; } .qb.q2 { color: #8fd0ff; }
+  .qb.q3 { color: #e8c46a; } .qb.q4 { color: #e29ce0; }
+  .qb.qe { color: #ff9a7a; } .qb.qu { color: #8f7fb8; border-style: dashed; }
+  .cf { display: inline-block; width: 14px; text-align: center; font-size: 11px; }
+  .cf.c1 { color: #8fe3a0; } .cf.c2 { color: #8fd0ff; }
+  .cf.c3 { color: #e8c46a; } .cf.c4 { color: #ff9a92; }
   .row .pr { color: var(--gold); font-size: 12px; white-space: nowrap; }
   .row.rar1 { border-color: rgba(140,200,255,0.3); }
   .row.rar2 { border-color: rgba(232,196,106,0.45); background: rgba(232,196,106,0.05); }
@@ -807,62 +817,63 @@ function drawSpr(s, x, y, flip) {
 
 /* 品物の種類。名前はどれも普通のもので、物語を説明しない */
 const KIND = {
-  dagger:     { nm: "ダガー",           cat: "weapon", base: 190,  atk: [4, 7],   ico: "dagger", w: 3 },
-  shortsword: { nm: "ショートソード",   cat: "weapon", base: 320,  atk: [6, 10],  ico: "sword",  w: 4 },
-  handaxe:    { nm: "ハンドアクス",     cat: "weapon", base: 450,  atk: [8, 14],  ico: "axe",    w: 3, minD: 2 },
-  longsword:  { nm: "ロングソード",     cat: "weapon", base: 620,  atk: [10, 16], ico: "sword",  w: 3, minD: 3 },
-  spear:      { nm: "スピア",           cat: "weapon", base: 700,  atk: [11, 18], ico: "spear",  w: 2, minD: 5 },
-  broadsword: { nm: "ブロードソード",   cat: "weapon", base: 1050, atk: [15, 23], ico: "sword",  w: 2, minD: 8 },
-  warhammer:  { nm: "ウォーハンマー",   cat: "weapon", base: 1350, atk: [19, 29], ico: "hammer", w: 2, minD: 12 },
-  staff:      { nm: "樫の杖",           cat: "weapon", base: 360,  atk: [5, 9],   ico: "staff",  w: 2 },
+  dagger:     { nm: "ダガー",           cat: "weapon", base: 190, wt: 1.0,  atk: [4, 7],   ico: "dagger", w: 3 },
+  shortsword: { nm: "ショートソード",   cat: "weapon", base: 320, wt: 1.8,  atk: [6, 10],  ico: "sword",  w: 4 },
+  handaxe:    { nm: "ハンドアクス",     cat: "weapon", base: 450, wt: 2.4,  atk: [8, 14],  ico: "axe",    w: 3, minD: 2 },
+  longsword:  { nm: "ロングソード",     cat: "weapon", base: 620, wt: 2.6,  atk: [10, 16], ico: "sword",  w: 3, minD: 3 },
+  spear:      { nm: "スピア",           cat: "weapon", base: 700, wt: 3.0,  atk: [11, 18], ico: "spear",  w: 2, minD: 5 },
+  broadsword: { nm: "ブロードソード",   cat: "weapon", base: 1050, wt: 3.6, atk: [15, 23], ico: "sword",  w: 2, minD: 8 },
+  warhammer:  { nm: "ウォーハンマー",   cat: "weapon", base: 1350, wt: 4.6, atk: [19, 29], ico: "hammer", w: 2, minD: 12 },
+  staff:      { nm: "樫の杖",           cat: "weapon", base: 360, wt: 1.6,  atk: [5, 9],   ico: "staff",  w: 2 },
 
-  woodshield: { nm: "木の盾",           cat: "shield", base: 170,  def: [3, 6],   ico: "shield", w: 3 },
-  ironshield: { nm: "鉄の盾",           cat: "shield", base: 460,  def: [7, 12],  ico: "shield", w: 3, minD: 4 },
-  towershield:{ nm: "タワーシールド",   cat: "shield", base: 980,  def: [13, 20], ico: "shield", w: 2, minD: 10 },
+  woodshield: { nm: "木の盾",           cat: "shield", base: 170, wt: 1.6,  def: [3, 6],   ico: "shield", w: 3 },
+  ironshield: { nm: "鉄の盾",           cat: "shield", base: 460, wt: 3.0,  def: [7, 12],  ico: "shield", w: 3, minD: 4 },
+  towershield:{ nm: "タワーシールド",   cat: "shield", base: 980, wt: 4.8,  def: [13, 20], ico: "shield", w: 2, minD: 10 },
 
-  leather:    { nm: "革の鎧",           cat: "armor",  base: 290,  def: [4, 8],   ico: "armor",  w: 4 },
-  chainmail:  { nm: "鎖帷子",           cat: "armor",  base: 720,  def: [9, 15],  ico: "armor",  w: 3, minD: 5 },
-  platemail:  { nm: "プレートメイル",   cat: "armor",  base: 1450, def: [16, 25], ico: "armor",  w: 2, minD: 11 },
+  leather:    { nm: "革の鎧",           cat: "armor",  base: 290, wt: 2.2,  def: [4, 8],   ico: "armor",  w: 4 },
+  chainmail:  { nm: "鎖帷子",           cat: "armor",  base: 720, wt: 4.0,  def: [9, 15],  ico: "armor",  w: 3, minD: 5 },
+  platemail:  { nm: "プレートメイル",   cat: "armor",  base: 1450, wt: 6.5, def: [16, 25], ico: "armor",  w: 2, minD: 11 },
 
-  cap:        { nm: "革の帽子",         cat: "helm",   base: 130,  def: [2, 4],   ico: "helm",   w: 3 },
-  ironhelm:   { nm: "鉄兜",             cat: "helm",   base: 400,  def: [5, 9],   ico: "helm",   w: 3, minD: 4 },
+  cap:        { nm: "革の帽子",         cat: "helm",   base: 130, wt: 0.6,  def: [2, 4],   ico: "helm",   w: 3 },
+  ironhelm:   { nm: "鉄兜",             cat: "helm",   base: 400, wt: 1.6,  def: [5, 9],   ico: "helm",   w: 3, minD: 4 },
 
-  bracelet:   { nm: "銀の腕輪",         cat: "acc",    base: 560,  def: [1, 3],   ico: "ring",   w: 2 },
-  amulet:     { nm: "護符",             cat: "acc",    base: 760,  def: [2, 5],   ico: "ring",   w: 2, minD: 6 },
-  ring:       { nm: "魔法の指輪",       cat: "acc",    base: 1050, def: [2, 6],   ico: "ring",   w: 2, minD: 3 },
+  bracelet:   { nm: "銀の腕輪",         cat: "acc",    base: 560, wt: 0.3,  def: [1, 3],   ico: "ring",   w: 2 },
+  amulet:     { nm: "護符",             cat: "acc",    base: 760, wt: 0.3,  def: [2, 5],   ico: "ring",   w: 2, minD: 6 },
+  ring:       { nm: "魔法の指輪",       cat: "acc",    base: 1050, wt: 0.2, def: [2, 6],   ico: "ring",   w: 2, minD: 3 },
 
-  potion:     { nm: "ポーション",       cat: "use",    base: 140,  ico: "potion", w: 4, use: "potion" },
-  elixir:     { nm: "万能薬",           cat: "use",    base: 460,  ico: "potion", w: 1, minD: 8, use: "potion" },
-  oil:        { nm: "ランプ油",         cat: "use",    base: 110,  ico: "lamp",   w: 3 },
+  potion:     { nm: "ポーション",       cat: "use",    base: 140, wt: 0.5, appr: 0.2,  ico: "potion", w: 4, use: "potion" },
+  elixir:     { nm: "万能薬",           cat: "use",    base: 460, wt: 0.5, appr: 0.45,  ico: "potion", w: 1, minD: 8, use: "potion" },
+  oil:        { nm: "ランプ油",         cat: "use",    base: 110, wt: 0.6, appr: 0.15,  ico: "lamp",   w: 3 },
 
-  coin:       { nm: "銀貨袋",           cat: "val",    base: 380,  ico: "coin",   w: 4 },
-  jewel:      { nm: "宝石",             cat: "val",    base: 820,  ico: "gem",    w: 3, minD: 4 },
-  goldbar:    { nm: "金の延べ棒",       cat: "val",    base: 1900, ico: "coin",   w: 1, minD: 12 },
+  coin:       { nm: "銀貨袋",           cat: "val",    base: 380, wt: 1.2, appr: 0.15,  ico: "coin",   w: 4 },
+  jewel:      { nm: "宝石",             cat: "val",    base: 820, wt: 0.4, appr: 1.15,  ico: "gem",    w: 3, minD: 4 },
+  goldbar:    { nm: "金の延べ棒",       cat: "val",    base: 1900, wt: 3.2, appr: 0.3, ico: "coin",   w: 1, minD: 12 },
 
   /* 見た目は普通の品。集めると何かが見えてくる */
-  badge:      { nm: "銀の徽章",         cat: "rel",    base: 260,  ico: "badge",  story: "badge" },
-  mapfrag:    { nm: "古い地図",         cat: "rel",    base: 200,  ico: "map",    story: "map" },
-  order:      { nm: "依頼書の切れ端",   cat: "rel",    base: 80,   ico: "note",   story: "order" },
-  kingsword:  { nm: "王の剣",           cat: "weapon", base: 3000, atk: [34, 40], ico: "holy",   uniq: true }
+  badge:      { nm: "銀の徽章",         cat: "rel",    base: 260, wt: 0.2,  ico: "badge",  story: "badge" },
+  mapfrag:    { nm: "古い地図",         cat: "rel",    base: 200, wt: 0.1,  ico: "map",    story: "map" },
+  order:      { nm: "依頼書の切れ端",   cat: "rel",    base: 80, wt: 0.1,   ico: "note",   story: "order" },
+  kingsword:  { nm: "王の剣",           cat: "weapon", base: 3000, wt: 4.0, atk: [34, 40], ico: "holy",   uniq: true }
 };
 const CAT_NM = { weapon: "武器", shield: "盾", armor: "鎧", helm: "兜", acc: "装身具", use: "消耗品", val: "貴金属", rel: "雑貨" };
 const SLOT_OF = { shield: "shield", armor: "armor", helm: "helm", acc: "acc" };   /* 武器は売り物。戦う手立てはない */
 
+/* 品質・付与・損耗はすべて個体のパラメータ。品名（種類）は変わらない */
 const QUAL = [
-  { nm: "粗悪な", mul: 0.55 },
-  { nm: "",       mul: 1.00 },
-  { nm: "上等な", mul: 1.65 },
-  { nm: "名工の", mul: 2.70 },
-  { nm: "伝説の", mul: 4.30 }
+  { nm: "粗悪", mul: 0.55 },
+  { nm: "並",   mul: 1.00 },
+  { nm: "上等", mul: 1.65 },
+  { nm: "名工", mul: 2.70 },
+  { nm: "伝説", mul: 4.30 }
 ];
 const ENCH = [
   { nm: "",     mul: 1.00, atk: 0,  def: 0 },
-  { nm: "炎の", mul: 1.55, atk: 5,  def: 0 },
-  { nm: "氷の", mul: 1.50, atk: 4,  def: 1 },
-  { nm: "雷の", mul: 1.62, atk: 6,  def: 0 },
-  { nm: "守の", mul: 1.48, atk: 0,  def: 4 },
-  { nm: "幸の", mul: 1.70, atk: 1,  def: 1 },
-  { nm: "呪の", mul: 0.62, atk: 3,  def: -2 }
+  { nm: "炎",   mul: 1.55, atk: 5,  def: 0 },
+  { nm: "氷",   mul: 1.50, atk: 4,  def: 1 },
+  { nm: "雷",   mul: 1.62, atk: 6,  def: 0 },
+  { nm: "守り", mul: 1.48, atk: 0,  def: 4 },
+  { nm: "幸運", mul: 1.70, atk: 1,  def: 1 },
+  { nm: "呪い", mul: 0.62, atk: 3,  def: -2 }
 ];
 const wearNm = w => w < 0.12 ? "新品同様" : w < 0.32 ? "良好" : w < 0.55 ? "やや傷み" : w < 0.78 ? "傷だらけ" : w < 0.98 ? "ぼろぼろ" : "壊れている";
 
@@ -982,7 +993,8 @@ const UPG = {
   boot:  { nm: "革の靴",   ico: "boot",  desc: "歩く速さ",       max: 5, cost: [700, 1700, 3500, 6600],  val: d => "×" + (1 + (d - 1) * 0.13).toFixed(2) },
   heart: { nm: "お守り",   ico: "heart", desc: "耐えられる回数", max: 4, cost: [1300, 3000, 6400],       val: d => (2 + d) + " つ" },
   glove: { nm: "革手袋",   ico: "glove", desc: "回収の速さ",     max: 4, cost: [850, 2000, 4000],        val: d => (1.5 - (d - 1) * 0.32).toFixed(2) + " 秒" },
-  eye:   { nm: "目利き",   ico: "eye",   desc: "買取価格",       max: 4, cost: [1000, 2500, 5000],       val: d => "+" + Math.round((d - 1) * 12) + "%" },
+  eye:   { nm: "目利き",   ico: "eye",   desc: "買取価格と見立ての精度", max: 4, cost: [1000, 2500, 5000],
+           val: d => "+" + Math.round((d - 1) * 12) + "% ／ 見立て " + ["当てずっぽう", "おおまか", "かなり正確", "寸分たがわず"][d - 1] },
   sup:   { nm: "水と食料",  ico: "ration", desc: "もぐっていられる時間", max: 5, cost: [700, 1600, 3300, 6200], val: d => supplyMin(d) + " 分" },
 };
 const GOODS = [
@@ -993,7 +1005,9 @@ const GOODS = [
 const lampR = () => 4.4 + G.up.lamp * 1.15;
 const maxSupply = () => 120 + (G.up.sup - 1) * 40;      // 秒に直すと 240 〜 560 秒ぶん
 const supplyMin = lv => Math.round((120 + (lv - 1) * 40) / SUPPLY_RATE / 60 * 10) / 10;
-const bagSlots = () => 4 + G.up.bag * 2;
+const bagCap = () => 12 + (G.up.bag - 1) * 6;          // 背負える重さ
+const itemWt = it => KIND[it.k].wt || 1;
+const bagWeight = () => run.bag.reduce((a, b) => a + itemWt(b), 0);
 const walkSpd = () => 44 * (1 + (G.up.boot - 1) * 0.13);
 const maxHearts = () => 2 + G.up.heart;
 const lootTime = () => 1.5 - (G.up.glove - 1) * 0.32;
@@ -1008,13 +1022,16 @@ const marketOf = c => (G.market && G.market[c]) || 1;
 const marketArrow = c => { const m = marketOf(c); return m > 1.12 ? "▲高値" : m > 1.03 ? "△やや高" : m < 0.9 ? "▼安値" : m < 0.97 ? "▽やや安" : "―"; };
 
 /* ---------- 品物 ---------- */
-function itemName(it) { return QUAL[it.q].nm + KIND[it.k].nm; }
-function itemSub(it) {
+const itemName = it => KIND[it.k].nm;                    // 品名は種類そのもの
+const qualNm = it => QUAL[it.q].nm;
+function itemSub(it, blind) {
   const k = KIND[it.k], p = [];
-  if (it.e) p.push("《" + ENCH[it.e].nm + "》");
-  p.push(wearNm(it.wear));
-  if (k.atk) p.push("攻 " + itemAtk(it));
-  if (k.def) p.push("防 " + itemDef(it));
+  if (k.wt) p.push("重さ " + (k.wt || 1).toFixed(1));
+  if (k.cat !== "use" && k.cat !== "val" && k.cat !== "rel") p.push(wearNm(it.wear));
+  if (!blind) {
+    if (k.atk) p.push("攻 " + itemAtk(it));
+    if (k.def) p.push("防 " + itemDef(it));
+  }
   return p.join(" ・ ");
 }
 const itemAtk = it => KIND[it.k].atk ? Math.max(1, Math.round((it.base_a + ENCH[it.e].atk) * (1 - it.wear * 0.5))) : 0;
@@ -1025,10 +1042,70 @@ function priceOf(it) {
   const v = PRICE_K * k.base * QUAL[it.q].mul * ENCH[it.e].mul * (1 - it.wear * 0.68) * (1 + it.d * 0.04);
   return Math.max(1, Math.round(v));
 }
+/* ---------- 目利き ― 値踏みは成分ごとに難しさが違う ----------
+   種類の相場はだいたい頭に入っている。品質もある程度は見れば分かる。
+   だが付与（エンチャント）は、腕が悪いうちは有無すら怪しい。
+   そして「持ち主の死因」による裏の補正は、最後まで見立てに入らない。      */
+const EYE = [
+  { base: 0.10, qmiss: 0.60, wear: 0.22, ench: 0.75 },   // Lv1
+  { base: 0.06, qmiss: 0.40, wear: 0.14, ench: 0.48 },   // Lv2
+  { base: 0.03, qmiss: 0.20, wear: 0.06, ench: 0.22 },   // Lv3
+  { base: 0.00, qmiss: 0.00, wear: 0.00, ench: 0.00 }    // Lv4
+];
+/* 品によって値踏みのしやすさが違う。銀貨は数えれば分かるが、宝石や指輪には目が要る */
+const APPR_CAT = { weapon: 1, shield: 1, armor: 1, helm: 0.9, acc: 1.3, use: 0.3, val: 0.8, rel: 0.6 };
+const apprHard = k => (k.appr !== undefined ? k.appr : (APPR_CAT[k.cat] || 1));
+const eyeLv = () => clamp(G.up.eye, 1, EYE.length);
+const eyeE = () => EYE[eyeLv() - 1];
+const eyeSharp = () => eyeE().qmiss === 0 && eyeE().base === 0;
+/* 品ごとに固定のずれ（同じ品を何度見ても同じ見立てになる） */
+const rr = (it, k) => { const v = Math.sin((it.u || 1) * 12.9898 + k * 78.233 + (it.mr || 0) * 3.7) * 43758.5453; return v - Math.floor(v); };
+
+function appraise(it) {
+  const k = KIND[it.k], h = apprHard(k), E0 = eyeE();
+  const E = { base: E0.base * h, qmiss: E0.qmiss * h, wear: E0.wear * h, ench: E0.ench * h };
+  // 「持ち主の死因」による裏の補正は、腕が上がっても見立てには入らない
+  if (eyeSharp()) return { v: Math.round(sellBase(it)), q: it.q, ench: it.e ? "known" : "none", unc: 0 };
+  // 種類の相場 ― ほぼ分かる
+  let v = PRICE_K * k.base * (1 + (rr(it, 1) * 2 - 1) * E.base);
+  // 品質 ― 見れば分かる。ただし、たまに一段読み違える
+  let q = it.q;
+  if (rr(it, 2) < E.qmiss) q = clamp(q + (rr(it, 3) < 0.5 ? -1 : 1) * (rr(it, 4) < 0.22 ? 2 : 1), 0, QUAL.length - 1);
+  v *= QUAL[q].mul;
+  // 付与 ― いちばん読めない
+  let ench = "none";
+  if (it.e) {
+    if (rr(it, 5) < E.ench) { ench = "unknown"; v *= 1.3; }        // 何かあるのは分かるが、中身までは
+    else { ench = "known"; v *= ENCH[it.e].mul; }
+  } else if (rr(it, 6) < E.ench * 0.4) { ench = "maybe"; v *= 1.18; }  // ありそうに見えてしまう
+  // 損耗 ― 傷は見えるが、正確ではない
+  const hasWear = k.cat !== "use" && k.cat !== "val" && k.cat !== "rel";
+  const w = hasWear ? clamp(it.wear + (rr(it, 7) * 2 - 1) * E.wear, 0, 1) : 0;
+  v *= (1 - w * 0.68);
+  v *= (1 + it.d * 0.04) * marketOf(k.cat) * shopMul();
+  const step = v > 800 ? 50 : v > 200 ? 20 : 5;                    // 見立ては桁が粗い
+  let unc = E.base + E.qmiss * 0.42 + (hasWear ? E.wear * 0.68 : 0);
+  unc += it.e ? E.ench * 0.55 : E.ench * 0.07;
+  if (ench === "unknown" || ench === "maybe") unc += 0.12;
+  return { v: Math.max(1, Math.round(v / step) * step), q, ench, unc };
+}
+const estPrice = it => appraise(it).v;
+const estSum = arr => arr.reduce((a, b) => a + estPrice(b), 0);
+const estMark = () => eyeSharp() ? "" : "およそ ";
+const confMark = u => u < 0.12 ? "◎" : u < 0.30 ? "○" : u < 0.55 ? "△" : "？";
+const confCls = u => u < 0.12 ? "c1" : u < 0.30 ? "c2" : u < 0.55 ? "c3" : "c4";
+const confTxt = u => u < 0.12 ? "ほぼ確か" : u < 0.30 ? "だいたい" : u < 0.55 ? "怪しい" : "見当もつかない";
+function estTxt(it) {
+  const a = appraise(it);
+  return (eyeSharp() ? "" : "≈") + money(a.v) + " G" +
+    (eyeSharp() ? "" : ' <span class="cf ' + confCls(a.unc) + '" title="' + confTxt(a.unc) + '">' + confMark(a.unc) + "</span>");
+}
+
 /* 買取価格。死因による内部補正はここに混ぜ込むが、表には出さない */
+const sellBase = it => priceOf(it) * marketOf(KIND[it.k].cat) * shopMul();   // 見立てで届く範囲
 function sellPrice(it) {
-  let v = priceOf(it) * marketOf(KIND[it.k].cat) * shopMul();
-  if (it.cz === "murder") v *= it.mb;
+  let v = sellBase(it);
+  if (it.cz === "murder") v *= it.mb;                                        // 表には出ない補正
   return Math.max(1, Math.round(v));
 }
 const rarOf = it => it.q >= 4 ? 3 : it.q >= 3 ? 2 : (it.q >= 2 || it.e) ? 1 : 0;
@@ -1054,7 +1131,8 @@ function makeItem(depth, opt) {
     q = roll < 2 ? 4 : roll < 11 ? 3 : roll < 28 ? 2 : roll < 62 ? 1 : 0;
   }
   let e = 0;
-  if (!k.use && !k.story && chance(0.06 + depth * 0.012 + (opt.boost || 0) * 0.14)) e = ri(1, ENCH.length - 1);
+  const gearCat = k.cat === "weapon" || k.cat === "shield" || k.cat === "armor" || k.cat === "helm" || k.cat === "acc";
+  if (gearCat && chance(0.06 + depth * 0.012 + (opt.boost || 0) * 0.14)) e = ri(1, ENCH.length - 1);
   let wear = opt.wear !== undefined ? opt.wear : clamp(rnd(0.02, 0.55) + rnd(0, depth * 0.012), 0, 0.96);
   if (k.cat === "use" || k.cat === "val" || k.cat === "rel") wear = 0;
   const it = {
@@ -1063,7 +1141,8 @@ function makeItem(depth, opt) {
     base_d: k.def ? ri(k.def[0], k.def[1]) + Math.round(q * 1.2) : 0,
     hi: opt.hi === undefined ? -1 : opt.hi,
     cz: opt.cz || null,
-    mb: +rnd(1.2, 1.4).toFixed(3)
+    mb: +rnd(1.2, 1.4).toFixed(3),
+    mr: +Math.random().toFixed(3)
   };
   return it;
 }
@@ -1476,7 +1555,7 @@ let camx = 0, camy = 0;
 let uiOpen = false, uiKind = "", mapOpen = false;
 const P = {
   x: 0, y: 0, dir: "s", face: 1, anim: 0, hp: 3, invul: 0, lamp: true, smoke: 0,
-  looting: null, lootT: 0, stepT: 0, armor: 0, st: 100, tired: 0, exT: 0
+  looting: null, lootT: 0, stepT: 0, armor: 0, st: 100, tired: 0, exT: 0, heavyT: 0
 };
 const keys = {};
 let touchVec = { x: 0, y: 0 }, touchA = false;
@@ -1591,13 +1670,14 @@ function goUp() {
   run.floors++;
   doFade(1, () => { enterLevel(next, "up"); SFX.descend(); toast(levelName(next), "good"); });
 }
-const bagFull = () => run.bag.length >= bagSlots();
+const bagFull = () => bagWeight() >= bagCap();
+const canCarry = it => bagWeight() + itemWt(it) <= bagCap() + 0.001;
 function addToBag(it) {
-  if (bagFull()) return false;
+  if (!canCarry(it)) return false;
   run.bag.push(it); dexItem(it);
   return true;
 }
-function dropItem(it, x, y) { loose.push({ it, x, y, vx: rnd(-24, 24), vy: rnd(-30, -6), t: 0, pick: 0.5 }); }
+function dropItem(it, x, y, delay) { loose.push({ it, x, y, vx: rnd(-24, 24), vy: rnd(-30, -6), t: 0, pick: delay || 0.5 }); }
 
 /* ---------- 一日の終わり ---------- */
 function endRun(kind) {
@@ -1743,6 +1823,7 @@ function updatePlayer(dt) {
   }
   P.invul = Math.max(0, P.invul - dt);
   P.smoke = Math.max(0, P.smoke - dt);
+  P.heavyT = Math.max(0, P.heavyT - dt);
   tickSupply(dt, inSafeZone(Math.floor(P.x / TILE), Math.floor(P.y / TILE)));
   if (P.st <= 0 && !P.tired) { P.tired = 1; toast("水も食料も尽きた。長くはもたない", "bad"); SFX.deny(); hudSig = ""; }
   if (P.st > 0 && P.tired) P.tired = 0;
@@ -1763,6 +1844,11 @@ function updatePlayer(dt) {
     if (l.vy > 0 && l.t > 0.28) { l.vy = 0; l.vx *= 0.6; }
     if (l.pick <= 0 && dist2(l.x, l.y, P.x, P.y) < 132) {
       if (addToBag(l.it)) { loose.splice(i, 1); SFX.get_(); floatTxt(P.x, P.y - 16, itemName(l.it), "#e8c46a"); }
+      else if (P.heavyT <= 0) {
+        P.heavyT = 2.5;
+        floatTxt(P.x, P.y - 18, "重すぎて背負えない", "#ff9a92");
+        toast("荷を整理して置いていく品を決めよう", "bad");
+      }
     }
   }
   const near = nearestRemain();
@@ -1810,10 +1896,10 @@ function finishLoot(c) {
   }
   let got = 0, full = false;
   for (const it of c.items) {
-    if (addToBag(it)) { got++; floatTxt(c.x + 8, c.y - 30 - got * 9, itemName(it) + " +" + sellPrice(it), rarOf(it) >= 2 ? "#e29ce0" : "#e8c46a"); }
+    if (addToBag(it)) { got++; floatTxt(c.x + 8, c.y - 30 - got * 9, itemName(it) + (it.q >= 2 ? "（" + qualNm(it) + "）" : "") + " " + estTxt(it), rarOf(it) >= 2 ? "#e29ce0" : "#e8c46a"); }
     else { full = true; dropItem(it, c.x + 8, c.y + 8); }
   }
-  if (full) toast("背負い袋がいっぱいだ", "bad");
+  if (full) toast("これ以上は背負えない", "bad");
   if (c.story === "badge") { G.story.badge++; save(); }
   if (c.story === "mapfrag") { G.story.map++; save(); }
   if (c.story === "order") { G.story.order++; save(); }
@@ -2667,12 +2753,21 @@ function closeUI() { uiOpen = false; uiKind = ""; UI.classList.remove("on"); UI.
 const gold = () => G.gold.toLocaleString("ja-JP");
 const money = n => Math.round(n).toLocaleString("ja-JP");
 
-function itemRow(it, right, cls, owner) {
-  let sub = itemSub(it);
+const QCLS = ["q0", "q1", "q2", "q3", "q4"];
+function itemRow(it, right, cls, owner, blind) {
+  const a = blind ? appraise(it) : null;
+  let sub = itemSub(it, blind);
   if (owner && it.hi >= 0 && S.dex.hero[it.hi]) sub += "<br>元の持ち主：" + HEROES[it.hi].n + "（" + HEROES[it.hi].c + "）";
+  const q = a ? a.q : it.q;
+  const badge = '<span class="qb ' + QCLS[q] + '">' + QUAL[q].nm + (a && a.q !== it.q ? "" : "") + "</span>" +
+    (a
+      ? (a.ench === "known" ? '<span class="qb qe">' + ENCH[it.e].nm + "</span>"
+        : a.ench === "unknown" ? '<span class="qb qu">何か付いている</span>'
+        : a.ench === "maybe" ? '<span class="qb qu">付与あり？</span>' : "")
+      : (it.e ? '<span class="qb qe">' + ENCH[it.e].nm + "</span>" : ""));
   return '<div class="row rar' + rarOf(it) + (cls ? " " + cls : "") + '">' +
     '<div class="ico" style="background-image:url(' + iconURL[KIND[it.k].ico] + ')"></div>' +
-    '<div class="nm">' + itemName(it) + "<small>" + sub + "</small></div>" +
+    '<div class="nm">' + itemName(it) + " " + badge + "<small>" + sub + "</small></div>" +
     '<div class="pr">' + right + "</div></div>";
 }
 
@@ -2716,6 +2811,9 @@ actions.help = () => {
     "・<b>灯り</b>を消すと感知距離が半分になり、見失われるのも早い（自分も見えなくなる）。<br>　追われていても、<b>3マスほど離れてから消せば1秒ほどで撒ける</b>。すぐ隣では効かない<br>" +
     "・回収は<b>物音</b>を立てる。近くの魔物が寄ってくる<br>" +
     "・拾った<b>防具</b>は身につけられる。殴られを肩代わりするが、その分傷んで売値が落ちる<br>" +
+    "・持てるのは<b>重さ</b>まで。重い鎧か、軽くて高い指輪か ― <b>道具ボタンの「荷」で捨てて</b>入れ替えられる<br>" +
+    "・暗がりでの値踏みは当てにならない。<b>種類の相場は読めても、品質は取り違え、付与はまず見抜けない</b><br>" +
+    "　銀貨は数えれば分かるが、宝石や指輪は目が要る。<b>目利き</b>を上げると誤差が縮み、買取も高くなる<br>" +
     "・力尽きると、その日はまるごと<b>夢</b>になる。拾った物は残らず、過ぎるのは一日だけ<br>" +
     "・<b>地形は変わらない</b>。歩いた地図は日をまたいで残る。変わるのは遺留品と魔物のほう<br>" +
     "・品物には持ち主がいた。誰の、どんな死に方だったかは<b>図鑑</b>に残る</p>" +
@@ -2783,7 +2881,7 @@ actions.dive = () => {
   }
   openUI("dive", '<div class="panel"><h2>どこから潜る</h2>' +
     '<div class="sub">聖堂は5階ごとに挟まっている独立した階だ。<b>転移碑</b>で地上へ帰れて、<b>行ったことのある聖堂へは直接降りられる</b>。<br>' +
-    "階段は上下ともに使える。水と食料 " + supplyMin(G.up.sup) + " 分 ／ 荷 " + bagSlots() + " 枠 ／ 体力 " + maxHearts() + " ／ 防具 " + armorMax() + "</div>" +
+    "階段は上下ともに使える。水と食料 " + supplyMin(G.up.sup) + " 分 ／ 背負える重さ " + bagCap() + " ／ 体力 " + maxHearts() + " ／ 防具 " + armorMax() + "</div>" +
     '<div class="list" style="max-height:44vh;overflow:auto">' + rows + "</div>" +
     '<div class="btns"><div class="btn" data-a="back">やめる</div></div></div>');
 };
@@ -2895,7 +2993,7 @@ function showStore(tab) {
       const it = G.equip[k];
       return '<div class="row">' +
         '<div class="ico" style="background-image:url(' + (it ? iconURL[KIND[it.k].ico] : "") + ')"></div>' +
-        '<div class="nm">' + nm + "<small>" + (it ? itemName(it) + " ・ " + itemSub(it) : "なし") + "</small></div>" +
+        '<div class="nm">' + nm + "<small>" + (it ? itemName(it) + "（" + qualNm(it) + "） ・ " + itemSub(it) : "なし") + "</small></div>" +
         '<div class="pr">' + (it ? '<span class="btn sm" data-a="unequip" data-i="' + k + '">外す</span>' : "―") + "</div></div>";
     }).join("") + "</div>" +
       '<div class="stat" style="margin-top:8px"><span>防御 <b>' + equipDef() + "</b>（被弾を " + armorMax() + " 回まで肩代わり）</span></div>" +
@@ -3046,10 +3144,10 @@ function showCase(c, replay) {
 
 /* ---------- ダンジョン内の問い ---------- */
 function askExit() {
-  const total = run.bag.reduce((a, b) => a + sellPrice(b), 0);
+  const total = estSum(run.bag);
   openUI("exit", '<div class="panel"><h2>転移碑</h2>' +
     '<div class="sub">石碑の紋に手を触れれば、荷ごと地上へ送られる。今日はそこで終わりだ。</div>' +
-    '<div class="stat"><span>' + levelName(run.pos) + "</span><span>荷 <b>" + run.bag.length + "/" + bagSlots() + "</b></span>" +
+    '<div class="stat"><span>' + levelName(run.pos) + "</span><span>荷 <b>" + run.bag.length + " 点 " + bagWeight().toFixed(1) + "/" + bagCap() + "</b></span>" +
     "<span>見積り <b>" + money(total) + "</b> G</span><span>体力 <b>" + P.hp + "</b></span></div>" +
     '<div class="btns"><div class="btn pri" data-a="goup2">地上へ戻る</div><div class="btn" data-a="closeask">まだ潜る</div></div></div>');
 }
@@ -3064,7 +3162,7 @@ function askDown() {
     : "次の聖堂は 第" + sanctNo(ns) + "聖堂（地下 " + ns + " 階の下・あと " + (ns - next.d + 1) + " 層）";
   openUI("down", '<div class="panel"><h2>下り階段</h2>' +
     '<div class="sub">' + levelName(next) + " へ降りられる。<br>" + gap + "。</div>" +
-    '<div class="stat"><span>荷 <b>' + run.bag.length + "/" + bagSlots() + "</b></span><span>体力 <b>" + P.hp + "/" + maxHearts() + "</b></span>" +
+    '<div class="stat"><span>荷 <b>' + run.bag.length + " 点 " + bagWeight().toFixed(1) + "/" + bagCap() + "</b></span><span>体力 <b>" + P.hp + "/" + maxHearts() + "</b></span>" +
     "<span>防具 <b>" + P.armor + "/" + armorMax() + "</b></span><span>水と食料 <b>" + Math.max(0, Math.round(P.st / SUPPLY_RATE)) + "</b> 秒</span></div>" +
     '<div class="btns"><div class="btn pri" data-a="godown">降りる</div><div class="btn" data-a="closeask">やめておく</div></div></div>');
 }
@@ -3073,17 +3171,17 @@ actions.godown = () => { closeUI(); goDown(); };
 function askUp() {
   const p = run.pos;
   if (!p.s && p.d <= 1) {
-    const total = run.bag.reduce((a, b) => a + sellPrice(b), 0);
+    const total = estSum(run.bag);
     openUI("up", '<div class="panel"><h2>地上への出口</h2>' +
       '<div class="sub">墓場の入口だ。ここを出れば、今日は終わりになる。</div>' +
-      '<div class="stat"><span>荷 <b>' + run.bag.length + "/" + bagSlots() + "</b></span><span>見積り <b>" + money(total) + "</b> G</span></div>" +
+      '<div class="stat"><span>荷 <b>' + run.bag.length + " 点 " + bagWeight().toFixed(1) + "/" + bagCap() + "</b></span><span>見積り <b>" + money(total) + "</b> G</span></div>" +
       '<div class="btns"><div class="btn pri" data-a="goup2">地上へ出る</div><div class="btn" data-a="closeask">まだ潜る</div></div></div>');
     return;
   }
   const next = p.s ? { d: p.d, s: false } : hasSanctBelow(p.d - 1) ? { d: p.d - 1, s: true } : { d: p.d - 1, s: false };
   openUI("up", '<div class="panel"><h2>上り階段</h2>' +
     '<div class="sub">' + levelName(next) + " へ戻れる。すでに歩いた道だ。</div>" +
-    '<div class="stat"><span>荷 <b>' + run.bag.length + "/" + bagSlots() + "</b></span>" +
+    '<div class="stat"><span>荷 <b>' + run.bag.length + " 点 " + bagWeight().toFixed(1) + "/" + bagCap() + "</b></span>" +
     "<span>水と食料 <b>" + Math.max(0, Math.round(P.st / SUPPLY_RATE)) + "</b> 秒</span></div>" +
     '<div class="btns"><div class="btn pri" data-a="goupstair">のぼる</div><div class="btn" data-a="closeask">やめておく</div></div></div>');
 }
@@ -3186,25 +3284,68 @@ function showTalk(lines, done) {
 function showPause() {
   openUI("pause", '<div class="panel"><h2>中断</h2>' +
     '<div class="stat"><span>' + G.day + " 日目</span><span>" + levelName(run.pos) + "</span>" +
-    "<span>荷 <b>" + run.bag.length + "/" + bagSlots() + "</b></span>" +
-    "<span>見積り <b>" + money(run.bag.reduce((a, b) => a + sellPrice(b), 0)) + "</b> G</span></div>" +
+    "<span>荷 <b>" + run.bag.length + " 点 " + bagWeight().toFixed(1) + "/" + bagCap() + "</b></span>" +
+    "<span>見積り <b>" + estMark() + money(estSum(run.bag)) + "</b> G</span></div>" +
     '<div class="btns"><div class="btn pri" data-a="resume">つづける</div><div class="btn" data-a="help">あそびかた</div></div>' +
     '<div class="btns" style="margin-top:8px"><div class="btn" data-a="mute">音 ' + (muted ? "OFF" : "ON") + "</div>" +
     '<div class="btn" data-a="closeask">とじる</div></div></div>');
 }
 actions.resume = () => closeUI();
 actions.mute = () => { muted = !muted; S.opt.mute = muted; save(); showPause(); };
-function showItems() {
-  const row = (id, ico, nm, desc, act) =>
-    '<div class="row"><div class="ico" style="background-image:url(' + iconURL[ico] + ')"></div>' +
-    '<div class="nm">' + nm + "<small>" + desc + "</small></div>" +
-    '<div class="pr">' + G.inv[id] + '<span class="btn sm' + (G.inv[id] > 0 ? "" : " dis") + '" data-a="' + act + '" style="margin-left:8px">使う</span></div></div>';
-  openUI("items", '<div class="panel"><h2>道具</h2><div class="list">' +
-    row("potion", "potion", "ポーション", "体力を1つ回復", "uPot") +
-    row("smoke", "smoke", "煙玉", "追跡を振り切る", "uSmk") +
-    "</div>" +
-    '<div class="btns"><div class="btn pri" data-a="resume">とじる</div><div class="btn" data-a="pause2">中断</div></div></div>');
+let itemTab = "tool";
+function showItems(tab) {
+  itemTab = tab || itemTab;
+  let body = "";
+  if (itemTab === "tool") {
+    const row = (id, ico, nm, desc, act) =>
+      '<div class="row"><div class="ico" style="background-image:url(' + iconURL[ico] + ')"></div>' +
+      '<div class="nm">' + nm + "<small>" + desc + "</small></div>" +
+      '<div class="pr">' + G.inv[id] + '<span class="btn sm' + (G.inv[id] > 0 ? "" : " dis") + '" data-a="' + act + '" style="margin-left:8px">使う</span></div></div>';
+    body = '<div class="list">' +
+      row("potion", "potion", "ポーション", "体力を1つ回復", "uPot") +
+      row("smoke", "smoke", "煙玉", "追跡を振り切る", "uSmk") + "</div>";
+  } else {
+    const total = estSum(run.bag);
+    body = '<div class="stat"><span>重さ <b>' + bagWeight().toFixed(1) + "/" + bagCap() + "</b></span>" +
+      "<span>" + run.bag.length + " 点</span><span>見積り <b>" + estMark() + money(total) + "</b> G</span></div>" +
+      (eyeSharp() ? "" : '<div class="note" style="margin:0 0 8px">目利き Lv' + eyeLv() +
+        " ― 種類の相場は読めるが、品質は取り違え、付与はほとんど見抜けない。<br>" +
+        '<span class="cf c1">◎</span>ほぼ確か <span class="cf c2">○</span>だいたい ' +
+        '<span class="cf c3">△</span>怪しい <span class="cf c4">？</span>見当もつかない</div>');
+    if (!run.bag.length) body += '<p class="q">まだ何も拾っていない。</p>';
+    else {
+      body += '<div class="btns" style="margin-bottom:8px"><div class="btn sm" data-a="sortBag" data-i="eff">割の悪い順</div>' +
+        '<div class="btn sm" data-a="sortBag" data-i="wt">重い順</div>' +
+        '<div class="btn sm" data-a="sortBag" data-i="val">高い順</div></div>';
+      body += '<div class="list" style="max-height:42vh;overflow:auto">' + run.bag.map((it, i) =>
+        itemRow(it, estTxt(it) +
+          '<span class="btn sm warn" data-a="dropIt" data-i="' + i + '" style="margin-left:8px">捨てる</span>', "", false, true)).join("") + "</div>";
+      body += '<div class="note">捨てた品はその場に落ちる。拾い直すこともできるが、階を離れれば戻らない。</div>';
+    }
+  }
+  openUI("items", '<div class="panel"><h2>' + (itemTab === "tool" ? "道具" : "荷を整理する") + "</h2>" +
+    '<div class="tabs"><div class="tab' + (itemTab === "tool" ? " on" : "") + '" data-a="itab" data-i="tool">道具</div>' +
+    '<div class="tab' + (itemTab === "bag" ? " on" : "") + '" data-a="itab" data-i="bag">荷（' + run.bag.length + "）</div></div>" +
+    body +
+    '<div class="btns" style="margin-top:12px"><div class="btn pri" data-a="resume">とじる</div><div class="btn" data-a="pause2">中断</div></div></div>');
 }
+actions.itab = d => showItems(d.i);
+actions.dropIt = d => {
+  const i = parseInt(d.i, 10), it = run.bag[i];
+  if (!it) return;
+  run.bag.splice(i, 1);
+  dropItem(it, P.x + rnd(-6, 6), P.y + 6, 2.5);
+  floatTxt(P.x, P.y - 18, itemName(it) + " を置いた", "#93876f");
+  hudSig = "";
+  showItems("bag");
+};
+actions.sortBag = d => {
+  const k = d.i;
+  run.bag.sort((a, b) => k === "wt" ? itemWt(b) - itemWt(a)
+    : k === "val" ? estPrice(b) - estPrice(a)
+    : (estPrice(a) / itemWt(a)) - (estPrice(b) / itemWt(b)));   // 並べ替えも見立てのまま
+  showItems("bag");
+};
 actions.uPot = () => { closeUI(); usePotion(); };
 actions.uSmk = () => { closeUI(); useSmoke(); };
 actions.pause2 = () => showPause();
@@ -3213,6 +3354,8 @@ actions.pause2 = () => showPause();
 function showResult(kind, kept, lost, depth, floors) {
   scene = "result";
   const total = kept.reduce((a, b) => a + sellPrice(b), 0);
+  const est = estSum(kept);
+  const gap = total - est;
   const head = "生きて帰った";
   const sub = "梯子を登りきる。夜の風が、墓場のにおいを流していく。";
   const over = G.day > G.limit && G.debt > 0;
@@ -3223,7 +3366,11 @@ function showResult(kind, kept, lost, depth, floors) {
       : '<p class="q">持ち帰った品はない。</p>') +
     (lost && lost.length ? '<div class="note" style="color:#ff9a92">落とした品：' + lost.map(itemName).join("、") + "</div>" : "") +
     '<div class="hr"></div>' +
-    '<div class="center big">見積り ' + money(total) + " G</div>" +
+    '<div class="center big">' + money(total) + " G</div>" +
+    (!eyeSharp() && kept.length
+      ? '<div class="center" style="font-size:11px;color:var(--dim);margin-top:4px">暗がりでの見立ては ' + money(est) + " G だった ― " +
+        (gap === 0 ? "ちょうどだ" : (gap > 0 ? "<b style=\"color:#8fe3a0\">+" + money(gap) : "<b style=\"color:#ff9a92\">" + money(gap)) + " G</b> の読み違い") + "</div>"
+      : "") +
     '<div class="stat center" style="justify-content:center;margin-top:10px"><span>' + G.day + " 日目になった</span>" +
     (G.debt > 0 ? "<span>借金 <b>" + money(G.debt) + "</b> G</span><span>期限まで <b>" + Math.max(0, daysLeft()) + "</b> 日</span>" : "") + "</div>" +
     '<div class="btns" style="margin-top:14px">' +
@@ -3305,15 +3452,13 @@ function updateHUD() {
     '<span class="chip">食 <span class="stam ' + (P.st <= 0 ? "out" : P.st < maxSupply() * 0.3 ? "low" : "") + '">' +
     '<i style="width:' + Math.round(clamp(P.st / maxSupply(), 0, 1) * 100) + '%"></i></span>' +
     (P.tired ? ' <b style="color:#ff9a92">飢</b>' : "") + "</span>" +
-    '<span class="chip">荷 <b>' + run.bag.length + "/" + bagSlots() + "</b></span>" +
+    '<span class="chip">荷 <b>' + bagWeight().toFixed(1) + "/" + bagCap() + "</b></span>" +
     '<span class="lamp ' + (P.lamp ? "" : "off") + '">' + (P.lamp ? "灯●" : "灯○") + "</span>" +
     '<span class="chip">薬 <b>' + G.inv.potion + "</b> 煙 <b>" + G.inv.smoke + "</b></span>";
   let h = "";
-  const slots = bagSlots();
-  for (let i = 0; i < slots; i++) {
-    const it = run.bag[i];
-    h += it ? '<i style="background-image:url(' + iconURL[KIND[it.k].ico] + ')"></i>' : '<i class="empty"></i>';
-  }
+  for (const it of run.bag) h += '<i style="background-image:url(' + iconURL[KIND[it.k].ico] + ')"></i>';
+  const room = Math.max(0, Math.round((bagCap() - bagWeight()) / 1.5));
+  for (let i = 0; i < Math.min(room, 8); i++) h += '<i class="empty"></i>';
   BAGEL.innerHTML = h;
 }
 
