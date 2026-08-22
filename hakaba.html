@@ -14,6 +14,7 @@
     --moss: #6f8f5a;
     --line: rgba(232, 196, 106, 0.22);
     --panel: rgba(16, 13, 20, 0.94);
+    --panel-solid: #100d14;
   }
   * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
   html, body {
@@ -31,7 +32,7 @@
   }
 
   #app { position: fixed; left: 0; right: 0; top: 0; height: 100%; display: flex; align-items: center; justify-content: center; z-index: 1; }
-  #ui { z-index: 4; }
+  #ui { z-index: 20; }
   #stage { position: relative; }
   #cv {
     display: block;
@@ -64,6 +65,9 @@
   #hud .sep { flex: 1; }
   #hud .chip { color: var(--gold); }
   #hud .chip b { color: var(--ink); font-weight: 600; }
+  #hud .chip.warn b, #hud .chip.warn { color: #ff9a92; }
+  #hud .clk { color: var(--ink); font-variant-numeric: tabular-nums; }
+  #hud .clk.low { color: var(--gold); } #hud .clk.out { color: var(--blood); }
   #hud .lamp.off { color: #5c5468; }
   #hud .stam { display: inline-block; width: 52px; height: 6px; vertical-align: middle;
     background: rgba(255,255,255,0.10); border: 1px solid rgba(255,255,255,0.20); }
@@ -80,14 +84,14 @@
     background-repeat: no-repeat; background-position: center; background-size: 11px 11px;
     image-rendering: pixelated;
   }
-  #bag i.empty { border-color: rgba(255,255,255,0.08); background-image: none !important; }
+  #bag.full i { border-color: rgba(180,65,58,0.55); }
 
   #toasts {
     position: absolute; left: 6px; right: 6px; bottom: 26px; display: flex; flex-direction: column;
     align-items: flex-end; gap: 3px; pointer-events: none;
   }
   #toasts div {
-    font-size: 10px; padding: 2px 6px; max-width: 100%; border-radius: 2px;
+    font-size: 11.5px; padding: 3px 8px; max-width: 100%; border-radius: 2px;
     background: rgba(8,6,12,0.82); border-left: 2px solid var(--gold);
     animation: toastIn 0.22s ease both; text-shadow: 0 1px 2px #000;
   }
@@ -111,10 +115,20 @@
   .abtn {
     position: absolute; pointer-events: auto; width: 66px; height: 66px; border-radius: 50%;
     background: rgba(20,16,26,0.5); border: 1px solid rgba(232,196,106,0.3);
-    color: var(--ink); font-size: 11px; display: flex; align-items: center; justify-content: center;
+    color: var(--ink); font-size: 11px;
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
     text-align: center; line-height: 1.25;
   }
   .abtn:active { background: rgba(232,196,106,0.3); }
+  .abtn small { display: block; font-size: 9.5px; font-weight: 400; letter-spacing: 0; color: var(--dim); margin-top: 1px; }
+  .abtn.off { color: #6a6276; border-color: rgba(232,196,106,0.12); }
+  .abtn.off small { color: #4d4657; }
+  .abtn.on { border-color: rgba(232,196,106,0.65); background: rgba(232,196,106,0.18); }
+  .abtn.hot {                                    /* 拾えるものが目の前にある */
+    border-color: rgba(232,196,106,0.9); background: rgba(232,196,106,0.24); color: #fff3d4;
+    box-shadow: 0 0 16px rgba(232,196,106,0.35);
+  }
+  .abtn.hot small { color: #e8c46a; }
   #bA { right: 5vw; bottom: calc(9vh + env(safe-area-inset-bottom)); width: 86px; height: 86px; font-size: 13px; }
   #bB { right: calc(5vw + 94px); bottom: calc(3vh + env(safe-area-inset-bottom)); width: 60px; height: 60px; }
   #bC { right: 5vw; bottom: calc(1.5vh + env(safe-area-inset-bottom)); width: 60px; height: 60px; font-size: 11px; }
@@ -122,33 +136,69 @@
 
   /* ---------- overlay UI ---------- */
   #ui {
-    position: absolute; inset: 0; display: none;
+    position: absolute; inset: 0; display: none;   /* #app いっぱい ― 画面の高さを全部使う */
     align-items: center; justify-content: center;
-    background: rgba(4,3,8,0.62);
-    padding: 10px; overflow: auto;
+    background: rgba(4,3,8,0.66);
+    padding: 8px;                                  /* 上の切り欠きは #app、下は .pfoot が見ている */
+    overflow: hidden;
   }
   #ui.on { display: flex; }
-  #ui.clear { background: linear-gradient(180deg, rgba(4,3,8,0.15) 0%, rgba(4,3,8,0.1) 40%, rgba(4,3,8,0.72) 100%); align-items: flex-end; }
-  #ui.clear .panel { background: transparent; border: none; box-shadow: none; padding-bottom: 22px; }
+  /* タイトルは絵の上に重ねたいので、盤面の高さぶんだけに収める */
+  #ui.clear { background: linear-gradient(180deg, rgba(4,3,8,0.15) 0%, rgba(4,3,8,0.1) 40%, rgba(4,3,8,0.72) 100%);
+    align-items: flex-end; height: var(--stageh, 100%); padding-bottom: 14px; }
+  #ui.clear .panel { background: transparent; border: none; box-shadow: none; }
+  .panel.raw { display: block; overflow-y: auto; padding: 16px 16px 14px; }
+
+  /* パネルは［見出し・本文・操作］の三段。スクロールするのは本文だけ */
   .panel {
-    width: min(560px, 100%); max-height: 100%; overflow: auto;
+    display: flex; flex-direction: column;
+    width: min(560px, 100%); max-height: 100%; overflow: hidden;
     background: var(--panel); border: 1px solid var(--line);
     box-shadow: 0 18px 60px rgba(0,0,0,0.7), inset 0 0 0 1px rgba(255,255,255,0.03);
-    padding: 16px 16px 14px; animation: pop 0.22s ease both;
+    animation: pop 0.22s ease both;
   }
+  .phead { flex: none; position: relative; padding: 13px 15px 0; }
+  .phead.bare { padding: 0; min-height: 42px; }
+  .pbody {
+    flex: 1 1 auto; min-height: 0; padding: 10px 15px 12px;
+    overflow-y: auto; overscroll-behavior: contain; -webkit-overflow-scrolling: touch;
+    background:
+      linear-gradient(var(--panel-solid) 40%, rgba(16,13,20,0)) top / 100% 16px no-repeat local,
+      linear-gradient(rgba(16,13,20,0), var(--panel-solid) 65%) bottom / 100% 16px no-repeat local,
+      radial-gradient(farthest-side at 50% 0, rgba(0,0,0,0.45), rgba(0,0,0,0)) top / 100% 9px no-repeat scroll,
+      radial-gradient(farthest-side at 50% 100%, rgba(0,0,0,0.45), rgba(0,0,0,0)) bottom / 100% 9px no-repeat scroll;
+  }
+  .pfoot {
+    flex: none; display: flex; flex-direction: column; gap: 7px;
+    padding: 10px 15px calc(11px + env(safe-area-inset-bottom));
+    border-top: 1px solid var(--line);
+    background: linear-gradient(180deg, rgba(0,0,0,0.10), rgba(0,0,0,0.30));
+  }
+  .pclose {
+    position: absolute; top: 6px; right: 7px; width: 34px; height: 34px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 19px; line-height: 1; color: var(--dim); cursor: pointer;
+    border: 1px solid rgba(255,255,255,0.10); background: rgba(255,255,255,0.04);
+    border-radius: 50%; z-index: 2;
+  }
+  .pclose:hover, .pclose:active { color: var(--gold); border-color: var(--line); background: rgba(232,196,106,0.12); }
+  .phead.hasx h2, .phead.hasx > div:first-child { padding-right: 38px; }
   @keyframes pop { from { opacity: 0; transform: translateY(10px) scale(0.99); } to { opacity: 1; transform: none; } }
   .panel h2 {
     font-size: 15px; letter-spacing: 0.2em; color: var(--gold); font-weight: 700;
     display: flex; align-items: center; gap: 8px; margin-bottom: 3px;
   }
   .panel h2::after { content: ""; flex: 1; height: 1px; background: var(--line); }
-  .panel .sub { font-size: 11px; color: var(--dim); line-height: 1.8; margin-bottom: 12px; }
+  .panel .sub { font-size: 11px; color: var(--dim); line-height: 1.8; margin-bottom: 10px; }
+  .phead .tabs { margin-bottom: 0; padding-bottom: 10px; }
+  .pbody > *:first-child { margin-top: 0; }
   .panel p { font-size: 12.5px; line-height: 1.95; color: var(--ink); }
   .panel p.q { color: var(--dim); font-size: 11.5px; }
 
   .tabs { display: flex; gap: 6px; margin-bottom: 12px; flex-wrap: wrap; }
   .tab {
-    font-size: 11px; padding: 5px 11px; border: 1px solid rgba(255,255,255,0.12);
+    font-size: 11px; padding: 7px 12px; min-height: 30px; display: flex; align-items: center;
+    border: 1px solid rgba(255,255,255,0.12);
     color: var(--dim); background: rgba(255,255,255,0.02); cursor: pointer;
   }
   .tab.on { color: #12100a; background: var(--gold); border-color: var(--gold); font-weight: 700; }
@@ -180,11 +230,17 @@
   .row.rar2 { border-color: rgba(232,196,106,0.45); background: rgba(232,196,106,0.05); }
   .row.rar3 { border-color: rgba(226,120,220,0.5); background: rgba(226,120,220,0.06); }
   .row.locked { opacity: 0.42; }
+  .row[data-a] { cursor: pointer; }
+  .row[data-a]::after { content: "›"; flex: none; color: var(--dim); font-size: 16px; line-height: 1; margin-left: 2px; }
+  .row[data-a]:hover { background: rgba(232,196,106,0.07); border-color: rgba(232,196,106,0.32); }
+  .row[data-a]:hover::after { color: var(--gold); }
+  .row[data-a]:active { background: rgba(232,196,106,0.14); }
 
   .btns { display: flex; gap: 8px; flex-wrap: wrap; }
   .btn {
     flex: 1; min-width: 120px; text-align: center; cursor: pointer;
-    padding: 10px 12px; font-size: 12.5px; font-weight: 700; letter-spacing: 0.08em;
+    padding: 11px 12px; min-height: 42px; display: flex; align-items: center; justify-content: center;
+    font-size: 12.5px; font-weight: 700; letter-spacing: 0.08em;
     color: var(--ink); border: 1px solid rgba(232,196,106,0.35); background: rgba(232,196,106,0.07);
     transition: background 0.15s, transform 0.1s;
   }
@@ -192,7 +248,10 @@
   .btn:active { transform: translateY(1px); }
   .btn.pri { background: var(--gold); color: #17130a; border-color: var(--gold); }
   .btn.pri:hover { background: #f4d789; }
-  .btn.sm { flex: none; min-width: 0; padding: 5px 12px; font-size: 11px; font-weight: 600; }
+  .pfoot .btn { letter-spacing: 0.03em; white-space: nowrap; min-width: 96px; }
+  .btns.slim .btn { min-height: 34px; padding: 7px 12px; font-size: 11.5px; font-weight: 600; }
+  .btn.sm { flex: none; min-width: 0; padding: 6px 12px; min-height: 30px; font-size: 11px; font-weight: 600;
+    display: inline-flex; align-items: center; justify-content: center; }
   .btn.dis { opacity: 0.35; pointer-events: none; }
   .btn.warn { border-color: rgba(180,65,58,0.5); background: rgba(180,65,58,0.12); color: #ffc4bd; }
 
@@ -207,6 +266,16 @@
     border: 1px solid rgba(255,255,255,0.2); background: rgba(255,255,255,0.05); color: var(--ink);
   }
   .qbar { height: 4px; background: rgba(255,255,255,0.08); margin-top: 4px; }
+
+  /* 横持ちになったら遊べないので、そう言う */
+  #rot {
+    display: none; position: fixed; inset: 0; z-index: 60; padding: 24px;
+    align-items: center; justify-content: center; text-align: center;
+    background: #07060b; color: var(--ink);
+  }
+  body.rotate #rot { display: flex; }
+  #rot b { display: block; font-size: 15px; letter-spacing: 0.14em; color: var(--gold); }
+  #rot small { display: block; margin-top: 8px; font-size: 11px; color: var(--dim); letter-spacing: 0.06em; }
   .qbar i { display: block; height: 100%; background: var(--gold); }
 </style>
 </head>
@@ -220,7 +289,6 @@
     <div id="hud"></div>
     <div id="bag"></div>
     <div id="toasts"></div>
-    <div id="ui"></div>
   </div>
   <div id="pad">
     <div class="stick" id="stick"><div class="knob" id="knob"></div></div>
@@ -229,7 +297,9 @@
     <div class="abtn" id="bC">道具</div>
     <div class="abtn" id="bD">地図</div>
   </div>
+  <div id="ui"></div>
 </div>
+<div id="rot"><div><b>画面を縦にしてください</b><small>『勇者の墓場』は縦持ち専用です</small></div></div>
 <script>
 "use strict";
 /* ============================================================
@@ -2867,10 +2937,60 @@ function drawTown() {
    ============================================================ */
 let isTouch = ("ontouchstart" in window) || navigator.maxTouchPoints > 0;
 const actions = {};
+/* パネルを ［見出し／本文／操作］ の三段に組み直す。
+   スクロールするのは本文だけ、とじる手段はつねに画面内に置く。 */
+const CLOSERS = ["back", "resume", "titleback"];
+function buildSheet(p) {
+  const kids = Array.prototype.slice.call(p.children);
+  const head = document.createElement("div"); head.className = "phead";
+  const body = document.createElement("div"); body.className = "pbody";
+  const foot = document.createElement("div"); foot.className = "pfoot";
+  let i = 0;                                       // 先頭の見出し・説明・タブは固定
+  for (; i < kids.length; i++) {
+    const k = kids[i];
+    if (!(k.tagName === "H2" || k.classList.contains("sub") || k.classList.contains("tabs"))) break;
+    head.appendChild(k);
+    if (k.classList.contains("tabs")) { i++; break; }   // タブから下は中身
+  }
+  const rest = kids.slice(i);
+  let cut = -1;                                    // いちばん最後の操作列から下は足元へ固定
+  for (let j = rest.length - 1; j >= 0; j--) if (rest[j].classList.contains("btns")) { cut = j; break; }
+  rest.forEach((el, j) => {
+    ((el.classList.contains("pin") || (cut >= 0 && j >= cut)) ? foot : body).appendChild(el);
+  });
+  body.querySelectorAll("[style]").forEach(el => {  // 入れ子のスクロールは潰す
+    if (el.style.maxHeight) { el.style.maxHeight = ""; el.style.overflow = ""; }
+  });
+  const fbs = foot.querySelectorAll(".btns");   // 操作列が二段になったら、とじる側は控えめに
+  if (fbs.length > 1) fbs[fbs.length - 1].classList.add("slim");
+  p.appendChild(head); if (body.children.length) p.appendChild(body); if (foot.children.length) p.appendChild(foot);
+  const c = p.querySelector(CLOSERS.map(a => '[data-a="' + a + '"]').join(","));
+  if (c) {                                         // × はつねに右上
+    const x = document.createElement("div");
+    x.className = "pclose"; x.textContent = "×"; x.dataset.a = c.dataset.a;
+    x.setAttribute("aria-label", "とじる");
+    head.appendChild(x); head.classList.add("hasx");
+    if (head.children.length === 1) head.classList.add("bare");
+  }
+  return { head, body, foot, closable: !!c, closeAct: c ? c.dataset.a : "" };
+}
+let uiCloseAct = "";
+const scrollMem = {};
+function scrollKey(p) {
+  const t = p.querySelector(".tabs .tab.on");
+  return uiKind + "/" + (t ? t.textContent : "");
+}
 function openUI(kind, html, clear) {
+  const old = UI.querySelector(".pbody");           // 開き直しでも読んでいた場所に戻す
+  if (old && uiKind) scrollMem[scrollKey(UI)] = old.scrollTop;
   uiOpen = true; uiKind = kind;
   UI.innerHTML = html; UI.classList.add("on");
   UI.classList.toggle("clear", !!clear);
+  const panel = UI.querySelector(".panel");
+  let sheet = null;
+  if (panel && clear) panel.classList.add("raw");     // タイトルは一枚もののまま
+  else if (panel) sheet = buildSheet(panel);
+  uiCloseAct = sheet ? sheet.closeAct : "";
   UI.querySelectorAll("[data-a]").forEach(el => {
     el.addEventListener("click", ev => {
       ev.preventDefault(); ev.stopPropagation();
@@ -2880,9 +3000,16 @@ function openUI(kind, html, clear) {
       if (f) f(el.dataset, el);
     });
   });
+  if (sheet && sheet.body) sheet.body.scrollTop = scrollMem[scrollKey(UI)] || 0;
   UI.scrollTop = 0;
 }
-function closeUI() { uiOpen = false; uiKind = ""; UI.classList.remove("on"); UI.classList.remove("clear"); UI.innerHTML = ""; }
+function closeUI() { uiOpen = false; uiKind = ""; uiCloseAct = ""; UI.classList.remove("on"); UI.classList.remove("clear"); UI.innerHTML = ""; }
+/* 幕を叩いてもとじる */
+UI.addEventListener("pointerdown", ev => {
+  if (ev.target !== UI || !uiCloseAct) return;
+  ev.preventDefault(); SFX.ui();
+  const f = actions[uiCloseAct]; if (f) f({});
+});
 const gold = () => G.gold.toLocaleString("ja-JP");
 const money = n => Math.round(n).toLocaleString("ja-JP");
 
@@ -2931,31 +3058,58 @@ actions.newg = () => {
 };
 actions.newg2 = () => { newGame(); doFade(1, () => showTown()); };
 actions.titleback = () => showTitle();
-actions.help = () => {
+let helpTab = "base";
+actions.help = d => showHelp(d && d.i);
+function showHelp(tab) {
+  helpTab = tab || helpTab;
+  let body = "";
+  if (helpTab === "base") {
+    body = "<p>・墓場にもぐり、<b>死んだ勇者の遺品</b>を回収して地上で売る<br>" +
+      "・<b>戦う手立てはない</b>。魔物は避けるものだ<br>" +
+      "・<b>一度もぐると一日</b>が過ぎる。深い階ほど品は良く、危険も増す<br>" +
+      "・力尽きると、その日はまるごと<b>夢</b>になる。拾った物は残らず、過ぎるのは一日だけ<br>" +
+      "・期限までに返せなければ、それまでだ</p>" +
+      '<div class="note">街では、絵のなかの押したいものを直接押す。店・ギルド・小屋・掲示板・墓場の入口。</div>';
+  } else if (helpTab === "dive") {
+    body = "<p>・階段は<b>上りも下りも</b>使える。地下1階の上り階段が、地上への出口<br>" +
+      "・5階ごとに<b>聖堂の階</b>が挟まっている。魔物は入ってこられず、<b>転移碑</b>で地上へ帰れる<br>" +
+      "・行ったことのある聖堂へは、次の日から<b>直接降りられる</b><br>" +
+      "・持って入れる<b>水と食料</b>が、そのまま<b>潜っていられる時間</b>。聖堂の中では減らない<br>" +
+      "・尽きると足が鈍り、やがて倒れる。途中で足すことはできない<br>" +
+      "・<b>地形は変わらない</b>。歩いた地図は日をまたいで残る。変わるのは遺留品と魔物のほう</p>";
+  } else if (helpTab === "hide") {
+    body = "<p>・<b>灯り</b>を消すと感知距離が半分になり、見失われるのも早い（自分も見えなくなる）<br>" +
+      "　追われていても、<b>3マスほど離れてから消せば1秒ほどで撒ける</b>。すぐ隣では効かない<br>" +
+      "・回収は<b>物音</b>を立てる。近くの魔物が寄ってくる<br>" +
+      "・拾った<b>防具</b>は身につけられる。殴られを肩代わりするが、その分傷んで売値が落ちる<br>" +
+      "・<b>煙玉</b>は追跡を切る。<b>ポーション</b>は体力をひとつ戻す</p>";
+  } else if (helpTab === "sell") {
+    body = "<p>・持てるのは<b>重さ</b>まで。重い鎧か、軽くて高い指輪か ― <b>道具ボタンの「荷」で捨てて</b>入れ替えられる<br>" +
+      "・暗がりでの値踏みは当てにならない。<b>種類の相場は読めても、品質は取り違え、付与はまず見抜けない</b><br>" +
+      "　銀貨は数えれば分かるが、宝石や指輪は目が要る。<b>目利き</b>を上げると誤差が縮み、買取も高くなる<br>" +
+      "・品物には持ち主がいた。誰の、どんな死に方だったかは<b>図鑑</b>に残る</p>" +
+      '<div class="note"><span class="cf c1">◎</span>ほぼ確か <span class="cf c2">○</span>だいたい ' +
+      '<span class="cf c3">△</span>怪しい <span class="cf c4">？</span>見当もつかない</div>';
+  } else {
+    body = '<div class="sub" style="margin:0">' + (isTouch ? "左の輪で移動<br>右の四つが 調べる（長押しで回収）・灯り・道具・地図<br>とじるときは右上の × でも、幕を叩いてもいい" :
+      '移動 <span class="kbd">←↑↓→</span><span class="kbd">WASD</span><br>調べる・決定 <span class="kbd">Z</span><span class="kbd">Space</span>（長押しで回収）<br>' +
+      '灯り <span class="kbd">X</span><span class="kbd">C</span> ／ 地図 <span class="kbd">M</span> ／ 道具 <span class="kbd">I</span><br>' +
+      'ポーション <span class="kbd">1</span> ／ 煙玉 <span class="kbd">2</span><br>中断・とじる <span class="kbd">Esc</span>') + "</div>";
+  }
   openUI("help", '<div class="panel"><h2>あそびかた</h2>' +
     '<div class="sub">あなたは遺品回収屋。勇者ではない。目的はひとつ ― 期限までに借金を返すこと。</div>' +
-    "<p>・墓場にもぐり、<b>死んだ勇者の遺品</b>を回収して地上で売る<br>" +
-    "・<b>戦う手立てはない</b>。魔物は避けるものだ<br>" +
-    "・<b>一度もぐると一日</b>が過ぎる。深い階ほど品は良く、危険も増す<br>" +
-    "・階段は<b>上りも下りも</b>使える。地下1階の上り階段が、地上への出口<br>" +
-    "・5階ごとに<b>聖堂の階</b>が挟まっている。魔物は入ってこられず、<b>転移碑</b>で地上へ帰れる<br>" +
-    "・持って入れる<b>水と食料</b>が、そのまま<b>潜っていられる時間</b>。聖堂の中では減らない<br>" +
-    "・尽きると足が鈍り、やがて倒れる。途中で足すことはできない<br>" +
-    "・<b>灯り</b>を消すと感知距離が半分になり、見失われるのも早い（自分も見えなくなる）。<br>　追われていても、<b>3マスほど離れてから消せば1秒ほどで撒ける</b>。すぐ隣では効かない<br>" +
-    "・回収は<b>物音</b>を立てる。近くの魔物が寄ってくる<br>" +
-    "・拾った<b>防具</b>は身につけられる。殴られを肩代わりするが、その分傷んで売値が落ちる<br>" +
-    "・持てるのは<b>重さ</b>まで。重い鎧か、軽くて高い指輪か ― <b>道具ボタンの「荷」で捨てて</b>入れ替えられる<br>" +
-    "・暗がりでの値踏みは当てにならない。<b>種類の相場は読めても、品質は取り違え、付与はまず見抜けない</b><br>" +
-    "　銀貨は数えれば分かるが、宝石や指輪は目が要る。<b>目利き</b>を上げると誤差が縮み、買取も高くなる<br>" +
-    "・力尽きると、その日はまるごと<b>夢</b>になる。拾った物は残らず、過ぎるのは一日だけ<br>" +
-    "・<b>地形は変わらない</b>。歩いた地図は日をまたいで残る。変わるのは遺留品と魔物のほう<br>" +
-    "・品物には持ち主がいた。誰の、どんな死に方だったかは<b>図鑑</b>に残る</p>" +
-    '<div class="hr"></div>' +
-    '<div class="sub" style="margin:0">' + (isTouch ? "左の輪で移動 ／ 調べる・灯り・地図・道具のボタン" :
-      '移動 <span class="kbd">←↑↓→</span><span class="kbd">WASD</span> ／ 調べる・決定 <span class="kbd">Z</span><span class="kbd">Space</span>（長押し） ／ 灯り <span class="kbd">X</span><span class="kbd">C</span> ／ 地図 <span class="kbd">M</span><br>' +
-      'ポーション <span class="kbd">1</span> 煙玉 <span class="kbd">2</span> ／ 地図 <span class="kbd">M</span> ／ 中断 <span class="kbd">Esc</span> ／ 音 <span class="kbd">M</span>') + "</div>" +
-    '<div class="btns" style="margin-top:14px"><div class="btn pri" data-a="back">もどる</div></div></div>');
-};
+    '<div class="tabs">' +
+    ["base:きほん", "dive:もぐる", "hide:かわす", "sell:荷と値", "key:そうさ"].map(t => {
+      const [k, nm] = t.split(":");
+      return '<div class="tab' + (helpTab === k ? " on" : "") + '" data-a="help" data-i="' + k + '">' + nm + "</div>";
+    }).join("") + "</div>" + body +
+    (scene === "town" || scene === "title"
+      ? '<div class="btns pin"><div class="btn" data-a="mute">音 ' + (muted ? "OFF" : "ON") + "</div>" +
+        (scene === "town" ? '<div class="btn" data-a="totitle">タイトルへ</div>' : "") + "</div>"
+      : "") +
+    '<div class="btns"><div class="btn pri" data-a="back">もどる</div></div></div>');
+}
+actions.totitle = () => { save(); doFade(1, () => showTitle()); };
 actions.back = () => {
   if (scene === "title") showTitle();
   else if (scene === "dungeon" && run && !run.escaped) closeUI();
@@ -3029,7 +3183,7 @@ function showShop(tab) {
         total += sellPrice(it);
         return itemRow(it, money(sellPrice(it)) + " G" + '<span class="btn sm" data-a="sell1" data-i="' + i + '" style="margin-left:8px">売る</span>');
       }).join("") + "</div>" +
-        '<div class="btns"><div class="btn pri" data-a="sellall">まとめて売る（' + money(total) + " G）</div>" +
+        '<div class="btns pin"><div class="btn pri" data-a="sellall">まとめて売る ' + money(total) + " G</div>" +
         '<div class="btn" data-a="store">倉庫に入れる</div></div>';
     }
     body += '<div class="note">今日の相場 ― ' + Object.keys(CAT_NM).map(c => CAT_NM[c] + " " + marketArrow(c)).join(" ／ ") + "</div>";
@@ -3416,7 +3570,7 @@ function showPause() {
     '<div class="btn" data-a="closeask">とじる</div></div></div>');
 }
 actions.resume = () => closeUI();
-actions.mute = () => { muted = !muted; S.opt.mute = muted; save(); showPause(); };
+actions.mute = () => { muted = !muted; S.opt.mute = muted; save(); if (uiKind === "help") showHelp(); else showPause(); };
 let itemTab = "tool";
 function showItems(tab) {
   itemTab = tab || itemTab;
@@ -3562,7 +3716,8 @@ function endFail() {
 let hudSig = "";
 function updateHUD() {
   if (scene !== "dungeon" || !run) { if (HUD.innerHTML) { HUD.innerHTML = ""; BAGEL.innerHTML = ""; hudSig = ""; } return; }
-  const sig = [P.hp, P.armor, run.pos.d, run.pos.s, run.bag.length, P.lamp, G.day, Math.ceil(P.st / 3),
+  const secs = Math.max(0, Math.ceil(P.st / SUPPLY_RATE));
+  const sig = [P.hp, P.armor, run.pos.d, run.pos.s, run.bag.length, P.lamp, G.day, secs,
     G.inv.potion, G.inv.smoke, run.bag.map(i => i.k).join(",")].join("|");
   if (sig === hudSig) return;
   hudSig = sig;
@@ -3575,16 +3730,34 @@ function updateHUD() {
     '<span class="chip">' + G.day + " 日目</span>" +
     '<span class="brk"></span>' +
     '<span class="chip">食 <span class="stam ' + (P.st <= 0 ? "out" : P.st < maxSupply() * 0.3 ? "low" : "") + '">' +
-    '<i style="width:' + Math.round(clamp(P.st / maxSupply(), 0, 1) * 100) + '%"></i></span>' +
+    '<i style="width:' + Math.round(clamp(P.st / maxSupply(), 0, 1) * 100) + '%"></i></span> ' +
+    '<span class="clk ' + (P.st <= 0 ? "out" : P.st < maxSupply() * 0.3 ? "low" : "") + '">' +
+    Math.floor(secs / 60) + ":" + String(secs % 60).padStart(2, "0") + "</span>" +
     (P.tired ? ' <b style="color:#ff9a92">飢</b>' : "") + "</span>" +
-    '<span class="chip">荷 <b>' + bagWeight().toFixed(1) + "/" + bagCap() + "</b></span>" +
+    '<span class="chip' + (bagWeight() >= bagCap() ? " warn" : "") + '">荷 <b>' + bagWeight().toFixed(1) + "/" + bagCap() + "</b></span>" +
     '<span class="lamp ' + (P.lamp ? "" : "off") + '">' + (P.lamp ? "灯●" : "灯○") + "</span>" +
     '<span class="chip">薬 <b>' + G.inv.potion + "</b> 煙 <b>" + G.inv.smoke + "</b></span>";
   let h = "";
   for (const it of run.bag) h += '<i style="background-image:url(' + iconURL[KIND[it.k].ico] + ')"></i>';
-  const room = Math.max(0, Math.round((bagCap() - bagWeight()) / 1.5));
-  for (let i = 0; i < Math.min(room, 8); i++) h += '<i class="empty"></i>';
   BAGEL.innerHTML = h;
+  BAGEL.className = bagWeight() >= bagCap() * 0.85 ? "full" : "";
+}
+
+/* 手元のボタンにも状態を出す ― 灯りの点灯、道具の残り、拾えるものが目の前にあるか */
+let padSig = "";
+function updatePad() {
+  const live = scene === "dungeon" && run && G && !uiOpen;
+  if (!live) { padSig = ""; return; }
+  const near = mapOpen ? null : nearestRemain();
+  const sig = [P.lamp, G.inv.potion, G.inv.smoke, near ? 1 : 0, mapOpen ? 1 : 0].join("|");
+  if (sig === padSig) return;
+  padSig = sig;
+  $("bA").innerHTML = near ? "回収<small>長押し</small>" : "調べる";
+  $("bA").classList.toggle("hot", !!near);
+  $("bB").innerHTML = "灯り<small>" + (P.lamp ? "●つけた" : "○消した") + "</small>";
+  $("bB").classList.toggle("off", !P.lamp);
+  $("bC").innerHTML = "道具<small>薬" + G.inv.potion + " 煙" + G.inv.smoke + "</small>";
+  $("bD").classList.toggle("on", !!mapOpen);
 }
 
 /* ============================================================
@@ -3600,8 +3773,8 @@ addEventListener("keydown", e => {
       if (k === "2") useSmoke();
       if (k === "escape") { if (mapOpen) mapOpen = false; else showPause(); }
       if (k === "i") showItems();
-    } else if (uiOpen && k === "escape") {
-      if (["pause", "items", "help", "exit", "down"].indexOf(uiKind) >= 0) closeUI();
+    } else if (uiOpen && (k === "escape" || k === "backspace") && uiCloseAct) {
+      const f = actions[uiCloseAct]; if (f) { SFX.ui(); f({}); }
     }
     if (k === "m" && scene === "dungeon" && !uiOpen) { mapOpen = !mapOpen; SFX.ui(); }
   }
@@ -3691,6 +3864,7 @@ function resize() {
   PAD.style.height = h + "px"; PAD.style.top = top + "px";
   const portrait = h > w * 1.05;
   document.body.classList.toggle("portrait", portrait);
+  document.body.classList.toggle("rotate", isTouch && !portrait && h < 520);
   let sc;
   if (portrait) {
     const padH = isTouch ? clamp(h * 0.24, 140, 230) : 0;   // 操作エリア
@@ -3706,6 +3880,7 @@ function resize() {
   fx.width = Math.round(cw * DPR); fx.height = Math.round(ch * DPR);
   fx.style.width = cw + "px"; fx.style.height = ch + "px";
   stage.style.width = cw + "px"; stage.style.height = ch + "px";
+  UI.style.setProperty("--stageh", ch + "px");
   PAD.classList.toggle("on", isTouch && scene === "dungeon");
 }
 addEventListener("resize", resize);
@@ -3744,7 +3919,7 @@ function frame(now) {
     drawTown();
     if (scene === "title") { g.fillStyle = "rgba(4,3,8,0.45)"; g.fillRect(0, 0, VW, VH); }
   }
-  updateHUD();
+  updateHUD(); updatePad();
   PAD.classList.toggle("on", isTouch && scene === "dungeon" && !uiOpen);
 
   // フェード
