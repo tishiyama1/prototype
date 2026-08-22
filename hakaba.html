@@ -705,23 +705,23 @@ const KING_A = [
   "................"
 ];
 
-const RA_PAL = { "0": "#140f14", "1": "#3a3038", "2": "#5c4e56", "3": "#7d6c76", "6": "#e0524a" };
+const RA_PAL = { "0": "#140f14", "1": "#3a3038", "2": "#6b5560", "3": "#907c86", "6": "#e0524a", "7": "#c99a34", "8": "#ffe9a0", "9": "#7fd0ff" };
 const RAT_A = [
   "................",
   "................",
-  "................",
-  "................",
-  "................",
-  "................",
-  "..00........00..",
-  ".0330......0330.",
-  ".03330000003330.",
-  "0333333333333330",
-  "0322222222222330",
-  "0326222222222330",
-  "0322222222222330",
-  ".03322222222330.",
+  "..........7.7.7.",
+  "..........78887.",
+  "..........79897.",
+  "..........77777.",
+  "..00.....0000000",
+  ".0330...03333330",
+  "0333000033322230",
+  "0322222222362230",
+  "0322222222222230",
+  ".03222222222330.",
+  "..003322223300..",
   "..00330..03300..",
+  "................",
   "................"
 ];
 const SP_PAL = { "0": "#100c16", "1": "#2c2136", "2": "#4a3a58", "3": "#6d5580", "6": "#c8f050" };
@@ -998,7 +998,8 @@ function buildSprites() {
   SPR.ghost = [makeSprite(GHOST_A, GH_PAL), makeSprite(GHOST_A, GH_PAL)];
   SPR.golem = [makeSprite(GOLEM_A, GO_PAL), makeSprite(GOLEM_A, Object.assign({}, GO_PAL, { "6": "#ffd06a" }))];
   SPR.king = [makeSprite(KING_A, KI_PAL), makeSprite(KING_A, Object.assign({}, KI_PAL, { "6": "#ffb0b0" }))];
-  SPR.rat = [makeSprite(RAT_A, RA_PAL), makeSprite(walk(RAT_A, "..00330..03300..", "................"), RA_PAL)];
+  const RAT_B = RAT_A.slice(); RAT_B[13] = "..03300..00330..";
+  SPR.rat = [makeSprite(RAT_A, RA_PAL), makeSprite(RAT_B, RA_PAL)];
   SPR.spider = [makeSprite(SPIDER_A, SP_PAL), makeSprite(SPIDER_A, Object.assign({}, SP_PAL, { "6": "#e8ff90" }))];
   SPR.wisp = [makeSprite(WISP_A, WI_PAL), makeSprite(WISP_A, Object.assign({}, WI_PAL, { "6": "#ff7a2c", "7": "#ffd88a" }))];
   SPR.worm = [makeSprite(WORM_A, WO_PAL), makeSprite(WORM_A, Object.assign({}, WO_PAL, { "3": "#d8bd78" }))];
@@ -1096,12 +1097,13 @@ const wearNm = w => w < 0.12 ? "新品同様" : w < 0.32 ? "良好" : w < 0.55 ?
 /* 所見 ― 死体から読み取れるのはここまで。誰が、なぜ、はわからない。
    atk は「その傷を作りうる攻撃手段」。魔物図鑑と突き合わせるための鍵。 */
 const CAUSES = [
-  { id: "blade",  nm: "刃物による致命傷", atk: "blade" },
+  { id: "blade",  nm: "刃物による致命傷", atk: "blade", susp: true },
+  { id: "melt",   nm: "溶解",             atk: "melt",  susp: true },
+  { id: "magic",  nm: "魔法による損傷",   atk: "magic", susp: true },
   { id: "blunt",  nm: "鈍器による外傷",   atk: "blunt" },
-  { id: "bite",   nm: "咬傷",             atk: "bite" },
-  { id: "poison", nm: "毒",               atk: "poison" },
-  { id: "burn",   nm: "火傷",             atk: "fire" },
-  { id: "magic",  nm: "魔法による損傷",   atk: "magic" },
+  { id: "bite",   nm: "噛殺",             atk: "bite" },
+  { id: "poison", nm: "毒",               atk: null },
+  { id: "burn",   nm: "火傷",             atk: null },
   { id: "crush",  nm: "圧死",             atk: "crush" },
   { id: "fall",   nm: "落下",             atk: null },
   { id: "choke",  nm: "窒息",             atk: null },
@@ -1232,19 +1234,30 @@ const HERO_TALK = [
 
 /* 魔物 ― 階層帯と攻撃手段を持つ。所見と突き合わせるための土台 */
 const MTYPE = {
-  slime: { nm: "ぬめり",   spr: "slime", spd: 15, sight: 3.6, hp: 8,  dMin: 1,  dMax: 12, w: 3, wander: 0.7, gold: 0.2, atk: ["poison"] },
-  bat:   { nm: "こうもり", spr: "bat",   spd: 35, sight: 4.4, hp: 5,  dMin: 1,  dMax: 30, w: 3, erratic: true, wander: 1.6, gold: 0.2, atk: ["bite"] },
-  bone:  { nm: "骸骨兵",   spr: "bone",  spd: 30, sight: 6.2, hp: 14, dMin: 2,  dMax: 14, w: 3, wander: 0.9, gold: 0.3, atk: ["blade"] },
-  ghost: { nm: "亡霊",     spr: "ghost", spd: 23, sight: 5.6, hp: 18, dMin: 6,  dMax: 30, w: 2, phase: true, wander: 0.6, gold: 0.35, atk: ["magic"] },
-  golem: { nm: "石の番人", spr: "golem", spd: 19, sight: 9.0, hp: 34, dMin: 10, dMax: 30, w: 2, wander: 0.5, gold: 0.5, atk: ["blunt", "crush"] },
-  rat:    { nm: "墓ねずみ", spr: "rat",    spd: 40, sight: 4.0, hp: 4,  dMin: 1,  dMax: 9,  w: 3, erratic: true, wander: 1.4, gold: 0.15, atk: ["bite"] },
-  spider: { nm: "糸蜘蛛",   spr: "spider", spd: 27, sight: 5.2, hp: 11, dMin: 3,  dMax: 17, w: 3, wander: 0.8, gold: 0.3, atk: ["bite", "poison"] },
-  wisp:   { nm: "燐火",     spr: "wisp",   spd: 26, sight: 6.6, hp: 12, dMin: 7,  dMax: 22, w: 2, phase: true, wander: 1.1, gold: 0.4, atk: ["fire"] },
-  worm:   { nm: "骨喰い蟲", spr: "worm",   spd: 17, sight: 4.8, hp: 26, dMin: 12, dMax: 26, w: 2, wander: 0.6, gold: 0.4, atk: ["bite", "crush"] },
-  wraith: { nm: "影法師",   spr: "wraith", spd: 34, sight: 7.4, hp: 22, dMin: 17, dMax: 30, w: 2, phase: true, wander: 0.5, gold: 0.55, atk: ["magic"] },
-  king:  { nm: "ダンジョンの主", spr: "king", spd: 30, sight: 10, hp: 120, dMin: 99, dMax: 99, w: 0, phase: true, wander: 0.3, boss: true, atk: ["crush", "magic"] }
+  slime:  { nm: "スライム", spr: "slime", spd: 20, sight: 4.2, hp: 8,  dMin: 1,  dMax: 12, w: 3, wander: 0.6, gold: 0.2,  ai: "chase",    atk: ["melt"] },
+  bat:    { nm: "こうもり", spr: "bat",   spd: 32, sight: 0,   hp: 5,  dMin: 1,  dMax: 30, w: 3, erratic: true, wander: 1.8, gold: 0.2, ai: "random", atk: ["bite"] },
+  rat:    { nm: "墓ねずみ", spr: "rat",   spd: 40, sight: 7.5, hp: 4,  dMin: 1,  dMax: 30, w: 1, erratic: true, wander: 1.6, gold: 0,   ai: "flee",  bonus: true, atk: [] },
+  bone:   { nm: "骸骨兵",   spr: "bone",  spd: 30, sight: 6.2, hp: 14, dMin: 2,  dMax: 14, w: 3, wander: 0.9, gold: 0.3,  ai: "wall",     atk: ["blade"] },
+  spider: { nm: "糸蜘蛛",   spr: "spider", spd: 30, sight: 5.4, hp: 11, dMin: 3, dMax: 17, w: 3, wander: 0.8, gold: 0.3,  ai: "corridor", atk: ["bite"] },
+  ghost:  { nm: "亡霊",     spr: "ghost", spd: 21, sight: 5.6, hp: 18, dMin: 6,  dMax: 30, w: 2, phase: true, wander: 0.6, gold: 0.35, ai: "chase", atk: ["magic"] },
+  wisp:   { nm: "燐火",     spr: "wisp",  spd: 30, sight: 6.6, hp: 12, dMin: 7,  dMax: 22, w: 2, phase: true, wander: 1.1, gold: 0.4,  ai: "drift",    atk: ["magic"] },
+  golem:  { nm: "石の番人", spr: "golem", spd: 14, sight: 99,  hp: 34, dMin: 10, dMax: 30, w: 2, wander: 0.4, gold: 0.5,  ai: "hunter",   atk: ["crush"] },
+  worm:   { nm: "骨喰い蟲", spr: "worm",  spd: 22, sight: 0,   hp: 26, dMin: 12, dMax: 26, w: 2, wander: 0.7, gold: 0.4,  ai: "scavenge", atk: ["bite"] },
+  wraith: { nm: "影法師",   spr: "wraith", spd: 32, sight: 7.4, hp: 22, dMin: 17, dMax: 30, w: 2, phase: true, wander: 0.5, gold: 0.55, ai: "chase", atk: ["magic"] },
+  king:   { nm: "ダンジョンの主", spr: "king", spd: 30, sight: 10, hp: 120, dMin: 99, dMax: 99, w: 0, phase: true, wander: 0.3, boss: true, ai: "chase", atk: ["crush", "magic"] }
+};const MON_ATK_NM = { blade: "斬撃", blunt: "打撃", bite: "噛みつき", melt: "溶解", poison: "毒", fire: "火炎", magic: "魔法", crush: "圧潰" };
+/* 行動特性 ― 図鑑にも出す */
+const MON_AI_NM = {
+  chase:    "見つけると追ってくる",
+  random:   "気まぐれに飛びまわる。人は追わない",
+  flee:     "こちらを見ると逃げていく",
+  wall:     "壁づたいに巡回し、見つけると追ってくる",
+  corridor: "通路に棲みつき、見つけると追ってくる",
+  hunter:   "どこにいても気づく。ゆっくり、ずっと追ってくる",
+  drift:    "決まった辺りを漂い、見つけると追ってくる",
+  scavenge: "死体や落ちた物に群がる。人は追わない"
 };
-const MON_ATK_NM = { blade: "斬撃", blunt: "打撃", bite: "咬傷", poison: "毒・酸", fire: "火炎", magic: "魔法", crush: "圧潰" };
+const spdNm = v => v < 17 ? "とても遅い" : v < 25 ? "遅い" : v < 37 ? "普通" : "速い";
 /* その階層に出る魔物が持っている攻撃手段 */
 function atkAtDepth(d) {
   const set = {};
@@ -1255,7 +1268,7 @@ function atkAtDepth(d) {
 /* その所見は、その階の魔物で説明がつくか */
 function explainable(czId, d) {
   const c = CAUSES.find(x => x.id === czId);
-  if (!c || !c.atk) return true;                 // 落下・衰弱などは魔物の話ではない
+  if (!c || !c.atk || !c.susp) return true;      // 落下・圧死などは事故でも起きる。印はつけない
   return !!atkAtDepth(d)[c.atk];
 }
 
@@ -1834,9 +1847,15 @@ function populateFloor(depth) {
   const bag = [];
   for (const k of avail) for (let w = 0; w < MTYPE[k].w + (MTYPE[k].dMin >= 4 ? Math.floor(depth / 5) : 0); w++) bag.push(k);
   for (let i = 0; i < nm; i++) {
-    const r = pick(pool);
-    const p = freeSpotIn(r, mons);
-    spawnMon(pick(bag), p.x, p.y, depth);
+    const k = pick(bag);
+    let p = null;
+    if (MTYPE[k].ai === "corridor") p = freeCorridorSpot();     // 糸蜘蛛は通路に棲む
+    if (!p) p = freeSpotIn(pick(pool), mons);
+    spawnMon(k, p.x, p.y, depth);
+  }
+  if (chance(0.38)) {                                           // 墓ねずみ ― たまに出る当たり
+    const p = freeSpotIn(pick(pool), mons);
+    spawnMon("rat", p.x, p.y, depth);
   }
   if (depth >= 2 && chance(0.42)) {
     const r = pick(pool);
@@ -1857,8 +1876,9 @@ function spawnMon(type, tx, ty, depth) {
   const t = MTYPE[type];
   const hp = Math.round(t.hp * (1 + (depth || 1) * 0.07));
   mons.push({
-    type, x: tx * TILE, y: ty * TILE, hp, maxHp: hp, state: "patrol", dirx: pick([-1, 0, 1]), diry: pick([-1, 0, 1]),
-    cd: rnd(0, 1.4), anim: rnd(0, 9), lx: 0, ly: 0, alert: 0, hurt: 0, ph: rnd(0, 9), dead: 0
+    type, x: tx * TILE + 8, y: ty * TILE + 8, hp, maxHp: hp, state: "patrol", dirx: pick([-1, 0, 1]), diry: pick([-1, 0, 1]),
+    cd: rnd(0, 1.4), anim: rnd(0, 9), lx: 0, ly: 0, alert: 0, hurt: 0, ph: rnd(0, 9), dead: 0,
+    hx: tx * TILE + 8, hy: ty * TILE + 8                        // 漂う起点
   });
 }
 function spawnCleaner(depth) {
@@ -2374,7 +2394,15 @@ function updateMons(dt) {
 
     if (t.boss && !run.escaped && dTiles < 2.2 && !uiOpen && !m.talked) { m.talked = true; askBoss(m); }
 
-    if (!passive && !run.escaped && !watchMode() && P.hp > 0 && dTiles <= t.sight * sightMul && (t.phase || los(mtx, mty, ptx, pty))) {
+    const ai = t.ai || "chase";
+    const awake = !passive && !run.escaped && !watchMode() && P.hp > 0;
+    let notice = false;
+    if (awake) {
+      if (ai === "hunter") notice = true;                       // どこにいても気づく
+      else if (ai === "random" || ai === "scavenge" || ai === "flee") notice = false;
+      else notice = dTiles <= t.sight * sightMul && (t.phase || los(mtx, mty, ptx, pty));
+    }
+    if (notice) {
       if (m.state !== "chase") { m.alert = 1.1; SFX.alert(); }
       m.state = "chase"; m.lost = 0; m.lx = ptx; m.ly = pty;
     } else if (m.state === "chase" && !passive) {
@@ -2401,6 +2429,38 @@ function updateMons(dt) {
       const tx = m.lx * TILE + 8, ty = m.ly * TILE + 8;
       if (m.cd <= 0 || dist2(tx, ty, m.x, m.y) < 90) { m.state = "patrol"; m.cd = rnd(0.5, 1.4); }
       else { const a = Math.atan2(ty - m.y, tx - m.x); dx = Math.cos(a); dy = Math.sin(a); sp *= 0.9; }
+    } else if (ai === "wall") {                                 // 骸骨兵 ― 左手の法則
+      const gx = (m.tx === undefined ? mtx : m.tx) * TILE + 8, gy = (m.ty === undefined ? mty : m.ty) * TILE + 8;
+      if (m.tx === undefined || dist2(gx, gy, m.x, m.y) < 12) leftHandStep(m);
+      const a = Math.atan2(m.ty * TILE + 8 - m.y, m.tx * TILE + 8 - m.x);
+      dx = Math.cos(a); dy = Math.sin(a); sp *= 0.78;
+    } else if (ai === "flee") {                                 // 墓ねずみ ― 見たら逃げる
+      if (awake && dTiles < t.sight) {
+        const a = Math.atan2(m.y - P.y, m.x - P.x);
+        dx = Math.cos(a); dy = Math.sin(a); sp *= 1.0; m.alert = 0.4;
+      } else {
+        m.cd -= dt;
+        if (m.cd <= 0) { m.cd = rnd(0.4, 1.2); const a = rnd(0, Math.PI * 2); m.dirx = Math.cos(a); m.diry = Math.sin(a); }
+        dx = m.dirx; dy = m.diry; sp *= 0.55;
+      }
+    } else if (ai === "drift") {                                // 燐火 ― 決まった辺りを漂う
+      if (m.hx === undefined) { m.hx = m.x; m.hy = m.y; }
+      const away = Math.hypot(m.x - m.hx, m.y - m.hy);
+      m.cd -= dt;
+      if (m.cd <= 0) { m.cd = rnd(0.6, 1.6); const a = rnd(0, Math.PI * 2); m.dirx = Math.cos(a); m.diry = Math.sin(a); }
+      if (away > TILE * 4.5) { const a = Math.atan2(m.hy - m.y, m.hx - m.x); dx = Math.cos(a); dy = Math.sin(a); }
+      else { dx = m.dirx; dy = m.diry; }
+      sp *= 0.6;
+    } else if (ai === "scavenge") {                             // 骨喰い蟲 ― 死体と落し物に群がる
+      m.wt = Math.max(0, (m.wt || 0) - dt);
+      if (!m.tgt || m.cd <= 0) { m.tgt = scavengeTarget(m); m.cd = 1.6; }
+      m.cd -= dt;
+      if (m.wt > 0) { dx = m.dirx; dy = m.diry; }
+      else if (m.tgt) {
+        if (dist2(m.tgt.x, m.tgt.y, m.x, m.y) < 200) { dx = 0; dy = 0; m.anim += dt; }
+        else { const a = Math.atan2(m.tgt.y - m.y, m.tgt.x - m.x); dx = Math.cos(a); dy = Math.sin(a); }
+      }
+      sp *= 0.7;
     } else {
       m.cd -= dt;
       if (m.cd <= 0) {
@@ -2408,12 +2468,13 @@ function updateMons(dt) {
         if (chance(0.25)) { m.dirx = 0; m.diry = 0; }
         else { const a = rnd(0, Math.PI * 2); m.dirx = Math.cos(a); m.diry = Math.sin(a); }
       }
-      dx = m.dirx; dy = m.diry; sp *= 0.62;
+      dx = m.dirx; dy = m.diry; sp *= (ai === "random" ? 0.85 : 0.62);
     }
     if (t.erratic && m.state !== "patrol") {
       dx += Math.cos(m.anim * 6 + m.ph) * 0.55; dy += Math.sin(m.anim * 5.3 + m.ph) * 0.55;
       const l = Math.hypot(dx, dy) || 1; dx /= l; dy /= l;
     }
+    const px0 = m.x, py0 = m.y;
     const nx = m.x + dx * sp * dt, ny = m.y + dy * sp * dt;
     if (t.phase) {
       if (nx > 8 && nx < MW * TILE - 8 && !inSafeZone(Math.floor(nx / TILE), Math.floor(m.y / TILE))) m.x = nx;
@@ -2422,7 +2483,19 @@ function updateMons(dt) {
       if (monFree(nx, m.y)) m.x = nx; else m.dirx = -m.dirx, m.cd = Math.min(m.cd, 0.2);
       if (monFree(m.x, ny)) m.y = ny; else m.diry = -m.diry, m.cd = Math.min(m.cd, 0.2);
     }
-    if (!passive && !run.escaped && P.hp > 0 && dist2(m.x, m.y, P.x, P.y) < 136) hitPlayer(m.x, m.y, false, t.nm);
+    if (m.state !== "chase" && Math.abs(m.x - px0) < 0.01 && Math.abs(m.y - py0) < 0.01) {
+      m.stuck = (m.stuck || 0) + dt;                            // 壁につかえたら向きを変える
+      if (m.stuck > 0.3) {
+        m.stuck = 0; const a2 = rnd(0, Math.PI * 2);
+        m.dirx = Math.cos(a2); m.diry = Math.sin(a2); m.cd = rnd(0.3, 0.9);
+        if (ai === "wall") { m.fdx = -m.fdx; m.fdy = -m.fdy; m.tx = undefined; }
+        if (ai === "scavenge") m.wt = 1.2;
+      }
+    } else m.stuck = 0;
+    if (!run.escaped && P.hp > 0 && dist2(m.x, m.y, P.x, P.y) < 136) {
+      if (t.bonus) catchBonus(m);
+      else if (!passive) hitPlayer(m.x, m.y, false, t.nm);
+    }
 
     if (hero && hero.hp > 0 && hero.state !== "hostile" && !passive && dist2(m.x, m.y, hero.x, hero.y) < 290) {
       m.hp -= dt * 9; m.hurt = 0.15; hero.hp -= dt * 3.4; hero.hurt = 0.15; hero.atk = 0.25;
@@ -2433,6 +2506,60 @@ function updateMons(dt) {
   for (let i = mons.length - 1; i >= 0; i--) if (mons[i].dead < -0.6) mons.splice(i, 1);
 }
 const inSafeZone = (tx, ty) => !!safeRoom && tx >= safeRoom.x - 1 && tx <= safeRoom.x + safeRoom.w && ty >= safeRoom.y - 1 && ty <= safeRoom.y + safeRoom.h;
+/* 部屋の中か通路か ― 糸蜘蛛は通路にしか棲まない */
+function inAnyRoom(tx, ty) {
+  for (const r of rooms) if (tx >= r.x && tx < r.x + r.w && ty >= r.y && ty < r.y + r.h) return true;
+  return false;
+}
+function freeCorridorSpot() {
+  for (let k = 0; k < 300; k++) {
+    const x = ri(1, MW - 2), y = ri(1, MH - 2);
+    if (map[idx(x, y)] !== T_FLOOR || blocked(x, y) || inSafeZone(x, y)) continue;
+    if (inAnyRoom(x, y)) continue;
+    return { x, y };
+  }
+  return null;
+}
+/* 左手の法則 ― 骸骨兵はこれで壁づたいに回る */
+function leftHandStep(m) {
+  if (!m.fdx && !m.fdy) { m.fdx = pick([1, -1, 0]); m.fdy = m.fdx ? 0 : pick([1, -1]); }
+  const mtx = Math.floor(m.x / TILE), mty = Math.floor(m.y / TILE);
+  const dirs = [[m.fdy, -m.fdx], [m.fdx, m.fdy], [-m.fdy, m.fdx], [-m.fdx, -m.fdy]];
+  for (const d of dirs) {
+    const nx = mtx + d[0], ny = mty + d[1];
+    if (!inb(nx, ny) || blocked(nx, ny) || inSafeZone(nx, ny)) continue;
+    m.fdx = d[0]; m.fdy = d[1]; m.tx = nx; m.ty = ny; return;
+  }
+  m.fdx = -m.fdx; m.fdy = -m.fdy; m.tx = mtx; m.ty = mty;
+}
+/* 骨喰い蟲が寄っていく先 ― 死体・骨・落ちている品 */
+function scavengeTarget(m) {
+  let best = null, bd = 1e9;
+  for (const c of corpses) {
+    if (c.looted) continue;
+    const d = dist2(c.x + 8, c.y + 8, m.x, m.y);
+    if (d < bd) { bd = d; best = { x: c.x + 8, y: c.y + 8 }; }
+  }
+  for (const l of loose) {
+    const d = dist2(l.x, l.y, m.x, m.y);
+    if (d < bd) { bd = d; best = { x: l.x, y: l.y }; }
+  }
+  return best;
+}
+/* 墓ねずみ ― 追わずに逃げる。捕まえると割のいい品を落とす */
+function catchBonus(m) {
+  if (m.dead > 0) return;
+  m.dead = 0.45; m.state = "dead";
+  dexMon(m.type, run.pos.d);
+  const it = makeItem(run.pos.d, { cat: "val", boost: 1.4, q: chance(0.45) ? 4 : 3 });
+  const got = addToBag(it);
+  if (!got) dropItem(it, m.x, m.y);
+  SFX.get_();
+  floatTxt(m.x, m.y - 20, itemName(it) + " " + estPlain(it), "#ffe7a8");
+  toast("墓ねずみを捕まえた ― " + itemName(it) + (got ? "" : "（背負えず落ちた）"), "good");
+  logAdd("墓ねずみを捕まえた", ["拾った：" + itemName(it) + " " + estPlain(it)], "");
+  for (let i = 0; i < 20; i++) addPart(m.x, m.y, { vx: rnd(-60, 60), vy: rnd(-70, 10), life: rnd(0.4, 0.9), max: 0.9, col: chance(0.5) ? "#ffe7a8" : "#e8c46a", sz: 2 });
+}
 function monFree(x, y) {
   const r = 5;
   if (inSafeZone(Math.floor(x / TILE), Math.floor(y / TILE))) return false;
@@ -3821,10 +3948,12 @@ function showDex(tab) {
     body = '<div class="list">' + Object.keys(MTYPE).filter(k => !MTYPE[k].boss || seen[k]).map(k => {
       const t = MTYPE[k], d = seen[k];
       if (!d) return '<div class="row locked"><div class="nm">？？？<small>まだ見ていない</small></div></div>';
-      return '<div class="row"><div class="nm">' + t.nm +
+      return '<div class="row' + (t.bonus ? " rar2" : "") + '"><div class="nm">' + t.nm +
         "<small>生息：地下 " + t.dMin + "〜" + t.dMax + " 階" + (t.boss ? "（最深部）" : "") +
-        (d.lo ? " ／ 見かけた深さ 地下 " + d.lo + "〜" + d.hi + " 階" : "") + "<br>攻撃：" +
-        t.atk.map(a => MON_ATK_NM[a]).join("・") + " ／ " + (d.n || 1) + " 体</small></div></div>";
+        (d.lo ? " ／ 見かけた深さ 地下 " + d.lo + "〜" + d.hi + " 階" : "") +
+        "<br>速さ：" + spdNm(t.spd) + " ／ " + MON_AI_NM[t.ai || "chase"] +
+        "<br>攻撃：" + (t.atk.length ? t.atk.map(a => MON_ATK_NM[a]).join("・") : "襲ってこない") +
+        (t.bonus ? "（捕まえると割のいい品）" : "") + " ／ " + (d.n || 1) + " 体</small></div></div>";
     }).join("") + "</div>" +
       '<div class="note">見かけた魔物だけが載る。どの階に、どんな手口の魔物がいるか ― それが分かると、死体の所見の読み方が変わる。</div>';
   } else if (dexTab === "log") {
