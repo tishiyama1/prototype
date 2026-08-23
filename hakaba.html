@@ -111,12 +111,13 @@
   #pad.on { opacity: 1; }
   #pad:not(.on) * { pointer-events: none; }
   .stick {
-    position: absolute; left: 16px; bottom: calc(10px + env(safe-area-inset-bottom)); width: 118px; height: 118px;
+    position: absolute; left: 50%; margin-left: -56px;
+    bottom: calc(8px + env(safe-area-inset-bottom)); width: 112px; height: 112px;
     border-radius: 50%; background: rgba(20,16,26,0.4); border: 1px solid rgba(232,196,106,0.18);
     pointer-events: auto;
   }
   .stick .knob {
-    position: absolute; left: 50%; top: 50%; width: 44px; height: 44px; margin: -22px 0 0 -22px;
+    position: absolute; left: 50%; top: 50%; width: 42px; height: 42px; margin: -21px 0 0 -21px;
     border-radius: 50%; background: rgba(232,196,106,0.28); border: 1px solid rgba(232,196,106,0.45);
   }
   .abtn {
@@ -136,10 +137,15 @@
     box-shadow: 0 0 16px rgba(232,196,106,0.35);
   }
   .abtn.hot small { color: #e8c46a; }
-  #bA { right: 12px;  bottom: calc(64px + env(safe-area-inset-bottom)); width: 82px; height: 82px; font-size: 12.5px; }
-  #bB { right: 100px; bottom: calc(10px + env(safe-area-inset-bottom)); width: 56px; height: 56px; }
-  #bC { right: 20px;  bottom: calc(4px  + env(safe-area-inset-bottom)); width: 56px; height: 56px; font-size: 11px; }
-  #bD { right: 108px; bottom: calc(74px + env(safe-area-inset-bottom)); width: 56px; height: 56px; font-size: 11px; }
+  /* 左に 地図・道具、右に 回収・灯り。設定で左右を入れ替えられる */
+  #bD { left:  12px; bottom: calc(72px + env(safe-area-inset-bottom)); width: 54px; height: 54px; font-size: 11px; }
+  #bC { left:  12px; bottom: calc(8px  + env(safe-area-inset-bottom)); width: 54px; height: 54px; font-size: 11px; }
+  #bA { right:  4px; bottom: calc(70px + env(safe-area-inset-bottom)); width: 72px; height: 72px; font-size: 12.5px; }
+  #bB { right: 13px; bottom: calc(8px  + env(safe-area-inset-bottom)); width: 54px; height: 54px; }
+  #pad.flip #bD { left: auto; right: 12px; }
+  #pad.flip #bC { left: auto; right: 12px; }
+  #pad.flip #bA { right: auto; left:  4px; }
+  #pad.flip #bB { right: auto; left: 13px; }
 
   /* ---------- overlay UI ---------- */
   #ui {
@@ -349,7 +355,7 @@ const hash = (x, y) => { let h = x * 374761393 + y * 668265263; h = (h ^ (h >> 1
     S.rec … 記録（最短返済日数など）                                   */
 const KEY = "yuusha_no_hakaba_v2";
 const DEBT0 = 100000, LIMIT0 = 30;
-const DEFAULT_SAVE = { g: null, dex: { hero: {}, item: {}, cause: {}, mon: {}, notes: [] }, rec: { best: 0, clears: 0, fails: 0, runs: 0, deaths: 0, boss: 0 }, opt: { mute: false, mode: "normal" } };
+const DEFAULT_SAVE = { g: null, dex: { hero: {}, item: {}, cause: {}, mon: {}, notes: [] }, rec: { best: 0, clears: 0, fails: 0, runs: 0, deaths: 0, boss: 0 }, opt: { mute: false, mode: "normal", flip: false } };
 let S = (() => {
   try {
     const raw = JSON.parse(localStorage.getItem(KEY) || "{}");
@@ -1236,7 +1242,7 @@ const HERO_TALK = [
 const MTYPE = {
   slime:  { nm: "スライム", spr: "slime", spd: 20, sight: 4.2, hp: 8,  dMin: 1,  dMax: 12, w: 3, wander: 0.6, gold: 0.2,  ai: "chase",    atk: ["melt"] },
   bat:    { nm: "こうもり", spr: "bat",   spd: 32, sight: 0,   hp: 5,  dMin: 1,  dMax: 30, w: 3, erratic: true, wander: 1.8, gold: 0.2, ai: "random", atk: ["bite"] },
-  rat:    { nm: "墓ねずみ", spr: "rat",   spd: 40, sight: 7.5, hp: 4,  dMin: 1,  dMax: 30, w: 1, erratic: true, wander: 1.6, gold: 0,   ai: "flee",  bonus: true, atk: [] },
+  rat:    { nm: "墓ねずみ", spr: "rat",   spd: 58, sight: 8.5, hp: 4,  dMin: 1,  dMax: 30, w: 1, erratic: true, wander: 1.6, gold: 0,   ai: "flee",  bonus: true, atk: [] },
   bone:   { nm: "骸骨兵",   spr: "bone",  spd: 30, sight: 6.2, hp: 14, dMin: 2,  dMax: 14, w: 3, wander: 0.9, gold: 0.3,  ai: "wall",     atk: ["blade"] },
   spider: { nm: "糸蜘蛛",   spr: "spider", spd: 30, sight: 5.4, hp: 11, dMin: 3, dMax: 17, w: 3, wander: 0.8, gold: 0.3,  ai: "corridor", atk: ["bite"] },
   ghost:  { nm: "亡霊",     spr: "ghost", spd: 21, sight: 5.6, hp: 18, dMin: 6,  dMax: 30, w: 2, phase: true, wander: 0.6, gold: 0.35, ai: "chase", atk: ["magic"] },
@@ -1257,7 +1263,7 @@ const MON_AI_NM = {
   drift:    "決まった辺りを漂い、見つけると追ってくる",
   scavenge: "死体や落ちた物に群がる。人は追わない"
 };
-const spdNm = v => v < 17 ? "とても遅い" : v < 25 ? "遅い" : v < 37 ? "普通" : "速い";
+const spdNm = v => v < 17 ? "とても遅い" : v < 25 ? "遅い" : v < 37 ? "普通" : v < 50 ? "速い" : "とても速い";
 /* その階層に出る魔物が持っている攻撃手段 */
 function atkAtDepth(d) {
   const set = {};
@@ -3879,6 +3885,7 @@ actions.optback = () => {
   else actions.back({});
 };
 actions.setmute = d => { muted = d.i === "1"; S.opt.mute = muted; save(); if (!muted) SFX.ui(); showOpt(); };
+actions.setflip = d => { S.opt.flip = d.i === "1"; save(); showOpt(); };
 actions.setmode = d => { S.opt.mode = d.i; save(); if (safeMode() && G) { G.assist = 1; save(); } showOpt(); };
 function showOpt() {
   const m = optMode();
@@ -3887,6 +3894,12 @@ function showOpt() {
     '<div class="lbl">音</div>' +
     '<div class="btns"><div class="btn' + (muted ? "" : " pri") + '" data-a="setmute" data-i="0">鳴らす</div>' +
     '<div class="btn' + (muted ? " pri" : "") + '" data-a="setmute" data-i="1">消す</div></div>' +
+    '<div class="lbl">手元のボタン</div>' +
+    '<div class="btns"><div class="btn' + (S.opt.flip ? "" : " pri") + '" data-a="setflip" data-i="0">ふつう</div>' +
+    '<div class="btn' + (S.opt.flip ? " pri" : "") + '" data-a="setflip" data-i="1">左右を入れ替える</div></div>' +
+    '<div class="note">' + (S.opt.flip
+      ? "左に 回収・灯り、右に 地図・道具。スティックは真ん中。"
+      : "左に 地図・道具、右に 回収・灯り。スティックは真ん中。") + "</div>" +
     '<div class="lbl">遊びかた</div>' +
     '<div class="btns trio">' + ["normal", "safe", "watch"].map(k =>
       '<div class="btn' + (m === k ? " pri" : "") + '" data-a="setmode" data-i="' + k + '">' + MODE_NM[k] + "</div>").join("") + "</div>" +
@@ -4415,9 +4428,9 @@ function updatePad() {
   padSig = sig;
   $("bA").innerHTML = near ? "回収<small>長押し</small>" : "調べる";
   $("bA").classList.toggle("hot", !!near);
-  $("bB").innerHTML = "灯り<small>" + (P.lamp ? "●つけた" : "○消した") + "</small>";
+  $("bB").textContent = "灯り";
   $("bB").classList.toggle("off", !P.lamp);
-  $("bC").innerHTML = "道具<small>薬" + G.inv.potion + " 煙" + G.inv.smoke + "</small>";
+  $("bC").textContent = "道具";
   $("bD").classList.toggle("on", !!mapOpen);
 }
 
@@ -4554,6 +4567,7 @@ function resize() {
   stage.style.width = cw + "px"; stage.style.height = ch + "px";
   UI.style.setProperty("--stageh", ch + "px");
   PAD.classList.toggle("on", isTouch && scene === "dungeon");
+  PAD.classList.toggle("flip", !!(S.opt && S.opt.flip));
 }
 addEventListener("resize", resize);
 addEventListener("orientationchange", () => setTimeout(resize, 200));
@@ -4594,6 +4608,7 @@ function frame(now) {
   }
   updateHUD(); updatePad();
   PAD.classList.toggle("on", isTouch && scene === "dungeon" && !uiOpen);
+  PAD.classList.toggle("flip", !!(S.opt && S.opt.flip));
 
   // フェード
   if (fadeDir > 0) {
