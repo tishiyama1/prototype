@@ -38,7 +38,7 @@
     display: block;
     image-rendering: pixelated; image-rendering: crisp-edges;
     background: #05040a;
-    box-shadow: 0 0 0 1px rgba(232,196,106,0.18), 0 24px 70px rgba(0,0,0,0.75);
+    box-shadow: 0 24px 70px rgba(0,0,0,0.75);   /* ふちの線は引かない ― ボタンや小地図の線と喧嘩する */
   }
   #fx { position: absolute; inset: 0; pointer-events: none; }
   #scan {
@@ -52,15 +52,29 @@
   }
 
   /* ---------- HUD ---------- */
-  /* 情報の柱 ― 利き手の反対側にまとめる */
+  /* 情報の柱 ― 利き手の反対側。下端はスティックと同じ高さにそろえる（--infobot） */
+  #info {
+    position: absolute; left: var(--infoside, 7px); bottom: var(--infobot, 6px); width: 52%;
+    display: flex; flex-direction: column; align-items: flex-start; gap: 6px;
+    pointer-events: none; z-index: 2;
+  }
+  #stage.lefty #info { left: auto; right: var(--infoside, 7px); align-items: flex-end; }
   #side {
-    position: absolute; left: 6px; bottom: 17%; width: 54%;
     display: flex; flex-direction: column; align-items: flex-start; gap: 4px;
     pointer-events: none;
   }
   #stage.dg #side { pointer-events: auto; cursor: pointer; }
   #stage.dg #side:active #hud2 { opacity: 0.6; }
-  #stage.lefty #side { left: auto; right: 6px; align-items: flex-end; }
+  #stage.lefty #side { align-items: flex-end; }
+  #mini {
+    display: none; width: 96px; height: 68px; image-rendering: pixelated;
+    background: rgba(6,5,12,0.72); box-shadow: 0 0 0 1px rgba(232,196,106,0.24);
+    pointer-events: none;
+  }
+  #stage.dun #mini { display: block; }
+  #stage.mo #mini { opacity: 0.5; }              /* 全体図を開いている間 ― もう一度押せばとじる */
+  #stage.dg #mini { pointer-events: auto; cursor: pointer; }
+  #stage.dg #mini:active { box-shadow: 0 0 0 1px rgba(232,196,106,0.7); }
   #hud2 {
     display: flex; flex-direction: column; gap: 2px;
     font-size: 10.5px; letter-spacing: 0.02em; line-height: 1.5;
@@ -76,7 +90,7 @@
     background: linear-gradient(180deg, rgba(6,5,10,0.92) 0%, rgba(6,5,10,0.8) 62%, rgba(6,5,10,0) 100%);
     pointer-events: none; text-shadow: 0 1px 2px #000, 0 0 6px #000;
   }
-  #hud .hearts { letter-spacing: 0px; color: var(--blood); font-size: 12px; }
+  #hud2 .hearts { letter-spacing: 0px; color: var(--blood); font-size: 12px; }
   #hud .brk { flex-basis: 100%; height: 0; }
   #hud .sep { flex: 1; }
   #hud .chip { color: var(--gold); }
@@ -85,8 +99,7 @@
   #hud .chip.mode { color: #12100a; background: var(--gold); padding: 0 5px; border-radius: 2px; font-weight: 700; }
   #hud .clk { color: var(--ink); font-variant-numeric: tabular-nums; }
   #hud .clk.low { color: var(--gold); } #hud .clk.out { color: var(--blood); }
-  #hud .lamp.off { color: #5c5468; }
-  #hud .stam { display: inline-block; width: 52px; height: 6px; vertical-align: middle;
+  #hud .stam, #hud2 .stam { display: inline-block; width: 52px; height: 6px; vertical-align: middle;
     background: rgba(255,255,255,0.10); border: 1px solid rgba(255,255,255,0.20); }
   #hud .stam i { display: block; height: 100%; background: #6f8f5a; transition: width .2s linear; }
   #hud .stam.low i { background: var(--gold); }
@@ -126,8 +139,8 @@
   #pad.on { opacity: 1; }
   #pad:not(.on) * { pointer-events: none; }
   .stick {
-    position: absolute; right: 14px;
-    bottom: calc(10px + env(safe-area-inset-bottom)); width: 100px; height: 100px;
+    position: absolute; right: 28px;
+    bottom: calc(30px + env(safe-area-inset-bottom)); width: 100px; height: 100px;
     border-radius: 50%; background: rgba(20,16,26,0.4); border: 1px solid rgba(232,196,106,0.18);
     pointer-events: auto;
   }
@@ -152,14 +165,14 @@
     box-shadow: 0 0 16px rgba(232,196,106,0.35);
   }
   .abtn.hot small { color: #e8c46a; }
-  /* 使う頻度の順に、親指の近いところから。回収はスティックの長押し */
-  #bB { right: 24px; bottom: calc(118px + env(safe-area-inset-bottom)); width: 58px; height: 58px; font-size: 12px; }
-  #bE { right:  6px; bottom: calc(184px + env(safe-area-inset-bottom)); width: 52px; height: 52px; font-size: 11px; }
-  #bF { right: 62px; bottom: calc(186px + env(safe-area-inset-bottom)); width: 46px; height: 46px; font-size: 10.5px; }
-  #pad.lefty .stick { right: auto; left: 14px; }
-  #pad.lefty #bB { right: auto; left: 24px; }
-  #pad.lefty #bE { right: auto; left:  6px; }
-  #pad.lefty #bF { right: auto; left: 62px; }
+  /* スティックを扇の要に、使う順で 真上→斜め上→横 と囲む。回収はボタンではなく足を止めるだけ */
+  #bB { right:  49px; bottom: calc(138px + env(safe-area-inset-bottom)); width: 58px; height: 58px; font-size: 12px; }
+  #bE { right: 116px; bottom: calc(118px + env(safe-area-inset-bottom)); width: 52px; height: 52px; font-size: 11px; }
+  #bF { right: 140px; bottom: calc( 57px + env(safe-area-inset-bottom)); width: 46px; height: 46px; font-size: 10.5px; }
+  #pad.lefty .stick { right: auto; left:  28px; }
+  #pad.lefty #bB { right: auto; left:  49px; }
+  #pad.lefty #bE { right: auto; left: 116px; }
+  #pad.lefty #bF { right: auto; left: 140px; }
   .stick.hot {                                   /* 足元に拾えるものがある */
     border-color: rgba(232,196,106,0.85); background: rgba(232,196,106,0.10);
     box-shadow: 0 0 18px rgba(232,196,106,0.28);
@@ -325,7 +338,10 @@
     <div id="scan"></div>
     <div id="vig"></div>
     <div id="hud"></div>
-    <div id="side"><div id="bag"></div><div id="hud2"></div></div>
+    <div id="info">
+      <div id="side"><div id="bag"></div><div id="hud2"></div></div>
+      <canvas id="mini" width="48" height="34"></canvas>
+    </div>
     <div id="toasts"></div>
   </div>
   <div id="pad">
@@ -357,6 +373,7 @@ const $ = id => document.getElementById(id);
 const fx = document.getElementById("fx"), fg = fx.getContext("2d");
 let SCALE = 3, DPR = 1, viewOX = 0, viewOY = 0;
 const UI = $("ui"), HUD = $("hud"), HUD2 = $("hud2"), BAGEL = $("bag"), TOAST = $("toasts"), PAD = $("pad");
+const MINI = $("mini"), mg = MINI.getContext("2d");
 
 const clamp = (v, a, b) => v < a ? a : v > b ? b : v;
 const lerp = (a, b, t) => a + (b - a) * t;
@@ -2250,15 +2267,14 @@ function inputVec() {
   const m = Math.hypot(ix, iy);
   return m > 1 ? { x: ix / m, y: iy / m, m: 1 } : { x: ix, y: iy, m };
 }
-let stickStillT = 0, stickHold = false;          // スティックを押したまま動かさない＝回収
-const actionHeld = () => !mapOpen && !!(keys["z"] || keys[" "] || keys["enter"] || stickHold);
+let stillT = 0;                                  // 足を止めている時間 ― 手ぶれに強いよう歩みで見る
+const AUTO_LOOT = 0.22;                          // 通りすがりで始まらない程度の間
+const actionHeld = () => !mapOpen && !!(keys["z"] || keys[" "] || keys["enter"] || stillT > AUTO_LOOT);
 
 function updatePlayer(dt, frozen) {
   const v = frozen ? { x: 0, y: 0, m: 0 } : inputVec();
   const moving = v.m > 0.06;
-  if (!frozen && stickId !== null && Math.hypot(touchVec.x, touchVec.y) <= 0.08) stickStillT += dt;
-  else stickStillT = 0;
-  stickHold = stickStillT > 0.15;                // 少し遊びを持たせて、軽く触れただけでは始めない
+  if (!frozen && !moving) stillT += dt; else stillT = 0;   // 立ち止まれば、それが回収の合図
   if (frozen) { P.looting = null; P.lootT = 0; P.anim = 0; }
   if (P.looting) {
     if (moving) { P.looting.prog = 0; P.looting = null; }
@@ -3128,7 +3144,7 @@ function drawDungeon(dt) {
       wtext("調べている…", nc.x + 8, nc.y - 17, "#e8c46a", 9);
     } else {
       const bob = Math.sin(time * 4) * 1;
-      wtext((isTouch ? "止まって長押し ― " : "Ｚ で調べる ― ") + remainLabel(nc), nc.x + 8, nc.y - 12 + bob, "#e8c46a", 9);
+      wtext("立ち止まれば調べる ― " + remainLabel(nc), nc.x + 8, nc.y - 12 + bob, "#e8c46a", 9);
     }
   }
   if (altar && Math.hypot(P.x / TILE - altar.x, P.y / TILE - altar.y) < 8) {
@@ -3175,24 +3191,20 @@ function drawDungeon(dt) {
   if (flash > 0) { g.fillStyle = "rgba(180,65,58," + (flash * 0.5).toFixed(3) + ")"; g.fillRect(0, 0, VW, VH); }
 }
 
-let miniRect = null;                                        // 押したら全体地図が出る枠
+/* 小地図は盤面ではなく DOM のキャンバスに描く ― 親指と同じ高さまで下ろすため */
 function drawMinimap() {
-  const s = 1, mw = MW * s, mh = MH * s;
-  const x0 = lefty() ? VW - mw - 5 : 5, y0 = VH - mh - 5;   // 操作の反対側の隅
-  miniRect = { x: x0 - 5, y: y0 - 5, w: mw + 10, h: mh + 10 };
-  g.fillStyle = "rgba(6,5,12,0.72)"; g.fillRect(x0 - 2, y0 - 2, mw + 4, mh + 4);
-  g.strokeStyle = "rgba(232,196,106,0.24)"; g.lineWidth = 1; g.strokeRect(x0 - 2.5, y0 - 2.5, mw + 5, mh + 5);
+  mg.clearRect(0, 0, MW, MH);
   for (let y = 0; y < MH; y++) for (let x = 0; x < MW; x++) {
     const i = idx(x, y);
     if (!seen[i]) continue;
     const t = map[i];
-    g.fillStyle = t === T_WALL ? "#2a2536" : t === T_EXIT ? "#7fd0ff" : t === T_DOWN ? "#e8c46a" :
+    mg.fillStyle = t === T_WALL ? "#2a2536" : t === T_EXIT ? "#7fd0ff" : t === T_DOWN ? "#e8c46a" :
       t === T_UP ? "#6f8f5a" : (inSafeZone(x, y) || inGrand(x, y)) ? "#8b84a8" : "#4a4360";
-    g.fillRect(x0 + x * s, y0 + y * s, s, s);
+    mg.fillRect(x, y, 1, 1);
   }
-  for (const c of corpses) if (!c.looted && seen[idx(c.tx, c.ty)]) { g.fillStyle = "#e8c46a"; g.fillRect(x0 + c.tx * s, y0 + c.ty * s, s, s); }
-  g.fillStyle = Math.floor(time * 4) % 2 ? "#fff3c4" : "#e8c46a";
-  g.fillRect(x0 + Math.floor(P.x / TILE) * s - 1, y0 + Math.floor(P.y / TILE) * s - 1, s + 2, s + 2);
+  for (const c of corpses) if (!c.looted && seen[idx(c.tx, c.ty)]) { mg.fillStyle = "#e8c46a"; mg.fillRect(c.tx, c.ty, 1, 1); }
+  mg.fillStyle = Math.floor(time * 4) % 2 ? "#fff3c4" : "#e8c46a";
+  mg.fillRect(Math.floor(P.x / TILE) - 1, Math.floor(P.y / TILE) - 1, 3, 3);
 }
 
 /* 全体地図 ― 地形は1タームのあいだ変わらないので、歩いたぶんが残る */
@@ -3624,7 +3636,7 @@ function showHelp(tab) {
   } else if (helpTab === "hide") {
     body = "<p>・<b>灯り</b>を消すと感知距離が半分になり、見失われるのも早い（自分も見えなくなる）<br>" +
       "　追われていても、<b>3マスほど離れてから消せば1秒ほどで撒ける</b>。すぐ隣では効かない<br>" +
-      "・回収は<b>物音</b>を立てる。近くの魔物が寄ってくる<br>" +
+      "・回収は<b>足を止めるだけ</b>で始まり、<b>物音</b>を立てる。近くの魔物が寄ってくるので、要らない亡骸のそばで立ち止まらない<br>" +
       "・拾った<b>防具</b>は身につけられる。殴られを肩代わりするが、その分傷んで売値が落ちる<br>" +
       "・<b>煙玉</b>は追跡を切る。<b>ポーション</b>は体力をひとつ戻す</p>";
   } else if (helpTab === "sell") {
@@ -3635,8 +3647,8 @@ function showHelp(tab) {
       '<div class="note"><span class="cf c1">◎</span>ほぼ確か <span class="cf c2">○</span>だいたい ' +
       '<span class="cf c3">△</span>怪しい <span class="cf c4">？</span>見当もつかない</div>';
   } else {
-    body = '<div class="sub" style="margin:0">' + (isTouch ? "利き手側の輪で移動 ― <b>止めたまま押しつづけると回収</b><br>その上のボタンが 灯り・煙玉・回復<br>反対側の<b>小地図を押すと全体図</b>、<b>情報の柱を押すと道具</b><br>とじるときは右上の × でも、幕を叩いてもいい" :
-      '移動 <span class="kbd">←↑↓→</span><span class="kbd">WASD</span><br>調べる・決定 <span class="kbd">Z</span><span class="kbd">Space</span>（長押しで回収）<br>' +
+    body = '<div class="sub" style="margin:0">' + (isTouch ? "利き手側の輪で移動 ― <b>足を止めれば、そばのものは勝手に調べる</b><br>輪を囲む三つが 灯り・煙玉・回復<br>反対側の<b>小地図を押すと全体図</b>、<b>体力や荷の柱を押すと道具</b><br>とじるときは右上の × でも、幕を叩いてもいい" :
+      '移動 <span class="kbd">←↑↓→</span><span class="kbd">WASD</span><br>調べる <b>足を止めるだけ</b>（<span class="kbd">Z</span><span class="kbd">Space</span> でも）<br>' +
       '灯り <span class="kbd">X</span><span class="kbd">C</span> ／ 地図 <span class="kbd">M</span> ／ 道具 <span class="kbd">I</span><br>' +
       'ポーション <span class="kbd">1</span> ／ 煙玉 <span class="kbd">2</span><br>中断・とじる <span class="kbd">Esc</span>') + "</div>";
   }
@@ -3907,6 +3919,7 @@ actions.opt = () => { optFrom = uiKind; showOpt(); };
 actions.optback = () => {
   if (optFrom === "help") showHelp();
   else if (optFrom === "pause") showPause();
+  else if (optFrom === "items") showItems();
   else actions.back({});
 };
 actions.setmute = d => { muted = d.i === "1"; S.opt.mute = muted; save(); if (!muted) SFX.ui(); showOpt(); };
@@ -3923,8 +3936,8 @@ function showOpt() {
     '<div class="btns"><div class="btn' + (lefty() ? "" : " pri") + '" data-a="sethand" data-i="right">右利き</div>' +
     '<div class="btn' + (lefty() ? " pri" : "") + '" data-a="sethand" data-i="left">左利き</div></div>' +
     '<div class="note">片手で持って遊ぶ想定です。スティックとボタンは<b>' + (lefty() ? "左" : "右") +
-    '手の親指が届く隅</b>にまとめ、空いた<b>' + (lefty() ? "右" : "左") + '側</b>に小地図と、水と食料・荷・灯り・道具の数を寄せます。' +
-    '小地図を押すと全体図、情報の柱を押すと道具が開きます。</div>' +
+    '手の親指が届くあたり</b>にまとめ、空いた<b>' + (lefty() ? "右" : "左") + '側</b>に体力・水と食料・荷と、小地図を寄せます。' +
+    '小地図を押すと全体図、体力や荷の柱を押すと道具が開きます。</div>' +
     '<div class="lbl">遊びかた</div>' +
     '<div class="btns trio">' + ["normal", "safe", "watch"].map(k =>
       '<div class="btn' + (m === k ? " pri" : "") + '" data-a="setmode" data-i="' + k + '">' + MODE_NM[k] + "</div>").join("") + "</div>" +
@@ -4257,7 +4270,7 @@ function showItems(tab) {
     '<div class="tab' + (itemTab === "bag" ? " on" : "") + '" data-a="itab" data-i="bag">荷（' + run.bag.length + "）</div></div>" +
     body +
     '<div class="btns" style="margin-top:12px"><div class="btn pri" data-a="resume">とじる</div><div class="btn" data-a="log">ログ</div>' +
-    '<div class="btn" data-a="pause2">中断</div></div></div>');
+    '<div class="btn" data-a="opt">設定</div></div></div>');
 }
 actions.itab = d => showItems(d.i);
 actions.dropIt = d => {
@@ -4278,7 +4291,6 @@ actions.sortBag = d => {
 };
 actions.uPot = () => { closeUI(); usePotion(); };
 actions.uSmk = () => { closeUI(); useSmoke(); };
-actions.pause2 = () => showPause();
 
 /* ---------- 一日の終わり ---------- */
 function showResult(kind, kept, lost, depth, floors) {
@@ -4413,28 +4425,26 @@ function updateHUD() {
   if (scene !== "dungeon" || !run) { if (HUD.innerHTML) { HUD.innerHTML = ""; HUD2.innerHTML = ""; BAGEL.innerHTML = ""; hudSig = ""; } return; }
   const secs = Math.max(0, Math.ceil(P.st / SUPPLY_RATE));
   const md = optMode();
-  const sig = [md, P.hp, P.armor, run.pos.d, run.pos.s, run.bag.length, P.lamp, G.day, secs,
-    G.inv.potion, G.inv.smoke, run.bag.map(i => i.k).join(",")].join("|");
+  const sig = [md, P.hp, P.armor, run.pos.d, run.pos.s, run.bag.length, G.day, secs,
+    P.tired, run.bag.map(i => i.k).join(",")].join("|");
   if (sig === hudSig) return;
   hudSig = sig;
   const hearts = "♥".repeat(P.hp) + '<span style="color:#3a3040">♥</span>'.repeat(Math.max(0, maxHearts() - P.hp));
   const shieldPips = P.armor > 0 ? '<span style="color:#b9c9de;margin-left:4px">' + "◈".repeat(P.armor) + "</span>" : "";
   const low = P.st <= 0 ? "out" : P.st < maxSupply() * 0.3 ? "low" : "";
-  HUD.innerHTML =                                    // 上の帯 ― 一行だけ
-    '<span class="hearts">' + hearts + "</span>" + shieldPips +
+  HUD.innerHTML =                                    // 上の帯 ― 場所と日付だけ
     '<span class="chip">' + (run.pos.s ? "第" + sanctNo(run.pos.d) + "聖堂" : "地下 <b>" + run.pos.d + "</b> 階") + "</span>" +
     '<span class="sep"></span>' +
     (md === "normal" ? "" : '<span class="chip mode">' + MODE_NM[md] + "</span>") +
     '<span class="chip">' + G.day + " 日目</span>";
-  HUD2.innerHTML =                                   // 柱 ― 利き手の反対側
+  HUD2.innerHTML =                                   // 柱 ― 利き手の反対側。体力もここ
+    '<div class="row2"><span class="hearts">' + hearts + "</span>" + shieldPips + "</div>" +
     '<div class="row2"><span class="chip">食</span><span class="stam ' + low + '">' +
     '<i style="width:' + Math.round(clamp(P.st / maxSupply(), 0, 1) * 100) + '%"></i></span>' +
     '<span class="clk ' + low + '">' + Math.floor(secs / 60) + ":" + String(secs % 60).padStart(2, "0") + "</span>" +
     (P.tired ? '<b style="color:#ff9a92">飢</b>' : "") + "</div>" +
     '<div class="row2"><span class="chip' + (bagWeight() >= bagCap() ? " warn" : "") + '">荷 <b>' +
-    bagWeight().toFixed(1) + "/" + bagCap() + "</b></span>" +
-    '<span class="lamp ' + (P.lamp ? "" : "off") + '">' + (P.lamp ? "灯●" : "灯○") + "</span></div>" +
-    '<div class="row2"><span class="chip">薬 <b>' + G.inv.potion + "</b> 煙 <b>" + G.inv.smoke + "</b></span></div>";
+    bagWeight().toFixed(1) + "/" + bagCap() + "</b></span></div>";
   let h = "";
   for (const it of run.bag) h += '<i style="background-image:url(' + iconURL[KIND[it.k].ico] + ')"></i>';
   BAGEL.innerHTML = h;
@@ -4510,7 +4520,7 @@ function stickMove(e) {
   }
   e.preventDefault();
 }
-function stickEnd() { stickId = null; touchVec = { x: 0, y: 0 }; stickStillT = 0; stickHold = false; knob.style.transform = ""; }
+function stickEnd() { stickId = null; touchVec = { x: 0, y: 0 }; knob.style.transform = ""; }
 stick.addEventListener("touchstart", stickStart, { passive: false });
 stick.addEventListener("touchmove", stickMove, { passive: false });
 stick.addEventListener("touchend", stickEnd);
@@ -4538,13 +4548,11 @@ function townHit(p) {
   for (const h of townHots) if (p.x >= h.x && p.x <= h.x + h.w && p.y >= h.y && p.y <= h.y + h.h) return h;
   return null;
 }
+MINI.addEventListener("pointerdown", ev => {                   // 小地図を押したら全体地図
+  if (scene !== "dungeon" || !run || uiOpen) return;
+  ev.preventDefault(); ev.stopPropagation(); actx(); SFX.ui(); mapOpen = !mapOpen;
+});
 stage.addEventListener("pointerdown", ev => {
-  if (scene === "dungeon" && run && !uiOpen && miniRect) {   // 小地図を押したら全体地図
-    const p = canvasPos(ev);
-    if (p.x >= miniRect.x && p.x <= miniRect.x + miniRect.w && p.y >= miniRect.y && p.y <= miniRect.y + miniRect.h) {
-      ev.preventDefault(); actx(); SFX.ui(); mapOpen = !mapOpen; return;
-    }
-  }
   if (uiOpen || scene !== "town") return;
   const h = townHit(canvasPos(ev));
   if (!h) return;
@@ -4598,6 +4606,11 @@ function resize() {
   PAD.classList.toggle("lefty", lefty());
   stage.classList.toggle("lefty", lefty());
   PAD.classList.toggle("flip", !!(S.opt && S.opt.flip));
+  // 情報の柱も、手元と同じだけ隅から浮かせる（切り欠きの量は実測でしか分からない）
+  const sr = stage.getBoundingClientRect(), kr = stick.getBoundingClientRect();
+  stage.style.setProperty("--infobot", (isTouch && portrait ? Math.round(sr.bottom - kr.bottom) + 18 : 10) + "px");
+  const edge = Math.round(lefty() ? w - sr.right : sr.left);   // 盤面が画面より狭いぶんを差し引く
+  stage.style.setProperty("--infoside", Math.max(7, 28 - edge) + "px");
 }
 addEventListener("resize", resize);
 addEventListener("orientationchange", () => setTimeout(resize, 200));
@@ -4640,7 +4653,9 @@ function frame(now) {
   PAD.classList.toggle("on", isTouch && scene === "dungeon" && !uiOpen);
   PAD.classList.toggle("lefty", lefty());
   stage.classList.toggle("lefty", lefty());
-  stage.classList.toggle("dg", scene === "dungeon" && !!run && !uiOpen && !mapOpen);
+  stage.classList.toggle("dun", scene === "dungeon" && !!run);
+  stage.classList.toggle("mo", mapOpen);
+  stage.classList.toggle("dg", scene === "dungeon" && !!run && !uiOpen);
 
   // フェード
   if (fadeDir > 0) {
