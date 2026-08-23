@@ -54,11 +54,11 @@
   /* ---------- HUD ---------- */
   /* 情報の柱 ― 利き手の反対側。下端はスティックと同じ高さにそろえる（--infobot） */
   #info {
-    position: absolute; left: 7px; bottom: var(--infobot, 6px); width: 52%;
+    position: absolute; left: var(--infoside, 7px); bottom: var(--infobot, 6px); width: 52%;
     display: flex; flex-direction: column; align-items: flex-start; gap: 6px;
     pointer-events: none; z-index: 2;
   }
-  #stage.lefty #info { left: auto; right: 7px; align-items: flex-end; }
+  #stage.lefty #info { left: auto; right: var(--infoside, 7px); align-items: flex-end; }
   #side {
     display: flex; flex-direction: column; align-items: flex-start; gap: 4px;
     pointer-events: none;
@@ -99,7 +99,6 @@
   #hud .chip.mode { color: #12100a; background: var(--gold); padding: 0 5px; border-radius: 2px; font-weight: 700; }
   #hud .clk { color: var(--ink); font-variant-numeric: tabular-nums; }
   #hud .clk.low { color: var(--gold); } #hud .clk.out { color: var(--blood); }
-  #hud .lamp.off { color: #5c5468; }
   #hud .stam, #hud2 .stam { display: inline-block; width: 52px; height: 6px; vertical-align: middle;
     background: rgba(255,255,255,0.10); border: 1px solid rgba(255,255,255,0.20); }
   #hud .stam i { display: block; height: 100%; background: #6f8f5a; transition: width .2s linear; }
@@ -3920,6 +3919,7 @@ actions.opt = () => { optFrom = uiKind; showOpt(); };
 actions.optback = () => {
   if (optFrom === "help") showHelp();
   else if (optFrom === "pause") showPause();
+  else if (optFrom === "items") showItems();
   else actions.back({});
 };
 actions.setmute = d => { muted = d.i === "1"; S.opt.mute = muted; save(); if (!muted) SFX.ui(); showOpt(); };
@@ -4270,7 +4270,7 @@ function showItems(tab) {
     '<div class="tab' + (itemTab === "bag" ? " on" : "") + '" data-a="itab" data-i="bag">荷（' + run.bag.length + "）</div></div>" +
     body +
     '<div class="btns" style="margin-top:12px"><div class="btn pri" data-a="resume">とじる</div><div class="btn" data-a="log">ログ</div>' +
-    '<div class="btn" data-a="pause2">中断</div></div></div>');
+    '<div class="btn" data-a="opt">設定</div></div></div>');
 }
 actions.itab = d => showItems(d.i);
 actions.dropIt = d => {
@@ -4291,7 +4291,6 @@ actions.sortBag = d => {
 };
 actions.uPot = () => { closeUI(); usePotion(); };
 actions.uSmk = () => { closeUI(); useSmoke(); };
-actions.pause2 = () => showPause();
 
 /* ---------- 一日の終わり ---------- */
 function showResult(kind, kept, lost, depth, floors) {
@@ -4426,7 +4425,7 @@ function updateHUD() {
   if (scene !== "dungeon" || !run) { if (HUD.innerHTML) { HUD.innerHTML = ""; HUD2.innerHTML = ""; BAGEL.innerHTML = ""; hudSig = ""; } return; }
   const secs = Math.max(0, Math.ceil(P.st / SUPPLY_RATE));
   const md = optMode();
-  const sig = [md, P.hp, P.armor, run.pos.d, run.pos.s, run.bag.length, P.lamp, G.day, secs,
+  const sig = [md, P.hp, P.armor, run.pos.d, run.pos.s, run.bag.length, G.day, secs,
     P.tired, run.bag.map(i => i.k).join(",")].join("|");
   if (sig === hudSig) return;
   hudSig = sig;
@@ -4445,8 +4444,7 @@ function updateHUD() {
     '<span class="clk ' + low + '">' + Math.floor(secs / 60) + ":" + String(secs % 60).padStart(2, "0") + "</span>" +
     (P.tired ? '<b style="color:#ff9a92">飢</b>' : "") + "</div>" +
     '<div class="row2"><span class="chip' + (bagWeight() >= bagCap() ? " warn" : "") + '">荷 <b>' +
-    bagWeight().toFixed(1) + "/" + bagCap() + "</b></span>" +
-    '<span class="lamp ' + (P.lamp ? "" : "off") + '">' + (P.lamp ? "灯●" : "灯○") + "</span></div>";
+    bagWeight().toFixed(1) + "/" + bagCap() + "</b></span></div>";
   let h = "";
   for (const it of run.bag) h += '<i style="background-image:url(' + iconURL[KIND[it.k].ico] + ')"></i>';
   BAGEL.innerHTML = h;
@@ -4608,9 +4606,11 @@ function resize() {
   PAD.classList.toggle("lefty", lefty());
   stage.classList.toggle("lefty", lefty());
   PAD.classList.toggle("flip", !!(S.opt && S.opt.flip));
-  // 情報の柱の下端を、親指のスティックと同じ高さにそろえる（切り欠きの量は実測でしか分からない）
+  // 情報の柱も、手元と同じだけ隅から浮かせる（切り欠きの量は実測でしか分からない）
   const sr = stage.getBoundingClientRect(), kr = stick.getBoundingClientRect();
-  stage.style.setProperty("--infobot", (isTouch && portrait ? Math.round(sr.bottom - kr.bottom) : 8) + "px");
+  stage.style.setProperty("--infobot", (isTouch && portrait ? Math.round(sr.bottom - kr.bottom) + 18 : 10) + "px");
+  const edge = Math.round(lefty() ? w - sr.right : sr.left);   // 盤面が画面より狭いぶんを差し引く
+  stage.style.setProperty("--infoside", Math.max(7, 28 - edge) + "px");
 }
 addEventListener("resize", resize);
 addEventListener("orientationchange", () => setTimeout(resize, 200));
