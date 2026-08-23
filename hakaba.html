@@ -58,6 +58,8 @@
     display: flex; flex-direction: column; align-items: flex-start; gap: 4px;
     pointer-events: none;
   }
+  #stage.dg #side { pointer-events: auto; cursor: pointer; }
+  #stage.dg #side:active #hud2 { opacity: 0.6; }
   #stage.lefty #side { left: auto; right: 6px; align-items: flex-end; }
   #hud2 {
     display: flex; flex-direction: column; gap: 2px;
@@ -150,16 +152,19 @@
     box-shadow: 0 0 16px rgba(232,196,106,0.35);
   }
   .abtn.hot small { color: #e8c46a; }
-  /* 片手で届く扇 ― スティックの上に回収・灯り、その上に地図・道具 */
-  #bA { right: 56px; bottom: calc(118px + env(safe-area-inset-bottom)); width: 64px; height: 64px; font-size: 12.5px; }
-  #bB { right:  2px; bottom: calc(124px + env(safe-area-inset-bottom)); width: 52px; height: 52px; }
-  #bD { right: 58px; bottom: calc(184px + env(safe-area-inset-bottom)); width: 50px; height: 50px; font-size: 11px; }
-  #bC { right:  6px; bottom: calc(184px + env(safe-area-inset-bottom)); width: 50px; height: 50px; font-size: 11px; }
+  /* 使う頻度の順に、親指の近いところから。回収はスティックの長押し */
+  #bB { right: 24px; bottom: calc(118px + env(safe-area-inset-bottom)); width: 58px; height: 58px; font-size: 12px; }
+  #bE { right:  6px; bottom: calc(184px + env(safe-area-inset-bottom)); width: 52px; height: 52px; font-size: 11px; }
+  #bF { right: 62px; bottom: calc(186px + env(safe-area-inset-bottom)); width: 46px; height: 46px; font-size: 10.5px; }
   #pad.lefty .stick { right: auto; left: 14px; }
-  #pad.lefty #bA { right: auto; left: 56px; }
-  #pad.lefty #bB { right: auto; left:  2px; }
-  #pad.lefty #bD { right: auto; left: 58px; }
-  #pad.lefty #bC { right: auto; left:  6px; }
+  #pad.lefty #bB { right: auto; left: 24px; }
+  #pad.lefty #bE { right: auto; left:  6px; }
+  #pad.lefty #bF { right: auto; left: 62px; }
+  .stick.hot {                                   /* 足元に拾えるものがある */
+    border-color: rgba(232,196,106,0.85); background: rgba(232,196,106,0.10);
+    box-shadow: 0 0 18px rgba(232,196,106,0.28);
+  }
+  .stick.hot .knob { background: rgba(232,196,106,0.45); }
 
   /* ---------- overlay UI ---------- */
   #ui {
@@ -325,10 +330,9 @@
   </div>
   <div id="pad">
     <div class="stick" id="stick"><div class="knob" id="knob"></div></div>
-    <div class="abtn" id="bA">回収<br>調べる</div>
     <div class="abtn" id="bB">灯り</div>
-    <div class="abtn" id="bC">道具</div>
-    <div class="abtn" id="bD">地図</div>
+    <div class="abtn" id="bE">煙玉</div>
+    <div class="abtn" id="bF">回復</div>
   </div>
   <div id="ui"></div>
 </div>
@@ -1987,7 +1991,7 @@ const P = {
   looting: null, lootT: 0, stepT: 0, armor: 0, st: 100, tired: 0, exT: 0, heavyT: 0
 };
 const keys = {};
-let touchVec = { x: 0, y: 0 }, touchA = false;
+let touchVec = { x: 0, y: 0 };
 
 function addPart(x, y, o) {
   parts.push(Object.assign({ x, y, vx: 0, vy: 0, life: 0.5, max: 0.5, col: "#fff", sz: 1, type: "dot" }, o));
@@ -2246,11 +2250,15 @@ function inputVec() {
   const m = Math.hypot(ix, iy);
   return m > 1 ? { x: ix / m, y: iy / m, m: 1 } : { x: ix, y: iy, m };
 }
-const actionHeld = () => !mapOpen && !!(keys["z"] || keys[" "] || keys["enter"] || touchA);
+let stickStillT = 0, stickHold = false;          // スティックを押したまま動かさない＝回収
+const actionHeld = () => !mapOpen && !!(keys["z"] || keys[" "] || keys["enter"] || stickHold);
 
 function updatePlayer(dt, frozen) {
   const v = frozen ? { x: 0, y: 0, m: 0 } : inputVec();
   const moving = v.m > 0.06;
+  if (!frozen && stickId !== null && Math.hypot(touchVec.x, touchVec.y) <= 0.08) stickStillT += dt;
+  else stickStillT = 0;
+  stickHold = stickStillT > 0.15;                // 少し遊びを持たせて、軽く触れただけでは始めない
   if (frozen) { P.looting = null; P.lootT = 0; P.anim = 0; }
   if (P.looting) {
     if (moving) { P.looting.prog = 0; P.looting = null; }
@@ -3120,7 +3128,7 @@ function drawDungeon(dt) {
       wtext("調べている…", nc.x + 8, nc.y - 17, "#e8c46a", 9);
     } else {
       const bob = Math.sin(time * 4) * 1;
-      wtext((isTouch ? "［調べる］" : "Ｚ で調べる") + " " + remainLabel(nc), nc.x + 8, nc.y - 12 + bob, "#e8c46a", 9);
+      wtext((isTouch ? "止まって長押し ― " : "Ｚ で調べる ― ") + remainLabel(nc), nc.x + 8, nc.y - 12 + bob, "#e8c46a", 9);
     }
   }
   if (altar && Math.hypot(P.x / TILE - altar.x, P.y / TILE - altar.y) < 8) {
@@ -3167,9 +3175,11 @@ function drawDungeon(dt) {
   if (flash > 0) { g.fillStyle = "rgba(180,65,58," + (flash * 0.5).toFixed(3) + ")"; g.fillRect(0, 0, VW, VH); }
 }
 
+let miniRect = null;                                        // 押したら全体地図が出る枠
 function drawMinimap() {
   const s = 1, mw = MW * s, mh = MH * s;
   const x0 = lefty() ? VW - mw - 5 : 5, y0 = VH - mh - 5;   // 操作の反対側の隅
+  miniRect = { x: x0 - 5, y: y0 - 5, w: mw + 10, h: mh + 10 };
   g.fillStyle = "rgba(6,5,12,0.72)"; g.fillRect(x0 - 2, y0 - 2, mw + 4, mh + 4);
   g.strokeStyle = "rgba(232,196,106,0.24)"; g.lineWidth = 1; g.strokeRect(x0 - 2.5, y0 - 2.5, mw + 5, mh + 5);
   for (let y = 0; y < MH; y++) for (let x = 0; x < MW; x++) {
@@ -3215,7 +3225,7 @@ function drawFullMap() {
   if (Math.floor(time * 4) % 2) mark(Math.floor(P.x / TILE), Math.floor(P.y / TILE), "#ffffff", true);
   wtext("地　図 ― " + levelName(run.pos) + (run.pos.s ? "" : "（" + themeOf(run.pos.d).nm + "）"), VW / 2, 20, "#e8c46a", 11);
   wtext("下り ● 上り ● 転移碑 ● 遺留品 ●", VW / 2, y0 + h + 16, "#93876f", 9);
-  wtext(isTouch ? "［地図］でとじる" : "M でとじる", VW / 2, y0 + h + 30, "#5a5266", 9);
+  wtext(isTouch ? "もう一度 小地図を押すととじる" : "M でとじる", VW / 2, y0 + h + 30, "#5a5266", 9);
 }
 
 /* ---------- 地上（町）― 背景そのものが操作盤 ---------- */
@@ -3618,14 +3628,14 @@ function showHelp(tab) {
       "・拾った<b>防具</b>は身につけられる。殴られを肩代わりするが、その分傷んで売値が落ちる<br>" +
       "・<b>煙玉</b>は追跡を切る。<b>ポーション</b>は体力をひとつ戻す</p>";
   } else if (helpTab === "sell") {
-    body = "<p>・持てるのは<b>重さ</b>まで。重い鎧か、軽くて高い指輪か ― <b>道具ボタンの「荷」で捨てて</b>入れ替えられる<br>" +
+    body = "<p>・持てるのは<b>重さ</b>まで。重い鎧か、軽くて高い指輪か ― <b>道具の「荷」で捨てて</b>入れ替えられる<br>" +
       "・暗がりでの値踏みは当てにならない。<b>種類の相場は読めても、品質は取り違え、付与はまず見抜けない</b><br>" +
       "　銀貨は数えれば分かるが、宝石や指輪は目が要る。<b>目利き</b>を上げると誤差が縮み、買取も高くなる<br>" +
       "・品物には持ち主がいた。誰の、どんな死に方だったかは<b>図鑑</b>に残る</p>" +
       '<div class="note"><span class="cf c1">◎</span>ほぼ確か <span class="cf c2">○</span>だいたい ' +
       '<span class="cf c3">△</span>怪しい <span class="cf c4">？</span>見当もつかない</div>';
   } else {
-    body = '<div class="sub" style="margin:0">' + (isTouch ? "左の輪で移動<br>右の四つが 調べる（長押しで回収）・灯り・道具・地図<br>とじるときは右上の × でも、幕を叩いてもいい" :
+    body = '<div class="sub" style="margin:0">' + (isTouch ? "利き手側の輪で移動 ― <b>止めたまま押しつづけると回収</b><br>その上のボタンが 灯り・煙玉・回復<br>反対側の<b>小地図を押すと全体図</b>、<b>情報の柱を押すと道具</b><br>とじるときは右上の × でも、幕を叩いてもいい" :
       '移動 <span class="kbd">←↑↓→</span><span class="kbd">WASD</span><br>調べる・決定 <span class="kbd">Z</span><span class="kbd">Space</span>（長押しで回収）<br>' +
       '灯り <span class="kbd">X</span><span class="kbd">C</span> ／ 地図 <span class="kbd">M</span> ／ 道具 <span class="kbd">I</span><br>' +
       'ポーション <span class="kbd">1</span> ／ 煙玉 <span class="kbd">2</span><br>中断・とじる <span class="kbd">Esc</span>') + "</div>";
@@ -3913,7 +3923,8 @@ function showOpt() {
     '<div class="btns"><div class="btn' + (lefty() ? "" : " pri") + '" data-a="sethand" data-i="right">右利き</div>' +
     '<div class="btn' + (lefty() ? " pri" : "") + '" data-a="sethand" data-i="left">左利き</div></div>' +
     '<div class="note">片手で持って遊ぶ想定です。スティックとボタンは<b>' + (lefty() ? "左" : "右") +
-    '手の親指が届く隅</b>にまとめ、空いた<b>' + (lefty() ? "右" : "左") + '側</b>に小地図と、水と食料・荷・灯り・道具の数を寄せます。</div>' +
+    '手の親指が届く隅</b>にまとめ、空いた<b>' + (lefty() ? "右" : "左") + '側</b>に小地図と、水と食料・荷・灯り・道具の数を寄せます。' +
+    '小地図を押すと全体図、情報の柱を押すと道具が開きます。</div>' +
     '<div class="lbl">遊びかた</div>' +
     '<div class="btns trio">' + ["normal", "safe", "watch"].map(k =>
       '<div class="btn' + (m === k ? " pri" : "") + '" data-a="setmode" data-i="' + k + '">' + MODE_NM[k] + "</div>").join("") + "</div>" +
@@ -4441,12 +4452,14 @@ function updatePad() {
   const sig = [P.lamp, G.inv.potion, G.inv.smoke, near ? 1 : 0, mapOpen ? 1 : 0].join("|");
   if (sig === padSig) return;
   padSig = sig;
-  $("bA").innerHTML = near ? "回収<small>長押し</small>" : "調べる";
-  $("bA").classList.toggle("hot", !!near);
+  stick.classList.toggle("hot", !!near);         // 足元に拾えるものがある
   $("bB").textContent = "灯り";
+  $("bB").classList.toggle("on", P.lamp);
   $("bB").classList.toggle("off", !P.lamp);
-  $("bC").textContent = "道具";
-  $("bD").classList.toggle("on", !!mapOpen);
+  $("bE").innerHTML = "煙玉<small>" + G.inv.smoke + "</small>";
+  $("bE").classList.toggle("off", G.inv.smoke <= 0);
+  $("bF").innerHTML = "回復<small>" + G.inv.potion + "</small>";
+  $("bF").classList.toggle("off", G.inv.potion <= 0);
 }
 
 /* ============================================================
@@ -4471,7 +4484,7 @@ addEventListener("keydown", e => {
   actx();
 }, { passive: false });
 addEventListener("keyup", e => { keys[e.key.toLowerCase()] = false; });
-addEventListener("blur", () => { for (const k in keys) keys[k] = false; touchVec = { x: 0, y: 0 }; touchA = false; });
+addEventListener("blur", () => { for (const k in keys) keys[k] = false; touchVec = { x: 0, y: 0 }; stickEnd(); });
 
 /* タッチ */
 const stick = $("stick"), knob = $("knob");
@@ -4497,7 +4510,7 @@ function stickMove(e) {
   }
   e.preventDefault();
 }
-function stickEnd() { stickId = null; touchVec = { x: 0, y: 0 }; knob.style.transform = ""; }
+function stickEnd() { stickId = null; touchVec = { x: 0, y: 0 }; stickStillT = 0; stickHold = false; knob.style.transform = ""; }
 stick.addEventListener("touchstart", stickStart, { passive: false });
 stick.addEventListener("touchmove", stickMove, { passive: false });
 stick.addEventListener("touchend", stickEnd);
@@ -4508,10 +4521,9 @@ function bindBtn(el, down, up) {
   el.addEventListener("mousedown", e => { e.preventDefault(); actx(); down(); });
   el.addEventListener("mouseup", e => { e.preventDefault(); if (up) up(); });
 }
-bindBtn($("bA"), () => { touchA = true; }, () => { touchA = false; });
 bindBtn($("bB"), () => { if (scene === "dungeon" && !uiOpen && !mapOpen) toggleLamp(); });
-bindBtn($("bC"), () => { if (scene === "dungeon" && !uiOpen) showItems(); });
-bindBtn($("bD"), () => { if (scene === "dungeon" && !uiOpen) { mapOpen = !mapOpen; SFX.ui(); } });
+bindBtn($("bE"), () => { if (scene === "dungeon" && !uiOpen && !mapOpen) useSmoke(); });
+bindBtn($("bF"), () => { if (scene === "dungeon" && !uiOpen && !mapOpen) usePotion(); });
 
 /* ============================================================
    画面サイズ / メインループ
@@ -4527,6 +4539,12 @@ function townHit(p) {
   return null;
 }
 stage.addEventListener("pointerdown", ev => {
+  if (scene === "dungeon" && run && !uiOpen && miniRect) {   // 小地図を押したら全体地図
+    const p = canvasPos(ev);
+    if (p.x >= miniRect.x && p.x <= miniRect.x + miniRect.w && p.y >= miniRect.y && p.y <= miniRect.y + miniRect.h) {
+      ev.preventDefault(); actx(); SFX.ui(); mapOpen = !mapOpen; return;
+    }
+  }
   if (uiOpen || scene !== "town") return;
   const h = townHit(canvasPos(ev));
   if (!h) return;
@@ -4542,6 +4560,10 @@ stage.addEventListener("pointermove", ev => {
   stage.style.cursor = h ? "pointer" : "";
 });
 stage.addEventListener("pointerleave", () => { townHover = null; stage.style.cursor = ""; });
+$("side").addEventListener("pointerdown", ev => {              // 情報パネルを押したら道具
+  if (scene !== "dungeon" || !run || uiOpen || mapOpen) return;
+  ev.preventDefault(); ev.stopPropagation(); actx(); SFX.ui(); showItems();
+});
 /* 操作は利き手側の隅にまとめて盤面の上に重ねる。下に空けるのは足元の帯だけ。 */
 function padNeed(h) { return clamp(Math.round(h * 0.15), 70, 120); }
 function resize() {
@@ -4618,6 +4640,7 @@ function frame(now) {
   PAD.classList.toggle("on", isTouch && scene === "dungeon" && !uiOpen);
   PAD.classList.toggle("lefty", lefty());
   stage.classList.toggle("lefty", lefty());
+  stage.classList.toggle("dg", scene === "dungeon" && !!run && !uiOpen && !mapOpen);
 
   // フェード
   if (fadeDir > 0) {
