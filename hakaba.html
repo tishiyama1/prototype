@@ -52,6 +52,20 @@
   }
 
   /* ---------- HUD ---------- */
+  /* 情報の柱 ― 利き手の反対側にまとめる */
+  #side {
+    position: absolute; left: 6px; bottom: 17%; width: 54%;
+    display: flex; flex-direction: column; align-items: flex-start; gap: 4px;
+    pointer-events: none;
+  }
+  #stage.lefty #side { left: auto; right: 6px; align-items: flex-end; }
+  #hud2 {
+    display: flex; flex-direction: column; gap: 2px;
+    font-size: 10.5px; letter-spacing: 0.02em; line-height: 1.5;
+    text-shadow: 0 1px 2px #000, 0 0 6px #000;
+  }
+  #hud2 .row2 { display: flex; align-items: center; gap: 5px; }
+  #stage.lefty #hud2 { align-items: flex-end; }
   #hud {
     position: absolute; left: 0; right: 0; top: 0;
     display: flex; align-items: center; gap: 6px; flex-wrap: wrap;
@@ -75,10 +89,8 @@
   #hud .stam i { display: block; height: 100%; background: #6f8f5a; transition: width .2s linear; }
   #hud .stam.low i { background: var(--gold); }
   #hud .stam.out i { background: var(--blood); }
-  #bag {
-    position: absolute; left: 6px; right: 6px; bottom: 6px; display: flex; gap: 2px; flex-wrap: wrap;
-    pointer-events: none;
-  }
+  #bag { display: flex; gap: 2px; flex-wrap: wrap; pointer-events: none; }
+  #stage.lefty #bag { justify-content: flex-end; }
   #bag i {
     width: 14px; height: 14px; display: block;
     background: rgba(0,0,0,0.5); border: 1px solid rgba(232,196,106,0.25);
@@ -88,9 +100,10 @@
   #bag.full i { border-color: rgba(180,65,58,0.55); }
 
   #toasts {
-    position: absolute; left: 6px; right: 6px; bottom: 26px; display: flex; flex-direction: column;
+    position: absolute; left: 6px; right: 6px; top: 24px; display: flex; flex-direction: column;
     align-items: flex-end; gap: 3px; pointer-events: none;
   }
+  #stage.lefty #toasts { align-items: flex-start; }
   #toasts div {
     font-size: 11.5px; padding: 3px 8px; max-width: 100%; border-radius: 2px;
     background: rgba(8,6,12,0.82); border-left: 2px solid var(--gold);
@@ -111,13 +124,13 @@
   #pad.on { opacity: 1; }
   #pad:not(.on) * { pointer-events: none; }
   .stick {
-    position: absolute; left: 50%; margin-left: -56px;
-    bottom: calc(8px + env(safe-area-inset-bottom)); width: 112px; height: 112px;
+    position: absolute; right: 14px;
+    bottom: calc(10px + env(safe-area-inset-bottom)); width: 100px; height: 100px;
     border-radius: 50%; background: rgba(20,16,26,0.4); border: 1px solid rgba(232,196,106,0.18);
     pointer-events: auto;
   }
   .stick .knob {
-    position: absolute; left: 50%; top: 50%; width: 42px; height: 42px; margin: -21px 0 0 -21px;
+    position: absolute; left: 50%; top: 50%; width: 40px; height: 40px; margin: -20px 0 0 -20px;
     border-radius: 50%; background: rgba(232,196,106,0.28); border: 1px solid rgba(232,196,106,0.45);
   }
   .abtn {
@@ -137,15 +150,16 @@
     box-shadow: 0 0 16px rgba(232,196,106,0.35);
   }
   .abtn.hot small { color: #e8c46a; }
-  /* 左に 地図・道具、右に 回収・灯り。設定で左右を入れ替えられる */
-  #bD { left:  12px; bottom: calc(72px + env(safe-area-inset-bottom)); width: 54px; height: 54px; font-size: 11px; }
-  #bC { left:  12px; bottom: calc(8px  + env(safe-area-inset-bottom)); width: 54px; height: 54px; font-size: 11px; }
-  #bA { right:  4px; bottom: calc(70px + env(safe-area-inset-bottom)); width: 72px; height: 72px; font-size: 12.5px; }
-  #bB { right: 13px; bottom: calc(8px  + env(safe-area-inset-bottom)); width: 54px; height: 54px; }
-  #pad.flip #bD { left: auto; right: 12px; }
-  #pad.flip #bC { left: auto; right: 12px; }
-  #pad.flip #bA { right: auto; left:  4px; }
-  #pad.flip #bB { right: auto; left: 13px; }
+  /* 片手で届く扇 ― スティックの上に回収・灯り、その上に地図・道具 */
+  #bA { right: 56px; bottom: calc(118px + env(safe-area-inset-bottom)); width: 64px; height: 64px; font-size: 12.5px; }
+  #bB { right:  2px; bottom: calc(124px + env(safe-area-inset-bottom)); width: 52px; height: 52px; }
+  #bD { right: 58px; bottom: calc(184px + env(safe-area-inset-bottom)); width: 50px; height: 50px; font-size: 11px; }
+  #bC { right:  6px; bottom: calc(184px + env(safe-area-inset-bottom)); width: 50px; height: 50px; font-size: 11px; }
+  #pad.lefty .stick { right: auto; left: 14px; }
+  #pad.lefty #bA { right: auto; left: 56px; }
+  #pad.lefty #bB { right: auto; left:  2px; }
+  #pad.lefty #bD { right: auto; left: 58px; }
+  #pad.lefty #bC { right: auto; left:  6px; }
 
   /* ---------- overlay UI ---------- */
   #ui {
@@ -306,7 +320,7 @@
     <div id="scan"></div>
     <div id="vig"></div>
     <div id="hud"></div>
-    <div id="bag"></div>
+    <div id="side"><div id="bag"></div><div id="hud2"></div></div>
     <div id="toasts"></div>
   </div>
   <div id="pad">
@@ -338,7 +352,7 @@ g.imageSmoothingEnabled = false;
 const $ = id => document.getElementById(id);
 const fx = document.getElementById("fx"), fg = fx.getContext("2d");
 let SCALE = 3, DPR = 1, viewOX = 0, viewOY = 0;
-const UI = $("ui"), HUD = $("hud"), BAGEL = $("bag"), TOAST = $("toasts"), PAD = $("pad");
+const UI = $("ui"), HUD = $("hud"), HUD2 = $("hud2"), BAGEL = $("bag"), TOAST = $("toasts"), PAD = $("pad");
 
 const clamp = (v, a, b) => v < a ? a : v > b ? b : v;
 const lerp = (a, b, t) => a + (b - a) * t;
@@ -355,7 +369,7 @@ const hash = (x, y) => { let h = x * 374761393 + y * 668265263; h = (h ^ (h >> 1
     S.rec … 記録（最短返済日数など）                                   */
 const KEY = "yuusha_no_hakaba_v2";
 const DEBT0 = 100000, LIMIT0 = 30;
-const DEFAULT_SAVE = { g: null, dex: { hero: {}, item: {}, cause: {}, mon: {}, notes: [] }, rec: { best: 0, clears: 0, fails: 0, runs: 0, deaths: 0, boss: 0 }, opt: { mute: false, mode: "normal", flip: false } };
+const DEFAULT_SAVE = { g: null, dex: { hero: {}, item: {}, cause: {}, mon: {}, notes: [] }, rec: { best: 0, clears: 0, fails: 0, runs: 0, deaths: 0, boss: 0 }, opt: { mute: false, mode: "normal", hand: "right" } };
 let S = (() => {
   try {
     const raw = JSON.parse(localStorage.getItem(KEY) || "{}");
@@ -376,6 +390,7 @@ const MODE_DESC = {
   watch: "魔物が追ってこない。水と食料も減らない。地形と品物を見て回るためのモード。"
 };
 const optMode = () => (S.opt && MODE_NM[S.opt.mode] ? S.opt.mode : "normal");
+const lefty = () => !!(S.opt && S.opt.hand === "left");   // 片手操作 ― 利き手側に操作をまとめる
 const safeMode = () => optMode() !== "normal";
 const watchMode = () => optMode() === "watch";
 const save = () => { try { S.g = G; localStorage.setItem(KEY, JSON.stringify(S)); } catch (e) {} };
@@ -3154,7 +3169,7 @@ function drawDungeon(dt) {
 
 function drawMinimap() {
   const s = 1, mw = MW * s, mh = MH * s;
-  const x0 = VW - mw - 5, y0 = 34;
+  const x0 = lefty() ? VW - mw - 5 : 5, y0 = VH - mh - 5;   // 操作の反対側の隅
   g.fillStyle = "rgba(6,5,12,0.72)"; g.fillRect(x0 - 2, y0 - 2, mw + 4, mh + 4);
   g.strokeStyle = "rgba(232,196,106,0.24)"; g.lineWidth = 1; g.strokeRect(x0 - 2.5, y0 - 2.5, mw + 5, mh + 5);
   for (let y = 0; y < MH; y++) for (let x = 0; x < MW; x++) {
@@ -3885,7 +3900,7 @@ actions.optback = () => {
   else actions.back({});
 };
 actions.setmute = d => { muted = d.i === "1"; S.opt.mute = muted; save(); if (!muted) SFX.ui(); showOpt(); };
-actions.setflip = d => { S.opt.flip = d.i === "1"; save(); showOpt(); };
+actions.sethand = d => { S.opt.hand = d.i === "left" ? "left" : "right"; save(); hudSig = ""; showOpt(); };
 actions.setmode = d => { S.opt.mode = d.i; save(); if (safeMode() && G) { G.assist = 1; save(); } showOpt(); };
 function showOpt() {
   const m = optMode();
@@ -3894,12 +3909,11 @@ function showOpt() {
     '<div class="lbl">音</div>' +
     '<div class="btns"><div class="btn' + (muted ? "" : " pri") + '" data-a="setmute" data-i="0">鳴らす</div>' +
     '<div class="btn' + (muted ? " pri" : "") + '" data-a="setmute" data-i="1">消す</div></div>' +
-    '<div class="lbl">手元のボタン</div>' +
-    '<div class="btns"><div class="btn' + (S.opt.flip ? "" : " pri") + '" data-a="setflip" data-i="0">ふつう</div>' +
-    '<div class="btn' + (S.opt.flip ? " pri" : "") + '" data-a="setflip" data-i="1">左右を入れ替える</div></div>' +
-    '<div class="note">' + (S.opt.flip
-      ? "左に 回収・灯り、右に 地図・道具。スティックは真ん中。"
-      : "左に 地図・道具、右に 回収・灯り。スティックは真ん中。") + "</div>" +
+    '<div class="lbl">利き手</div>' +
+    '<div class="btns"><div class="btn' + (lefty() ? "" : " pri") + '" data-a="sethand" data-i="right">右利き</div>' +
+    '<div class="btn' + (lefty() ? " pri" : "") + '" data-a="sethand" data-i="left">左利き</div></div>' +
+    '<div class="note">片手で持って遊ぶ想定です。スティックとボタンは<b>' + (lefty() ? "左" : "右") +
+    '手の親指が届く隅</b>にまとめ、空いた<b>' + (lefty() ? "右" : "左") + '側</b>に小地図と、水と食料・荷・灯り・道具の数を寄せます。</div>' +
     '<div class="lbl">遊びかた</div>' +
     '<div class="btns trio">' + ["normal", "safe", "watch"].map(k =>
       '<div class="btn' + (m === k ? " pri" : "") + '" data-a="setmode" data-i="' + k + '">' + MODE_NM[k] + "</div>").join("") + "</div>" +
@@ -4385,7 +4399,7 @@ function endFail() {
    ============================================================ */
 let hudSig = "";
 function updateHUD() {
-  if (scene !== "dungeon" || !run) { if (HUD.innerHTML) { HUD.innerHTML = ""; BAGEL.innerHTML = ""; hudSig = ""; } return; }
+  if (scene !== "dungeon" || !run) { if (HUD.innerHTML) { HUD.innerHTML = ""; HUD2.innerHTML = ""; BAGEL.innerHTML = ""; hudSig = ""; } return; }
   const secs = Math.max(0, Math.ceil(P.st / SUPPLY_RATE));
   const md = optMode();
   const sig = [md, P.hp, P.armor, run.pos.d, run.pos.s, run.bag.length, P.lamp, G.day, secs,
@@ -4394,21 +4408,22 @@ function updateHUD() {
   hudSig = sig;
   const hearts = "♥".repeat(P.hp) + '<span style="color:#3a3040">♥</span>'.repeat(Math.max(0, maxHearts() - P.hp));
   const shieldPips = P.armor > 0 ? '<span style="color:#b9c9de;margin-left:4px">' + "◈".repeat(P.armor) + "</span>" : "";
-  HUD.innerHTML =
+  const low = P.st <= 0 ? "out" : P.st < maxSupply() * 0.3 ? "low" : "";
+  HUD.innerHTML =                                    // 上の帯 ― 一行だけ
     '<span class="hearts">' + hearts + "</span>" + shieldPips +
     '<span class="chip">' + (run.pos.s ? "第" + sanctNo(run.pos.d) + "聖堂" : "地下 <b>" + run.pos.d + "</b> 階") + "</span>" +
     '<span class="sep"></span>' +
-    '<span class="chip">' + G.day + " 日目</span>" +
     (md === "normal" ? "" : '<span class="chip mode">' + MODE_NM[md] + "</span>") +
-    '<span class="brk"></span>' +
-    '<span class="chip">食 <span class="stam ' + (P.st <= 0 ? "out" : P.st < maxSupply() * 0.3 ? "low" : "") + '">' +
-    '<i style="width:' + Math.round(clamp(P.st / maxSupply(), 0, 1) * 100) + '%"></i></span> ' +
-    '<span class="clk ' + (P.st <= 0 ? "out" : P.st < maxSupply() * 0.3 ? "low" : "") + '">' +
-    Math.floor(secs / 60) + ":" + String(secs % 60).padStart(2, "0") + "</span>" +
-    (P.tired ? ' <b style="color:#ff9a92">飢</b>' : "") + "</span>" +
-    '<span class="chip' + (bagWeight() >= bagCap() ? " warn" : "") + '">荷 <b>' + bagWeight().toFixed(1) + "/" + bagCap() + "</b></span>" +
-    '<span class="lamp ' + (P.lamp ? "" : "off") + '">' + (P.lamp ? "灯●" : "灯○") + "</span>" +
-    '<span class="chip">薬 <b>' + G.inv.potion + "</b> 煙 <b>" + G.inv.smoke + "</b></span>";
+    '<span class="chip">' + G.day + " 日目</span>";
+  HUD2.innerHTML =                                   // 柱 ― 利き手の反対側
+    '<div class="row2"><span class="chip">食</span><span class="stam ' + low + '">' +
+    '<i style="width:' + Math.round(clamp(P.st / maxSupply(), 0, 1) * 100) + '%"></i></span>' +
+    '<span class="clk ' + low + '">' + Math.floor(secs / 60) + ":" + String(secs % 60).padStart(2, "0") + "</span>" +
+    (P.tired ? '<b style="color:#ff9a92">飢</b>' : "") + "</div>" +
+    '<div class="row2"><span class="chip' + (bagWeight() >= bagCap() ? " warn" : "") + '">荷 <b>' +
+    bagWeight().toFixed(1) + "/" + bagCap() + "</b></span>" +
+    '<span class="lamp ' + (P.lamp ? "" : "off") + '">' + (P.lamp ? "灯●" : "灯○") + "</span></div>" +
+    '<div class="row2"><span class="chip">薬 <b>' + G.inv.potion + "</b> 煙 <b>" + G.inv.smoke + "</b></span></div>";
   let h = "";
   for (const it of run.bag) h += '<i style="background-image:url(' + iconURL[KIND[it.k].ico] + ')"></i>';
   BAGEL.innerHTML = h;
@@ -4527,17 +4542,8 @@ stage.addEventListener("pointermove", ev => {
   stage.style.cursor = h ? "pointer" : "";
 });
 stage.addEventListener("pointerleave", () => { townHover = null; stage.style.cursor = ""; });
-/* 操作エリアがほんとうに要る高さを、ボタンの実寸から測る。
-   数字を決め打ちにすると CSS を触るたびに盤面と重なる。 */
-function padNeed() {
-  const pb = PAD.getBoundingClientRect().bottom;
-  let n = 0;
-  for (const el of [stick, $("bA"), $("bB"), $("bC"), $("bD")]) {
-    const r = el.getBoundingClientRect();
-    if (r.height) n = Math.max(n, pb - r.top);
-  }
-  return n ? Math.ceil(n) + 8 : 160;
-}
+/* 操作は利き手側の隅にまとめて盤面の上に重ねる。下に空けるのは足元の帯だけ。 */
+function padNeed(h) { return clamp(Math.round(h * 0.15), 70, 120); }
 function resize() {
   const vv = window.visualViewport;
   const w = Math.round(vv ? vv.width : innerWidth);
@@ -4552,7 +4558,7 @@ function resize() {
   document.body.classList.toggle("rotate", isTouch && !portrait && h < 520);
   let sc;
   if (portrait) {
-    const padH = isTouch ? padNeed() : 0;                   // 操作エリアの実寸
+    const padH = isTouch ? padNeed(h) : 0;                  // 足元に空ける帯
     sc = w / VW;                                            // まず幅いっぱい
     if (VH * sc > h - padH) sc = (h - padH) / VH;            // 収まらないぶんだけ縮める
   } else {
@@ -4567,6 +4573,8 @@ function resize() {
   stage.style.width = cw + "px"; stage.style.height = ch + "px";
   UI.style.setProperty("--stageh", ch + "px");
   PAD.classList.toggle("on", isTouch && scene === "dungeon");
+  PAD.classList.toggle("lefty", lefty());
+  stage.classList.toggle("lefty", lefty());
   PAD.classList.toggle("flip", !!(S.opt && S.opt.flip));
 }
 addEventListener("resize", resize);
@@ -4608,7 +4616,8 @@ function frame(now) {
   }
   updateHUD(); updatePad();
   PAD.classList.toggle("on", isTouch && scene === "dungeon" && !uiOpen);
-  PAD.classList.toggle("flip", !!(S.opt && S.opt.flip));
+  PAD.classList.toggle("lefty", lefty());
+  stage.classList.toggle("lefty", lefty());
 
   // フェード
   if (fadeDir > 0) {
