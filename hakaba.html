@@ -104,16 +104,6 @@
   #hud .stam i { display: block; height: 100%; background: #6f8f5a; transition: width .2s linear; }
   #hud .stam.low i { background: var(--gold); }
   #hud .stam.out i { background: var(--blood); }
-  #bag { display: flex; gap: 2px; flex-wrap: wrap; pointer-events: none; }
-  #stage.lefty #bag { justify-content: flex-end; }
-  #bag i {
-    width: 14px; height: 14px; display: block;
-    background: rgba(0,0,0,0.5); border: 1px solid rgba(232,196,106,0.25);
-    background-repeat: no-repeat; background-position: center; background-size: 11px 11px;
-    image-rendering: pixelated;
-  }
-  #bag.full i { border-color: rgba(180,65,58,0.55); }
-
   #toasts {
     position: absolute; left: 6px; right: 6px; top: 24px; display: flex; flex-direction: column;
     align-items: flex-end; gap: 3px; pointer-events: none;
@@ -339,7 +329,7 @@
     <div id="vig"></div>
     <div id="hud"></div>
     <div id="info">
-      <div id="side"><div id="bag"></div><div id="hud2"></div></div>
+      <div id="side"><div id="hud2"></div></div>
       <canvas id="mini" width="48" height="34"></canvas>
     </div>
     <div id="toasts"></div>
@@ -372,7 +362,7 @@ g.imageSmoothingEnabled = false;
 const $ = id => document.getElementById(id);
 const fx = document.getElementById("fx"), fg = fx.getContext("2d");
 let SCALE = 3, DPR = 1, viewOX = 0, viewOY = 0;
-const UI = $("ui"), HUD = $("hud"), HUD2 = $("hud2"), BAGEL = $("bag"), TOAST = $("toasts"), PAD = $("pad");
+const UI = $("ui"), HUD = $("hud"), HUD2 = $("hud2"), TOAST = $("toasts"), PAD = $("pad");
 const MINI = $("mini"), mg = MINI.getContext("2d");
 
 const clamp = (v, a, b) => v < a ? a : v > b ? b : v;
@@ -1020,6 +1010,7 @@ const ICONS = {
   badge: ["............", "...000000...", "..06666660..", "..06777760..", "..06755760..", "..06755760..", "..06777760..", "..06666660..", "...066660...", "....0660....", ".....00.....", "............"],
   note: ["..00000000..", ".0222222220.", ".0333333330.", ".0311111130.", ".0333333330.", ".0311111130.", ".0333333330.", ".0311113330.", ".0333333330.", ".0333333230.", ".0333333320.", "..00000000.."],
   chest: ["............", "............", "............", ".0000000000.", "055555555550", "055556655550", ".0000660000.", "044440644440", "044446644440", "044444444440", ".0000000000.", "............"],
+  chestOpen: ["............", "............", ".0000000000.", "055555555550", ".0000000000.", "............", ".0000000000.", "001111111100", "041111111140", "044444444440", ".0000000000.", "............"],
   ration: ["............", "..000.......", ".04440......", ".0aaa0......", "0aaaaa0000..", "0abbba05550.", "0abbba555550", "0aaaaa566650", "0aaaaa555550", "0aaaaa555550", "0aaaaa00000.", ".00000......"]
 };
 
@@ -2998,7 +2989,7 @@ function drawDungeon(dt) {
       const c = e.o;
       if (light[idx(c.tx, c.ty)] < 0.04 && !seen[idx(c.tx, c.ty)]) continue;
       g.save();
-      if (c.looted) g.globalAlpha = 0.6;
+      if (c.looted) g.globalAlpha = 0.45;         // 調べ終えたものは沈める
       if (c.type === "blood") {
         g.fillStyle = "#5a1c1c";
         for (let i = 0; i < 7; i++) {
@@ -3006,15 +2997,16 @@ function drawDungeon(dt) {
           g.fillRect(c.x + 2 + h1 * 12, c.y + 6 + h2 * 8, 1 + (h1 > 0.6 ? 2 : 1), 1 + (h2 > 0.7 ? 2 : 1));
         }
         g.fillStyle = "#7a2626"; g.fillRect(c.x + 5, c.y + 9, 6, 3);
-      } else if (c.type === "memo") {
+      } else if (c.type === "memo") {           // 手記は持っていく ― 骨だけ残る
         drawSpr(SPR.bones, c.x, c.y);
-        drawSpr(SPR.icon.note, c.x + 6, c.y + 4);
-      } else if (c.type === "item") {
+        if (!c.looted) drawSpr(SPR.icon.note, c.x + 6, c.y + 4);
+      } else if (c.type === "item") {            // 落とし物そのもの ― 拾えばなくなる
+        if (c.looted) { g.restore(); continue; }
         drawSpr(SPR.icon[KIND[c.items[0].k].ico], c.x + 2, c.y + 4 + Math.sin(time * 3 + c.tx) * 0.8);
       } else if (c.type === "broken") {
         drawSpr(SPR.bones, c.x, c.y);
-      } else if (c.type === "chest") {
-        drawSpr(SPR.icon.chest, c.x + 2, c.y + 3);
+      } else if (c.type === "chest") {           // 空けた箱は、開いたまま残る
+        drawSpr(c.looted ? SPR.icon.chestOpen : SPR.icon.chest, c.x + 2, c.y + 3);
       } else if (c.type === "carcass") {          // 魔物の死骸 ― 骨と、緑がかった残滓
         drawSpr(SPR.bones, c.x, c.y);
         g.fillStyle = "rgba(90,130,80,0.5)";
@@ -4422,7 +4414,7 @@ function endFail() {
    ============================================================ */
 let hudSig = "";
 function updateHUD() {
-  if (scene !== "dungeon" || !run) { if (HUD.innerHTML) { HUD.innerHTML = ""; HUD2.innerHTML = ""; BAGEL.innerHTML = ""; hudSig = ""; } return; }
+  if (scene !== "dungeon" || !run) { if (HUD.innerHTML) { HUD.innerHTML = ""; HUD2.innerHTML = ""; hudSig = ""; } return; }
   const secs = Math.max(0, Math.ceil(P.st / SUPPLY_RATE));
   const md = optMode();
   const sig = [md, P.hp, P.armor, run.pos.d, run.pos.s, run.bag.length, G.day, secs,
@@ -4445,10 +4437,6 @@ function updateHUD() {
     (P.tired ? '<b style="color:#ff9a92">飢</b>' : "") + "</div>" +
     '<div class="row2"><span class="chip' + (bagWeight() >= bagCap() ? " warn" : "") + '">荷 <b>' +
     bagWeight().toFixed(1) + "/" + bagCap() + "</b></span></div>";
-  let h = "";
-  for (const it of run.bag) h += '<i style="background-image:url(' + iconURL[KIND[it.k].ico] + ')"></i>';
-  BAGEL.innerHTML = h;
-  BAGEL.className = bagWeight() >= bagCap() * 0.85 ? "full" : "";
   const tn = document.getElementById("tnote");       // 開いている画面の掲示も進める
   if (tn && !inSanctNow()) tn.textContent = "時間は止まっていない ― 残り " + supplyClock() + "。魔物も動いている";
 }
