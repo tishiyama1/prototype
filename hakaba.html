@@ -293,6 +293,12 @@
     display: inline-flex; align-items: center; justify-content: center; }
   .btn.dis { opacity: 0.35; pointer-events: none; }
   .btn.warn { border-color: rgba(180,65,58,0.5); background: rgba(180,65,58,0.12); color: #ffc4bd; }
+  .tin {
+    width: 100%; padding: 9px 10px; font: inherit; font-size: 13px; letter-spacing: 0.04em;
+    color: var(--ink); background: rgba(255,255,255,0.05);
+    border: 1px solid rgba(232,196,106,0.35); border-radius: 2px; outline: none;
+  }
+  .tin:focus { border-color: var(--gold); background: rgba(232,196,106,0.08); }
 
   .stat { display: flex; gap: 14px; flex-wrap: wrap; font-size: 11px; color: var(--dim); margin-bottom: 10px; }
   .stat b { color: var(--gold); font-weight: 700; }
@@ -380,7 +386,7 @@ const hash = (x, y) => { let h = x * 374761393 + y * 668265263; h = (h ^ (h >> 1
     S.rec … 記録（最短返済日数など）                                   */
 const KEY = "yuusha_no_hakaba_v2";
 const DEBT0 = 100000, LIMIT0 = 30;
-const DEFAULT_SAVE = { g: null, dex: { hero: {}, item: {}, cause: {}, mon: {}, notes: [] }, rec: { best: 0, clears: 0, fails: 0, runs: 0, deaths: 0, boss: 0 }, opt: { mute: false, mode: "normal", hand: "right" } };
+const DEFAULT_SAVE = { g: null, dex: { hero: {}, item: {}, cause: {}, mon: {}, notes: [] }, rec: { best: 0, clears: 0, fails: 0, runs: 0, deaths: 0, boss: 0, bestRun: 0, bestTerm: 0, gold: 0, hauls: 0 }, opt: { mute: false, mode: "normal", hand: "right", name: "拾い屋" } };
 let S = (() => {
   try {
     const raw = JSON.parse(localStorage.getItem(KEY) || "{}");
@@ -413,12 +419,23 @@ function newGame() {
     stash: [], store: [],
     equip: { shield: null, armor: null, helm: null, acc: null },
     deepest: 1, sanctMax: 0, seed: (Math.random() * 4294967296) >>> 0, mem: {}, susp: 0, kind: 0, infamy: 0,
-    market: {}, story: { done: [], badge: 0, map: 0, order: 0, cleaner: 0, boss: 0, murderKept: 0, oddDeath: 0, humanKill: 0, witness: 0, house: 0 },
-    met: [], sold: 0, uid: 1, ended: null
+    market: {}, story: { done: [], badge: 0, map: 0, order: 0, cleaner: 0, boss: 0, murderKept: 0, oddDeath: 0, humanKill: 0, witness: 0, house: 0, notebook: 0 },
+    met: [], sold: 0, uid: 1, ended: null, seen: {}, earned: 0, runsDone: 0, bestRun: 0
   };
   rollMarket();
   S.rec.runs++;
   save();
+}
+
+/* 主人公の名前 ― 設定で変えられる。初期値は「拾い屋」 */
+const PNAME0 = "拾い屋";
+function pname() {
+  const n = S.opt && typeof S.opt.name === "string" ? S.opt.name.trim() : "";
+  return n || PNAME0;
+}
+function setPName(v) {
+  const n = String(v || "").replace(/[<>&"']/g, "").trim().slice(0, 8);
+  S.opt.name = n || PNAME0; save();
 }
 
 /* ---------- 音 ---------- */
@@ -1277,7 +1294,7 @@ const MTYPE = {
   golem:  { nm: "石の番人", spr: "golem", spd: 14, sight: 99,  hp: 34, dMin: 10, dMax: 30, w: 2, wander: 0.4, gold: 0.5,  ai: "hunter",   atk: ["crush"] },
   worm:   { nm: "骨喰い蟲", spr: "worm",  spd: 22, sight: 0,   hp: 26, dMin: 12, dMax: 26, w: 2, wander: 0.7, gold: 0.4,  ai: "scavenge", atk: ["bite"] },
   wraith: { nm: "影法師",   spr: "wraith", spd: 32, sight: 7.4, hp: 22, dMin: 17, dMax: 30, w: 2, phase: true, wander: 0.5, gold: 0.55, ai: "chase", atk: ["magic"] },
-  king:   { nm: "ダンジョンの主", spr: "king", spd: 30, sight: 10, hp: 120, dMin: 99, dMax: 99, w: 0, phase: true, wander: 0.3, boss: true, ai: "chase", atk: ["crush", "magic"] }
+  king:   { nm: "ダンジョンの主", spr: "king", spd: 30, sight: 10, hp: 120, dMin: 99, dMax: 99, w: 0, dim: true, wander: 0.3, boss: true, ai: "chase", atk: ["crush", "magic"] }
 };const MON_ATK_NM = { blade: "斬撃", blunt: "打撃", bite: "咬傷", melt: "溶解", poison: "毒", fire: "火炎", magic: "魔法", crush: "圧潰" };
 /* 行動特性 ― 図鑑にも出す */
 const MON_AI_NM = {
@@ -1490,6 +1507,7 @@ function dexMon(type, depth) {
   if (!S.dex.mon) S.dex.mon = {};
   const d = S.dex.mon[type] || (S.dex.mon[type] = { n: 0, lo: depth, hi: depth });
   d.n++; d.lo = Math.min(d.lo, depth); d.hi = Math.max(d.hi, depth);
+  tipOn("m:" + type);
 }
 function dexItem(it) {
   const d = S.dex.item[it.k] || (S.dex.item[it.k] = { n: 0, q: -1, e: [] });
@@ -1499,6 +1517,108 @@ function dexItem(it) {
 const dexHeroCount = () => Object.keys(S.dex.hero).length;
 const dexItemCount = () => Object.keys(S.dex.item).length;
 const dexCauseCount = () => Object.keys(S.dex.cause).length;
+
+
+/* ---------- 手帳 ― 拾い屋のメモ。潜るうちに増えていく ---------- */
+const TIP_CAT = { play: "潜りかた", lore: "墓場のはなし", clue: "気になること" };
+const TIPS = [
+  { id: "p_stair", cat: "play", ttl: "階段は上りも下りも使える", need: () => true,
+    txt: "地下1階の上り階段が、そのまま地上への出口だ。降りるだけの穴ではない。" },
+  { id: "p_supply", cat: "play", ttl: "水と食料が時計がわり", need: () => true,
+    txt: "持って入った分が、そのまま潜っていられる時間。途中で足すことはできない。尽きれば足が鈍り、やがて倒れる。" },
+  { id: "p_sanct", cat: "play", ttl: "五階ごとに聖堂がある", need: g => g.sanctMax >= 1,
+    txt: "魔物は入ってこられない。水と食料も減らない。荷を整理するならここだ。" },
+  { id: "p_warp", cat: "play", ttl: "転移碑で地上へ帰れる", need: g => g.sanctMax >= 1,
+    txt: "聖堂の碑からは地上へ戻れる。一度行った聖堂へは、翌日から直接降りられる。" },
+  { id: "p_noise", cat: "play", ttl: "回収は物音を立てる", need: g => (g.seen.loot || 0) >= 1,
+    txt: "調べているあいだ、五マスほどの魔物がこちらを探しはじめる。要らない亡骸のそばで足を止めない。" },
+  { id: "p_lamp", cat: "play", ttl: "灯りを消せば見失われる", need: g => (g.seen.lampoff || 0) >= 1,
+    txt: "消すと感知の距離が半分になる。三マスほど離れてから消せば一秒ほどで撒ける。すぐ隣では効かない。" },
+  { id: "p_weight", cat: "play", ttl: "背負える重さは決まっている", need: g => (g.seen.full || 0) >= 1,
+    txt: "重い鎧か、軽くて高い指輪か。道具の「荷」からその場に捨てて入れ替えられる。捨てた品は床に落ちる。" },
+  { id: "p_smoke", cat: "play", ttl: "煙玉は追跡を切る", need: g => (g.seen.smoke || 0) >= 1,
+    txt: "追われている最中でも、投げれば見失わせられる。囲まれてからでは遅い。" },
+  { id: "p_eye", cat: "play", ttl: "暗がりの見立ては当てにならない", need: g => g.sold >= 1,
+    txt: "種類の相場は読めても、品質は取り違え、付与はまず見抜けない。目利きを上げると誤差が縮み、買取も高くなる。" },
+  { id: "p_mem", cat: "play", ttl: "地形は変わらない", need: g => g.day >= 2,
+    txt: "歩いて明らかにした地図は日をまたいで残る。日ごとに変わるのは遺留品と魔物のほうだ。" },
+  { id: "p_market", cat: "play", ttl: "相場は日で動く", need: g => g.day >= 3,
+    txt: "同じ品でも売る日で値が変わる。急がないものは寝かせてもいい。" },
+  { id: "p_chest", cat: "play", ttl: "宝箱", need: g => (g.seen.chest || 0) >= 1,
+    txt: "箱の中身は割がいい。空けたあとは、開いたまま残る。" },
+  { id: "p_hero", cat: "play", ttl: "まだ息のある者がいる", need: g => (g.seen.hero || 0) >= 1,
+    txt: "ポーションを渡せば立ち上がり、しばらく前を歩いて魔物を斬ってくれる。放っておけば、いずれ荷になる。" },
+  { id: "p_armor", cat: "play", ttl: "拾った防具は着られる", need: g => (g.seen.armor || 0) >= 1,
+    txt: "殴られを肩代わりしてくれるが、そのぶん傷んで売値が落ちる。売るか、着るか。" },
+  { id: "p_upg", cat: "play", ttl: "身を固める", need: g => Object.keys(g.up).some(k => g.up[k] > 1),
+    txt: "提灯・鞄・靴・お守り・革手袋・目利き・水袋。上げれば戻らないが、次の日から効く。" },
+
+  { id: "l_town", cat: "lore", ttl: "街はこの墓場で食っている", need: g => (g.seen.guild || 0) >= 1,
+    txt: "宿も武器屋も道具屋も酒場もギルドも、勇者が来るから成り立っている。攻略されて困るのは、さて誰か。" },
+  { id: "l_grave", cat: "lore", ttl: "墓標に名前はない", need: g => g.deepest >= 3,
+    txt: "地下に並ぶ墓標は、どれも彫りかけで止まっている。誰が、誰のために立てたのか。" },
+  { id: "l_theme", cat: "lore", ttl: "五階ごとに石が変わる", need: g => g.deepest >= 6,
+    txt: "石畳、苔むした水路、骨の回廊、焼けた坑道、氷雨の層、黒曜の底。掘った時代が違うのだろう。" },
+  { id: "l_deep", cat: "lore", ttl: "深いほど値が張る", need: g => g.deepest >= 10,
+    txt: "同じ品でも、深いところで拾ったものほど高く売れる。危険の分は、ちゃんと値に乗っている。" },
+  { id: "l_rat", cat: "lore", ttl: "墓ねずみの王冠", need: g => (g.seen.rat || 0) >= 1,
+    txt: "小さな冠をかぶった鼠がいる。誰かが遊びでかぶせたのか、どこかから拾ってきたのか。捕まえると、いい品を抱えている。" },
+  { id: "l_debt", cat: "lore", ttl: "借金の相手", need: g => g.day >= 5,
+    txt: "証文にはギルドの印がある。取り立てに来るのも、仕事を回すのも、同じ窓口だ。" },
+  { id: "l_king", cat: "lore", ttl: "底にいるもの", need: g => g.deepest >= 20,
+    txt: "三十階の下は無い、と酒場では言う。何かが座っていて、それが墓場そのものなのだと。" },
+
+  { id: "k_odd", cat: "clue", ttl: "説明のつかない傷", need: g => (g.story.oddDeath || 0) >= 1,
+    txt: "この階の魔物では、こんな傷はつかない。刃物だ。" },
+  { id: "k_sword", cat: "clue", ttl: "剣を抜いていない", need: g => (g.story.oddDeath || 0) >= 3,
+    txt: "深いところで死んでいる者ほど、剣が鞘に入ったままだ。戦った跡がない。" },
+  { id: "k_hum", cat: "clue", ttl: "人の手", need: g => (g.story.humanKill || 0) >= 1,
+    txt: "魔物の仕業ではない亡骸がある。誰かが、この墓場で人を殺している。" },
+  { id: "k_badge", cat: "clue", ttl: "銀の徽章", need: g => (g.story.badge || 0) >= 1,
+    txt: "深い階の勇者が、ギルド職員の徽章を持っていた。落とし物だといいのだが。" },
+  { id: "k_map", cat: "clue", ttl: "配られた地図", need: g => (g.story.map || 0) >= 1,
+    txt: "刷り物の地図。どれも道順が違い、どれも行き止まりへ向かっている。ギルドの売店で一枚300G。" },
+  { id: "k_order", cat: "clue", ttl: "依頼書の切れ端", need: g => (g.story.order || 0) >= 1,
+    txt: "『……の件、了承。深度十二以深にて処理』。人ひとりのことを、そう書く仕事がある。" },
+  { id: "k_cleaner", cat: "clue", ttl: "黒い外套の男", need: g => (g.story.cleaner || 0) >= 1,
+    txt: "深いところで、荷を持たない男とすれ違った。拾いに来た風ではなかった。" },
+  { id: "k_house", cat: "clue", ttl: "魔物の巣の跡", need: g => (g.story.house || 0) >= 1,
+    txt: "魔物が固まって死んでいる場所がある。誰かが片づけた跡だ。腕の立つ誰かが。" },
+  { id: "k_talk", cat: "clue", ttl: "酒場で聞いた話", need: g => (g.story.witness || 0) >= 1,
+    txt: "深いところで死んでいる連中は剣を抜いていない ― そう言った男がいた。" },
+  { id: "k_boss", cat: "clue", ttl: "扉の手前", need: g => (g.story.boss || 0) >= 1,
+    txt: "主は「ここまで来た者はいない」と言った。だが扉の手前には、後ろから斬られた勇者が転がっている。" }
+];
+const TIP_MIN_TRUTH = 6;                        // これだけ気になれば、繋がる
+function monTip(k) {
+  const t = MTYPE[k];
+  if (!t) return null;
+  return { id: "m:" + k, cat: "play", ttl: t.nm + "の癖",
+    txt: MON_AI_NM[t.ai || "chase"] + "。足は" + spdNm(t.spd) + "。" +
+      (t.boss ? "最深部にしかいない。" : "生息は地下 " + t.dMin + "〜" + t.dMax + " 階あたり。") +
+      (t.atk && t.atk.length ? "つける傷は" + t.atk.map(a => MON_ATK_NM[a]).join("・") + "。" : "こちらを傷つけはしない。") +
+      (t.phase ? "壁を抜ける。" : "") + (t.bonus ? "捕まえると、いい品を抱えている。" : "") };
+}
+const tipIds = () => TIPS.map(t => t.id).concat(Object.keys(MTYPE).map(k => "m:" + k));
+const tipOf = id => id.indexOf("m:") === 0 ? monTip(id.slice(2)) : (TIPS.find(t => t.id === id) || null);
+const tipGot = () => (S.dex.tips || []);
+const clueGot = () => tipGot().filter(id => { const t = tipOf(id); return t && t.cat === "clue"; }).length;
+function tipOn(id) {
+  if (!S.dex.tips) S.dex.tips = [];
+  if (S.dex.tips.indexOf(id) >= 0) return false;
+  const t = tipOf(id);
+  if (!t) return false;
+  S.dex.tips.push(id); save();
+  toast("手帳に書きとめた ― " + t.ttl, "good");
+  if (typeof logAdd === "function" && run && !run.escaped) logAdd("手帳：" + t.ttl, [t.txt], "");
+  return true;
+}
+function sawIt(k) { if (!G) return; if (!G.seen) G.seen = {}; G.seen[k] = (G.seen[k] || 0) + 1; }
+function tipCheck() {                            // 条件のそろったメモを拾い上げる
+  if (!G) return;
+  if (!G.seen) G.seen = {};
+  for (const t of TIPS) { try { if (t.need(G, S)) tipOn(t.id); } catch (e) {} }
+}
 
 /* ---------- 隠しストーリー ---------- */
 const CASES = [
@@ -1634,6 +1754,44 @@ function carveRoom(r) {
 function carveH(x0, x1, y) { for (let x = Math.min(x0, x1); x <= Math.max(x0, x1); x++) if (inb(x, y)) map[idx(x, y)] = T_FLOOR; }
 function carveV(y0, y1, x) { for (let y = Math.min(y0, y1); y <= Math.max(y0, y1); y++) if (inb(x, y)) map[idx(x, y)] = T_FLOOR; }
 
+/* 柱と墓は床の上に置くので、置きどころによっては道をふさいでしまう。
+   生成のあと上り階段から歩ける範囲を数えて、塞いでいる飾りだけ取り除く */
+function openBlockedPaths(sx, sy) {
+  const start = idx(sx, sy);
+  const flood = deep => {
+    const hit = new Uint8Array(MW * MH), st = [start];
+    hit[start] = 1;
+    while (st.length) {
+      const i = st.pop(), x = i % MW, y = (i - x) / MW;
+      for (let k = 0; k < 4; k++) {
+        const nx = x + (k === 0 ? 1 : k === 1 ? -1 : 0), ny = y + (k === 2 ? 1 : k === 3 ? -1 : 0);
+        if (!inb(nx, ny)) continue;
+        const j = idx(nx, ny);
+        if (hit[j] || map[j] === T_WALL) continue;
+        if (!deep && (deco[j] === D_GRAVE || deco[j] === D_PILLAR)) continue;
+        hit[j] = 1; st.push(j);
+      }
+    }
+    return hit;
+  };
+  const all = flood(true);                       // 飾りが無ければ歩けるはずの床
+  for (let pass = 0; pass < 24; pass++) {
+    const walk = flood(false);                   // いま実際に歩ける床
+    let short = false;
+    for (let i = 0; i < all.length; i++) if (all[i] && !walk[i]) { short = true; break; }
+    if (!short) return;
+    let opened = 0;
+    for (let i = 0; i < all.length; i++) {       // 歩ける側に面した飾りを外す
+      if (!all[i] || walk[i]) continue;
+      if (deco[i] !== D_GRAVE && deco[i] !== D_PILLAR) continue;
+      const x = i % MW, y = (i - x) / MW;
+      if ((inb(x + 1, y) && walk[idx(x + 1, y)]) || (inb(x - 1, y) && walk[idx(x - 1, y)]) ||
+          (inb(x, y + 1) && walk[idx(x, y + 1)]) || (inb(x, y - 1) && walk[idx(x, y - 1)])) { deco[i] = D_NONE; opened++; }
+    }
+    if (!opened) return;
+  }
+}
+
 function genLayout(pos) {
   lseed = seedFor(pos);
   map.fill(T_WALL); deco.fill(D_NONE); seen.fill(0);
@@ -1681,6 +1839,7 @@ function genLayout(pos) {
       }
     }
   }
+  openBlockedPaths(upR.cx, upR.cy);
 }
 
 /* 最深部 ― 小部屋（前室）から扉をくぐって、聖堂じみた玄室へ。奥に主がいる */
@@ -1872,7 +2031,7 @@ function populateFloor(depth) {
       }));
     }
     corpses.push(makeRemain(depth, freeSpotIn(hr, corpses).x, freeSpotIn(hr, corpses).y, { type: "blood" }));
-    G.story.house = (G.story.house || 0) + 1;
+    G.story.house = (G.story.house || 0) + 1; tipCheck();
   }
 
   const avail = Object.keys(MTYPE).filter(k => MTYPE[k].w > 0 && MTYPE[k].dMin <= depth && depth <= MTYPE[k].dMax);
@@ -1922,7 +2081,7 @@ function spawnCleaner(depth) {
     anim: 0, dir: 1, name: "黒い外套の男", cls: "？", hi: -1, talk: "", cleaner: true,
     gear: [makeItem(depth, { boost: 0.6, tr: "hum" })], cd: 0, met: true, atk: 0, hurt: 0, follow: 0
   };
-  G.story.cleaner++;
+  G.story.cleaner++; tipCheck();
   if (!caseDone("c4") && G.story.order < 1) {
     const rr = pick(cand.length ? cand : rooms);
     const p = freeSpotIn(rr, corpses);
@@ -2108,6 +2267,7 @@ function startRun(pos) {
   P.st = maxSupply(); P.tired = 0; P.exT = 0; P.armor = armorMax();
   enterLevel(pos, "start");
   scene = "dungeon"; closeUI();
+  tipCheck();
   SFX.descend();
 }
 function goDown() {
@@ -2153,12 +2313,23 @@ function endRun(kind) {
   }
   storeMem(run.pos);
   const kept = run.bag.slice();
+  const haul = kept.reduce((a, b) => a + sellPrice(b), 0);   // 地上に着いた時点の買取見込み
+  run.haul = haul;
+  G.earned = (G.earned || 0) + haul;
+  G.runsDone = (G.runsDone || 0) + 1;
+  G.bestRun = Math.max(G.bestRun || 0, haul);
+  if (!G.assist) {
+    S.rec.bestRun = Math.max(S.rec.bestRun || 0, haul);
+    S.rec.bestTerm = Math.max(S.rec.bestTerm || 0, G.earned);
+    S.rec.gold = (S.rec.gold || 0) + haul;
+    S.rec.hauls = (S.rec.hauls || 0) + 1;
+  }
   for (const it of kept) G.stash.push(it);
   G.day++;
   rollMarket();
   if (G.deepest >= 12) addSusp(1);
   save();
-  doFade(1, () => { showResult(kind, kept, [], depth, floors); });
+  doFade(1, () => { showResult(kind, kept, [], depth, floors, haul); });
   SFX.escape();
 }
 
@@ -2219,6 +2390,7 @@ function canStand(x, y) {
 function toggleLamp() {
   P.lamp = !P.lamp; SFX.ui(); hudSig = "";
   if (P.lamp || !run || run.escaped) return;
+  sawIt("lampoff"); tipCheck();
   let shook = 0;
   for (const m of mons) {
     if (m.dead > 0 || m.state !== "chase") continue;
@@ -2231,7 +2403,7 @@ function toggleLamp() {
 /* ---------- 道具 ---------- */
 function useSmoke() {
   if (G.inv.smoke <= 0) { SFX.deny(); toast("煙玉がない", "bad"); return; }
-  G.inv.smoke--; save(); SFX.smoke();
+  G.inv.smoke--; sawIt("smoke"); save(); SFX.smoke();
   P.smoke = 7;
   for (const m of mons) if (dist2(m.x, m.y, P.x, P.y) < (TILE * 7) ** 2) { m.state = "patrol"; m.alert = 0; }
   for (let i = 0; i < 26; i++) addPart(P.x, P.y, { vx: rnd(-60, 60), vy: rnd(-60, 60), life: rnd(0.6, 1.4), max: 1.4, col: "#9aa2b8", sz: 3 });
@@ -2278,7 +2450,7 @@ function updatePlayer(dt, frozen) {
         P.lootT = 0;
         addPart(P.x, P.y - 6, { life: 0.8, max: 0.8, type: "ring", col: "#e8c46a", sz: 3 });
         for (const m of mons) {
-          if (m.dead > 0 || m.state === "chase" || MTYPE[m.type].boss) continue;
+          if (m.state === "dead" || m.state === "chase" || MTYPE[m.type].boss) continue;
           if (dist2(m.x, m.y, P.x, P.y) < (TILE * 5.5) ** 2) { m.state = "search"; m.lx = Math.floor(P.x / TILE); m.ly = Math.floor(P.y / TILE); m.alert = 0.6; }
         }
       }
@@ -2322,7 +2494,7 @@ function updatePlayer(dt, frozen) {
     if (!frozen && l.pick <= 0 && dist2(l.x, l.y, P.x, P.y) < 132) {
       if (addToBag(l.it)) { loose.splice(i, 1); SFX.get_(); floatTxt(P.x, P.y - 16, itemName(l.it), "#e8c46a"); }
       else if (P.heavyT <= 0) {
-        P.heavyT = 2.5;
+        P.heavyT = 2.5; sawIt("full"); tipCheck();
         floatTxt(P.x, P.y - 18, "重すぎて背負えない", "#ff9a92");
         toast("荷を整理して置いていく品を決めよう", "bad");
       }
@@ -2403,10 +2575,10 @@ function finishLoot(c) {
   if (c.story === "badge") { G.story.badge++; save(); }
   if (c.story === "mapfrag") { G.story.map++; save(); }
   if (c.story === "order") { G.story.order++; save(); }
-  if (c.type === "chest") { G.story.chest = 1; }
+  if (c.type === "chest") { G.story.chest = 1; sawIt("chest"); }
   for (let i = 0; i < 14; i++) addPart(c.x + 8, c.y + 8, { vx: rnd(-30, 30), vy: rnd(-50, -6), life: rnd(0.4, 0.9), max: 0.9, col: "#e8c46a", sz: 1 });
   if (logLines.length) logAdd(remainLabel(c) + " を調べた", logLines, c.hero && !explainable(c.hero.cz, c.hero.floor) ? "bad" : "");
-  checkCases();
+  sawIt("loot"); tipCheck(); checkCases();
 }
 
 /* ---------- 魔物 ---------- */
@@ -2421,7 +2593,7 @@ function updateMons(dt) {
     m.anim += dt;
     m.alert = Math.max(0, m.alert - dt);
     m.hurt = Math.max(0, m.hurt - dt);
-    if (m.dead > 0) { m.dead -= dt; continue; }
+    if (m.state === "dead") { m.dead -= dt; continue; }   // 倒れたものはもう触れない
     const t = MTYPE[m.type];
     const passive = t.boss && !m.angry;
     const mtx = Math.floor(m.x / TILE), mty = Math.floor(m.y / TILE);
@@ -2516,9 +2688,16 @@ function updateMons(dt) {
       if (nx > 8 && nx < MW * TILE - 8 && !inSafeZone(Math.floor(nx / TILE), Math.floor(m.y / TILE))) m.x = nx;
       if (ny > 8 && ny < MH * TILE - 8 && !inSafeZone(Math.floor(m.x / TILE), Math.floor(ny / TILE))) m.y = ny;
     } else {
-      if (monFree(nx, m.y)) m.x = nx; else m.dirx = -m.dirx, m.cd = Math.min(m.cd, 0.2);
-      if (monFree(m.x, ny)) m.y = ny; else m.diry = -m.diry, m.cd = Math.min(m.cd, 0.2);
+      const keepOut = ai === "corridor";               // 糸蜘蛛 ― 追っていても通路から出ない
+      const okX = monFree(nx, m.y) && !(keepOut && inAnyRoom(Math.floor(nx / TILE), Math.floor(m.y / TILE)));
+      const okY = monFree(m.x, ny) && !(keepOut && inAnyRoom(Math.floor(m.x / TILE), Math.floor(ny / TILE)));
+      if (okX) m.x = nx; else m.dirx = -m.dirx, m.cd = Math.min(m.cd, 0.2);
+      if (okY) m.y = ny; else m.diry = -m.diry, m.cd = Math.min(m.cd, 0.2);
     }
+    if (ai === "corridor" && m.state === "chase" && Math.abs(m.x - px0) < 0.01 && Math.abs(m.y - py0) < 0.01) {
+      m.wallT = (m.wallT || 0) + dt;                   // 部屋へ逃げられたら、通路で待つ
+      if (m.wallT > 0.6) { m.wallT = 0; m.state = "search"; m.cd = 2.2; m.lx = ptx; m.ly = pty; }
+    } else m.wallT = 0;
     if (m.state !== "chase" && Math.abs(m.x - px0) < 0.01 && Math.abs(m.y - py0) < 0.01) {
       m.stuck = (m.stuck || 0) + dt;                            // 壁につかえたら向きを変える
       if (m.stuck > 0.3) {
@@ -2584,8 +2763,8 @@ function scavengeTarget(m) {
 }
 /* 墓ねずみ ― 追わずに逃げる。捕まえると割のいい品を落とす */
 function catchBonus(m) {
-  if (m.dead > 0) return;
-  m.dead = 0.45; m.state = "dead";
+  if (m.caught || m.state === "dead") return;
+  m.caught = true; m.dead = 0.3; m.state = "dead";   // 触れたら消える
   dexMon(m.type, run.pos.d);
   const it = makeItem(run.pos.d, { cat: "val", boost: 1.4, q: chance(0.45) ? 4 : 3 });
   const got = addToBag(it);
@@ -2593,6 +2772,7 @@ function catchBonus(m) {
   SFX.get_();
   floatTxt(m.x, m.y - 20, itemName(it) + " " + estPlain(it), "#ffe7a8");
   toast("墓ねずみを捕まえた ― " + itemName(it) + (got ? "" : "（背負えず落ちた）"), "good");
+  sawIt("rat"); tipCheck();
   logAdd("墓ねずみを捕まえた", ["拾った：" + itemName(it) + " " + estPlain(it)], "");
   for (let i = 0; i < 20; i++) addPart(m.x, m.y, { vx: rnd(-60, 60), vy: rnd(-70, 10), life: rnd(0.4, 0.9), max: 0.9, col: chance(0.5) ? "#ffe7a8" : "#e8c46a", sz: 2 });
 }
@@ -2669,12 +2849,12 @@ function updateHero(dt) {
     if (monFree(h.x, ny)) h.y = ny;
     h.dir = Math.cos(a) < 0 ? -1 : 1;
   }
-  if (!h.met && h.state !== "hostile" && dist2(h.x, h.y, P.x, P.y) < 620 && !uiOpen && !run.escaped) { h.met = true; askHero(); }
+  if (!h.met && h.state !== "hostile" && dist2(h.x, h.y, P.x, P.y) < 620 && !uiOpen && !run.escaped) { h.met = true; sawIt("hero"); tipCheck(); askHero(); }
 }
 function nearestMon(from, maxTiles) {
   let best = null, bd = (maxTiles * TILE) ** 2;
   for (const m of mons) {
-    if (m.dead > 0 || MTYPE[m.type].boss) continue;
+    if (m.state === "dead" || MTYPE[m.type].boss) continue;
     const d = dist2(m.x, m.y, from.x, from.y);
     if (d < bd) { bd = d; best = m; }
   }
@@ -3032,10 +3212,10 @@ function drawDungeon(dt) {
       if (!inb(tx, ty) || light[idx(tx, ty)] < 0.045) continue;
       if (!m.seen && m.dead <= 0) { m.seen = 1; dexMon(m.type, run.pos.d); }
       g.save();
-      if (m.dead > 0) { g.globalAlpha = clamp(m.dead / 0.45, 0, 1); g.translate(0, (1 - m.dead / 0.45) * 4); }
-      if (t.phase) g.globalAlpha *= 0.78;
+      if (m.state === "dead") { g.globalAlpha = clamp(m.dead / 0.45, 0, 1); g.translate(0, (1 - m.dead / 0.45) * 4); }
+      if (t.phase || t.dim) g.globalAlpha *= 0.78;
       if (m.hurt > 0) g.globalAlpha *= 0.6;
-      const bob = t.phase ? Math.sin(time * 2.4 + m.ph) * 2 : 0;
+      const bob = (t.phase || t.dim) ? Math.sin(time * 2.4 + m.ph) * 2 : 0;
       const fr = Math.floor(m.anim * (t.erratic ? 9 : 4)) % 2;
       drawSpr(SPR[t.spr][fr], m.x - 8, m.y - 10 + bob, m.state === "chase" ? P.x < m.x : false);
       g.restore();
@@ -3113,7 +3293,7 @@ function drawDungeon(dt) {
   // ---- 上物（灯りに関係なく見せるもの） ----
   g.save(); g.translate(ox, oy);
   for (const m of mons) {
-    if (m.dead > 0) continue;
+    if (m.state === "dead") continue;
     if (m.alert > 0) mark(m.x, m.y - 21 - (1 - m.alert / 1.2) * 3, "!", "#ff6b6b");
     else if (m.state === "chase") mark(m.x, m.y - 20, "!", "#e0524a");
     else if (m.state === "search") mark(m.x, m.y - 20, "?", "#e8c46a");
@@ -3763,7 +3943,7 @@ function showShop(tab) {
 actions.tab = d => showShop(d.i);
 function sellItem(it) {
   const p = sellPrice(it);
-  G.gold += p; G.sold++;
+  G.gold += p; G.sold++; tipCheck();
   if (it.tr === "hum") addSusp(2);             // 表には出ない。ギルドは何を回収したか見ている
   return p;
 }
@@ -3858,7 +4038,8 @@ actions.equip = d => {
   const slot = SLOT_OF[KIND[it.k].cat]; if (!slot) return;
   if (G.equip[slot]) G.store.push(G.equip[slot]);
   G.equip[slot] = it; arr.splice(i, 1);
-  countMurderKept(); save(); SFX.buy(); showStore("equip");
+  if (slot === "armor" || slot === "shield" || slot === "helm") sawIt("armor");
+  countMurderKept(); tipCheck(); save(); SFX.buy(); showStore("equip");
 };
 actions.unequip = d => {
   const it = G.equip[d.i]; if (!it) return;
@@ -3869,7 +4050,7 @@ actions.unequip = d => {
 /* ---------- 冒険者ギルド ---------- */
 actions.guild = () => showGuild();
 function showGuild() {
-  scene = "town";
+  scene = "town"; sawIt("guild"); tipCheck();
   const opts = [1000, 10000, 50000].filter(v => v <= G.gold && v <= G.debt);
   const all = Math.min(G.gold, G.debt);
   let btns = opts.map(v => '<div class="btn" data-a="pay" data-v="' + v + '">' + money(v) + " G 返す</div>").join("");
@@ -3921,6 +4102,9 @@ function showOpt() {
   const m = optMode();
   openUI("opt", '<div class="panel"><h2>設定</h2>' +
     '<div class="sub">遊びかたは、いつでも変えられる。</div>' +
+    '<div class="lbl">名前</div>' +
+    '<input class="tin" id="pnin" maxlength="8" value="' + pname() + '" placeholder="' + PNAME0 + '">' +
+    '<div class="note">墓場での呼ばれ方です。空にすると「' + PNAME0 + '」に戻ります。</div>' +
     '<div class="lbl">音</div>' +
     '<div class="btns"><div class="btn' + (muted ? "" : " pri") + '" data-a="setmute" data-i="0">鳴らす</div>' +
     '<div class="btn' + (muted ? " pri" : "") + '" data-a="setmute" data-i="1">消す</div></div>' +
@@ -3943,6 +4127,13 @@ function showOpt() {
     (G && G.assist && m === "normal" ? '<div class="note" style="color:#ff9a92">この周はすでに練習を使ったので、ふつうに戻しても記録には残りません。</div>' : "") +
     (scene === "town" ? '<div class="btns pin"><div class="btn" data-a="totitle">タイトルへ</div></div>' : "") +
     '<div class="btns"><div class="btn pri" data-a="optback">もどる</div></div></div>');
+  const nin = document.getElementById("pnin");     // 名前は打った端から覚える
+  if (nin) {
+    const commit = () => { setPName(nin.value); hudSig = ""; };
+    nin.addEventListener("change", commit);
+    nin.addEventListener("blur", commit);
+    nin.addEventListener("keydown", ev => { if (ev.key === "Enter") { commit(); nin.blur(); } });
+  }
 }
 
 /* ---------- 図鑑 ---------- */
@@ -4006,26 +4197,67 @@ function showDex(tab) {
       '<small>' + e.d + " 日目 ／ " + e.f + (e.l.length ? "<br>" + e.l.join("<br>") : "") + "</small></div></div>").join("") + "</div>"
       : '<p class="q">まだ何も起きていない。</p>';
     body += '<div class="btns" style="margin-top:10px"><div class="btn sm" data-a="logclear">ログを消す</div></div>';
+  } else if (dexTab === "score") {
+    const g = S.g || {};
+    body = '<div class="stat"><span>今期の持ち帰り高</span><span class="big" style="color:var(--gold)">' + money(g.earned || 0) + " G</span></div>" +
+      '<div class="list">' +
+      [["今期の探索", (g.runsDone || 0) + " 回"],
+       ["今期の最高（1回）", money(g.bestRun || 0) + " G"],
+       ["今期の1回あたり", money(Math.round((g.earned || 0) / Math.max(1, g.runsDone || 0))) + " G"],
+       ["最深", "地下 " + (g.deepest || 1) + " 階"]]
+        .map(r => '<div class="row thin"><div class="nm">' + r[0] + '</div><div class="val">' + r[1] + "</div></div>").join("") + "</div>" +
+      '<div class="lbl">通しの記録</div>' +
+      '<div class="list">' +
+      [["1回の最高", money(S.rec.bestRun || 0) + " G"],
+       ["1タームの最高", money(S.rec.bestTerm || 0) + " G"],
+       ["通算の持ち帰り高", money(S.rec.gold || 0) + " G"],
+       ["探索した回数", (S.rec.hauls || 0) + " 回"],
+       ["最短返済", (S.rec.best ? S.rec.best + " 日" : "―")]]
+        .map(r => '<div class="row thin"><div class="nm">' + r[0] + '</div><div class="val">' + r[1] + "</div></div>").join("") + "</div>" +
+      '<div class="note">持ち帰り高は、地上に着いた時点の買取見込みで数えます。' +
+      (g.assist ? "この周は練習を使ったので、通しの記録には残りません。" : "練習・見学を使った周は、通しの記録に残りません。") + "</div>";
   } else if (dexTab === "note") {
     body = S.dex.notes.length ? '<div class="list" style="max-height:52vh;overflow:auto">' + S.dex.notes.map(n =>
       '<div class="row"><div class="ico" style="background-image:url(' + iconURL.note + ')"></div><div class="nm" style="font-size:11.5px">「' + n + '」</div></div>').join("") + "</div>"
       : '<p class="q">まだ手記を拾っていない。</p>';
   } else {
-    body = '<div class="list">' + CASES.map((c, i) => {
-      const done = S.g && caseDone(c.id);
-      const prev = i === 0 || (S.g && caseDone(CASES[i - 1].id));
-      if (done) return '<div class="row rar2" data-a="recase" data-i="' + c.id + '" style="cursor:pointer"><div class="ico" style="background-image:url(' + iconURL.note + ')"></div><div class="nm">' + c.ttl + "<small>読み直す</small></div></div>";
-      return '<div class="row' + (prev ? "" : " locked") + '"><div class="nm">' + (prev ? c.ttl.replace(/ ― .*/, " ― ？？？") : "？？？") +
-        "<small>" + (prev ? c.hint : "まだ何も見えていない") + "</small></div></div>";
-    }).join("") + "</div>" +
-      '<div class="note">気になったことを書き留めておく手帳。埋めなくても、借金は返せる。</div>';
+    const got = tipGot(), all = tipIds();
+    const sect = cat => {
+      const mine = all.filter(id => { const t = tipOf(id); return t && t.cat === cat && got.indexOf(id) >= 0; });
+      const rest = all.filter(id => { const t = tipOf(id); return t && t.cat === cat; }).length - mine.length;
+      return '<div class="lbl">' + TIP_CAT[cat] + " <span style=\"color:var(--dim);font-weight:400\">" + mine.length + " / " + (mine.length + rest) + "</span></div>" +
+        (mine.length ? '<div class="list">' + mine.map(id => { const t = tipOf(id);
+          return '<div class="row"><div class="ico" style="background-image:url(' + iconURL.note + ')"></div>' +
+            '<div class="nm">' + t.ttl + "<small>" + t.txt + "</small></div></div>"; }).join("") + "</div>"
+          : '<p class="q">まだ何も書いていない。</p>') +
+        (rest ? '<div class="note">あと ' + rest + " 件、書けることがありそうだ。</div>" : "");
+    };
+    const cl = clueGot(), truth = G && G.story.notebook;
+    body = '<div class="stat"><span>' + pname() + "の手帳</span><span><b>" + got.length + "</b> / " + all.length + " 件</span>" +
+      "<span>気になること <b>" + cl + "</b></span></div>" +
+      (cl >= TIP_MIN_TRUTH
+        ? '<div class="list" style="margin-bottom:8px"><div class="row rar3" data-a="tiptruth" style="cursor:pointer">' +
+          '<div class="ico" style="background-image:url(' + iconURL.note + ')"></div><div class="nm">' +
+          (truth ? "繋げてみた ― 読み直す" : "気になることを、順に並べてみる") +
+          "<small>" + (truth ? "もう一度たどる" : "ここまでの " + cl + " 件を、一枚に書き出してみる") + "</small></div></div></div>"
+        : cl > 0 ? '<div class="note">気になることが ' + TIP_MIN_TRUTH + " 件そろえば、並べて考えられそうだ。（いま " + cl + " 件）</div>" : "") +
+      sect("clue") + sect("play") + sect("lore") +
+      '<div class="lbl">綴じ込み ― 見えてきたこと</div>' +
+      '<div class="list">' + CASES.map((c, i) => {
+        const done = S.g && caseDone(c.id);
+        const prev = i === 0 || (S.g && caseDone(CASES[i - 1].id));
+        if (done) return '<div class="row rar2" data-a="recase" data-i="' + c.id + '" style="cursor:pointer"><div class="ico" style="background-image:url(' + iconURL.note + ')"></div><div class="nm">' + c.ttl + "<small>読み直す</small></div></div>";
+        return '<div class="row' + (prev ? "" : " locked") + '"><div class="nm">' + (prev ? c.ttl.replace(/ ― .*/, " ― ？？？") : "？？？") +
+          "<small>" + (prev ? c.hint : "まだ何も見えていない") + "</small></div></div>";
+      }).join("") + "</div>" +
+      '<div class="note">拾い集めたことを書き留めておく手帳。埋めなくても、借金は返せる。</div>';
   }
   openUI("dex", '<div class="panel"><h2>記録と図鑑</h2>' +
     '<div class="sub">最短返済 ' + (S.rec.best || "―") + " 日 ／ 完済 " + S.rec.clears + " 回 ／ 期限切れ " + S.rec.fails + " 回 ／ 夢 " + (S.rec.deaths || 0) + " 回" +
     (S.rec.boss ? " ／ 主に会った " + S.rec.boss + " 回" : "") +
     (S.rec.ends ? " ／ " + Object.keys(S.rec.ends).map(k => ENDINGS[k].nm + "END").join("・") : "") + "</div>" + timeNote() +
     '<div class="tabs">' +
-    ["log:ログ", "hero:勇者", "mon:魔物", "item:品物", "cause:所見", "note:手記", "case:手帳"].map(t => {
+    ["log:ログ", "score:成績", "hero:勇者", "mon:魔物", "item:品物", "cause:所見", "note:手記", "case:手帳"].map(t => {
       const [k, nm] = t.split(":");
       return '<div class="tab' + (dexTab === k ? " on" : "") + '" data-a="dex" data-i="' + k + '">' + nm + "</div>";
     }).join("") + "</div>" + body +
@@ -4034,6 +4266,25 @@ function showDex(tab) {
 actions.logclear = () => { S.log = []; save(); showDex("log"); };
 actions.log = () => showDex("log");
 actions.recase = d => { const c = CASES.find(x => x.id === d.i); if (c) showCase(c, true); };
+actions.tiptruth = () => {
+  if (!G || clueGot() < TIP_MIN_TRUTH) { SFX.deny(); return; }
+  const first = !G.story.notebook;
+  G.story.notebook = 1; save();
+  const lines = tipGot().filter(id => { const t = tipOf(id); return t && t.cat === "clue"; }).map(id => "・" + tipOf(id).ttl);
+  openUI("case", '<div class="panel">' +
+    '<h2>手帳 ― 並べてみる</h2>' +
+    '<div class="sub">' + pname() + "は、書きためた紙を床に並べた。</div>" +
+    '<div class="list">' + lines.map(l => '<div class="row thin"><div class="nm">' + l + "</div></div>").join("") + "</div>" +
+    ["深いところの勇者ほど、剣を抜いていない。傷は刃物で、たいてい背中側から。",
+     "その階の魔物では、その傷はつかない。",
+     "ギルドの徽章と、刷り物の地図と、焼け残りの依頼書が、同じ深さから出てくる。",
+     "主は「誰も来ていない」と言った。嘘ではないのだろう。届く前に止められているだけだ。",
+     "……止めているのは、魔物ではない。"].map((t, i) =>
+      '<p' + (i >= 3 ? ' class="q"' : "") + ">" + t + "</p>").join("") +
+    (first ? '<div class="note">手帳に印をつけた。この目で確かめたことが、いつか繋がる。</div>' : "") +
+    '<div class="btns" style="margin-top:12px"><div class="btn pri" data-a="dex" data-i="case">手帳へ戻る</div></div></div>');
+  if (first) { addSusp(8); SFX.alert(); }
+};
 
 /* ---------- 物語 ---------- */
 function showCase(c, replay) {
@@ -4128,7 +4379,7 @@ actions.hHelp = () => {
   toast("勇者 " + h.name + " が同行してくれる", "good");
   if (!(G.story.witness || 0) || chance(0.5)) {      // 証言をひとつ漏らす
     const w = pick(HERO_WITNESS);
-    G.story.witness = (G.story.witness || 0) + 1;
+    G.story.witness = (G.story.witness || 0) + 1; tipCheck();
     if (S.dex.notes.indexOf(w) < 0) S.dex.notes.push(w);
     setTimeout(() => { if (scene === "dungeon" && !uiOpen) { floatTxt(h.x, h.y - 34, "「……ひとつ言っておく」", "#7fd0ff"); toast("手記に書き留めた ― 勇者 " + h.name + " の話", "good"); } }, 900);
     save();
@@ -4152,29 +4403,29 @@ actions.hLeave = () => { closeUI(); rememberHero(hero); floatTxt(hero.x, hero.y 
 
 /* 最深部の番人 */
 function askBoss(m) {
-  const again = (S.rec.boss || 0) >= 1;
-  G.story.boss = 1;
+  const again = (G.story.boss || 0) >= 1;        // 前の周の記憶を持ち込まない
+  G.story.boss = (G.story.boss || 0) + 1;
   S.rec.boss = (S.rec.boss || 0) + 1;
   save();
   if (again) { showTalk([["ダンジョンの主", "……また来たのか"]], bossChoice); return; }
   const lines = [
     ["ダンジョンの主", "……人か。"],
     ["ダンジョンの主", "久しいな。どれほど待ったか、もう数えていない。"],
-    ["俺（拾い屋）", "……あんた、ずっとここに？"],
+    ["俺（" + pname() + "）", "……あんた、ずっとここに？"],
     ["ダンジョンの主", "そういうものだ。私はこの墓場そのものでな。"],
     ["ダンジョンの主", "私が斬られれば、ここは崩れる。だから下も、この先も無い。"],
     ["ダンジョンの主", "勇者が来るのを待っていた。だが、誰も来ない。ひとりも、だ。"],
-    ["俺（拾い屋）", "……ひとりも？　上の階には、そこらじゅうに転がってるぞ。"],
+    ["俺（" + pname() + "）", "……ひとりも？　上の階には、そこらじゅうに転がってるぞ。"],
     ["ダンジョンの主", "ここには誰も来ていない。お前が最初だ。"],
-    ["俺（拾い屋）", "……。"],
+    ["俺（" + pname() + "）", "……。"],
     ["ダンジョンの主", "お前は勇者か。"],
-    ["俺（拾い屋）", "いや。拾い屋だ。死んだ奴の荷物を集めて売ってる。"],
+    ["俺（" + pname() + "）", "いや。拾い屋だ。死んだ奴の荷物を集めて売ってる。"],
     ["ダンジョンの主", "そうか。……それでも、来たのはお前が最初だ。"]
   ];
   showTalk(lines, bossChoice);
 }
 function bossChoice() {
-  const again = (S.rec.boss || 0) >= 2;
+  const again = (G.story.boss || 0) >= 2;
   openUI("boss", '<div class="panel"><h2>ダンジョンの主</h2>' +
     (again
       ? '<div class="sub">主は座ったまま、こちらを見ている。</div>'
@@ -4196,7 +4447,7 @@ actions.bossFight = () => {
   SFX.alert(); flash = 1; shake = 12;
   showTalk([
     ["ダンジョンの主", "そうか。"],
-    ["―", "拾い屋の手には、売り物の剣しかなかった。振り方も知らない。"]
+    ["―", pname() + "の手には、売り物の剣しかなかった。振り方も知らない。"]
   ], () => {
     if (safeMode()) { toast("本来ならここで死んでいる", "bad"); endRun("escape"); return; }
     P.hp = 0; endRun("faint");
@@ -4285,9 +4536,9 @@ actions.uPot = () => { closeUI(); usePotion(); };
 actions.uSmk = () => { closeUI(); useSmoke(); };
 
 /* ---------- 一日の終わり ---------- */
-function showResult(kind, kept, lost, depth, floors) {
+function showResult(kind, kept, lost, depth, floors, haul) {
   scene = "result";
-  const total = kept.reduce((a, b) => a + sellPrice(b), 0);
+  const total = haul === undefined ? kept.reduce((a, b) => a + sellPrice(b), 0) : haul;
   const est = estSum(kept);
   const gap = total - est;
   const head = "生きて帰った";
@@ -4307,6 +4558,10 @@ function showResult(kind, kept, lost, depth, floors) {
       : "") +
     '<div class="stat center" style="justify-content:center;margin-top:10px"><span>' + G.day + " 日目になった</span>" +
     (G.debt > 0 ? "<span>借金 <b>" + money(G.debt) + "</b> G</span><span>期限まで <b>" + Math.max(0, daysLeft()) + "</b> 日</span>" : "") + "</div>" +
+    '<div class="stat center" style="justify-content:center"><span>' + (G.runsDone || 1) + " 回目の探索</span>" +
+    "<span>今期の持ち帰り高 <b>" + money(G.earned || 0) + "</b> G</span>" +
+    (total > 0 && total >= (G.bestRun || 0) ? '<span style="color:#8fe3a0">今期の最高</span>' : "") +
+    (!G.assist && total > 0 && total >= (S.rec.bestRun || 0) ? '<span style="color:var(--gold)">自己最高</span>' : "") + "</div>" +
     '<div class="btns" style="margin-top:14px">' +
     (over ? '<div class="btn pri" data-a="town">地上へ</div>'
       : '<div class="btn pri" data-a="toshop">店で売る</div><div class="btn" data-a="town">地上へ</div>') +
@@ -4375,7 +4630,7 @@ function judgeEnding() {
   const clues = [(t.oddDeath || 0) >= 3, (t.humanKill || 0) >= 3, (t.badge || 0) + (t.order || 0) >= 2,
     (t.map || 0) >= 3, monDex >= 4, (t.house || 0) >= 1].filter(Boolean).length;
   const guild = (t.badge || 0) + (t.order || 0) >= 2;
-  if (t.boss >= 1 && guild && (t.witness || 0) >= 1 && clues >= 4) return "truth";
+  if (t.boss >= 1 && guild && ((t.witness || 0) >= 1 || t.notebook) && clues >= 4) return "truth";
   if (guild && ((t.oddDeath || 0) >= 3 || (t.humanKill || 0) >= 3)) return "plot";
   if ((t.oddDeath || 0) >= 1 || (t.humanKill || 0) >= 1 || t.boss >= 1) return "odd";
   return "normal";
@@ -4391,6 +4646,9 @@ function endClear() {
     '<h2 style="justify-content:center">借金完済 ― ' + END.nm + "END</h2>" +
     '<div class="big" style="margin:10px 0">' + days + " 日</div>" +
     '<div class="sub">評価：' + (G.assist ? MODE_NM[optMode()] + " ― 記録には残らない" : rank + (best && days < best ? "（自己最短を更新）" : best ? "／ 最短記録 " + Math.min(best, days) + " 日" : "")) + "</div>" +
+    '<div class="stat center" style="justify-content:center"><span>' + (G.runsDone || 0) + " 回潜って</span>" +
+    "<span>持ち帰り高 <b>" + money(G.earned || 0) + "</b> G</span>" +
+    "<span>最高の1回 <b>" + money(G.bestRun || 0) + "</b> G</span></div>" +
     '<div class="lbl" style="text-align:center">' + END.ttl + "</div>" +
     END.txt.map((t2, i) => '<p' + (i >= 2 ? ' class="q"' : "") + ">" + t2 + "</p>").join('<div style="height:6px"></div>') +
     (ek === "truth" ? "" : '<div class="note">墓場にはまだ、拾われていない物がある。誰が、どうして死んだのか ― 気にしなければ、それまでの話だが。</div>') +
@@ -4464,6 +4722,7 @@ function updatePad() {
    入力
    ============================================================ */
 addEventListener("keydown", e => {
+  if (e.target && e.target.tagName === "INPUT") return;   // 名前を打っている
   const k = e.key.toLowerCase();
   if ([" ", "arrowup", "arrowdown", "arrowleft", "arrowright"].indexOf(k) >= 0) e.preventDefault();
   if (!keys[k]) {
