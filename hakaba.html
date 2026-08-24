@@ -419,7 +419,7 @@ function newGame() {
     stash: [], store: [],
     equip: { shield: null, armor: null, helm: null, acc: null },
     deepest: 1, sanctMax: 0, seed: (Math.random() * 4294967296) >>> 0, mem: {}, susp: 0, kind: 0, infamy: 0,
-    market: {}, story: { done: [], badge: 0, map: 0, order: 0, cleaner: 0, boss: 0, murderKept: 0, oddDeath: 0, humanKill: 0, witness: 0, house: 0, notebook: 0, robDeep: 0 },
+    market: {}, story: { done: [], badge: 0, map: 0, order: 0, cleaner: 0, boss: 0, murderKept: 0, oddDeath: 0, humanKill: 0, witness: 0, house: 0, notebook: 0 },
     met: [], sold: 0, uid: 1, ended: null, seen: {}, earned: 0, runsDone: 0, bestRun: 0
   };
   rollMarket();
@@ -4394,9 +4394,7 @@ actions.hRob = () => {
   let got = 0;
   for (const it of h.gear) { it.hi = h.hi; if (addToBag(it)) got++; else dropItem(it, h.x, h.y); }
   h.gear = [];
-  G.infamy++;
-  if (run.pos.d >= END_REQ.deep) G.story.robDeep = (G.story.robDeep || 0) + 1;   // 深いところでやったことは残る
-  addSusp(3); save(); SFX.loot();
+  G.infamy++; addSusp(3); save(); SFX.loot();
   h.state = "hostile"; h.hp = Math.max(h.hp, h.maxHp * 0.8);
   floatTxt(h.x, h.y - 24, "「貴様……！」", "#ff9a92");
   toast("装備を奪った（" + got + " 点）― 追われている", "bad");
@@ -4600,7 +4598,8 @@ function recordClear() {
 /* 借金を返した日に、それまで拾ってきた違和感を数える。
    明示的なクエストにはしない ― 普通に遊んでいれば勝手に溜まる。 */
 /* エンディングのしきい値 ― ここだけ触れば調整できる */
-const END_REQ = { rich: 1000000, cleaner: 1, deep: 10, buddy: 10, marry: 20 };
+const END_REQ = { rich: 1000000, cleaner: 10, buddy: 10, marry: 20 };
+const noUpg = () => Object.keys(G.up).every(k => G.up[k] <= 1);   // 何ひとつ強化していない
 const ENDINGS = {
   normal: { nm: "通常", ttl: "返した",
     txt: ["受付の女は判を押し、証文を破いた。",
@@ -4643,6 +4642,13 @@ const ENDINGS = {
           "焼け残りの依頼書に押してあった刻印を思い出す。",
           "同じ判が、いましがた俺の証文にも押されたところだ。",
           "……悪くない条件だった。"] },
+  bare: { nm: "裸一貫", ttl: "返した ― 何ひとつ買い足さずに",
+    txt: ["受付の女は判を押し、証文を破いた。これであんたは自由だ。",
+          "「その提灯、初日から替えてないだろう」",
+          "替えていない。鞄も、靴も、水袋も、初日に渡されたものだ。",
+          "灯りの届く先が狭いぶん、足元をよく見た。担げる量が少ないぶん、置く物を選んだ。",
+          "設備を増やせば楽になったのだろう。増やす金があれば、先に返していたが。",
+          "……道具は、あとから買えばいい。返しちまえば、こっちのものだ。"] },
   rich: { nm: "金満", ttl: "返した ― そして、まだ有り余っている",
     txt: ["受付の女は判を押し、証文を破いた。手が少し震えていた。",
           "破いた紙の向こうに、まだ百万が積んである。",
@@ -4670,8 +4676,9 @@ function judgeEnding() {
   if (t.boss >= 1 && guild && ((t.witness || 0) >= 1 || t.notebook) && clues >= 4) return "truth";
   if ((t.boss || 0) >= END_REQ.marry) return "marry";
   if ((t.boss || 0) >= END_REQ.buddy) return "buddy";
-  if ((t.robDeep || 0) >= END_REQ.cleaner) return "cleaner";
+  if ((G.infamy || 0) >= END_REQ.cleaner) return "cleaner";
   if (G.gold >= END_REQ.rich) return "rich";
+  if (noUpg()) return "bare";
   if (guild && ((t.oddDeath || 0) >= 3 || (t.humanKill || 0) >= 3)) return "plot";
   if ((t.oddDeath || 0) >= 1 || (t.humanKill || 0) >= 1 || t.boss >= 1) return "odd";
   return "normal";
