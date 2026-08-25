@@ -383,12 +383,14 @@ const dist2 = (ax, ay, bx, by) => { const dx = ax - bx, dy = ay - by; return dx 
 const hash = (x, y) => { let h = x * 374761393 + y * 668265263; h = (h ^ (h >> 13)) * 1274126177; return ((h ^ (h >> 16)) >>> 0) / 4294967296; };
 
 /* ---------- セーブ ---------- */
-/*  S.g   … いまの「周」（借金・日数・持ち物）。完済か期限切れで終わる
-    S.dex … 周をまたいで残るコレクション（勇者・品物・死因・記録）
-    S.rec … 記録（最短返済日数など）                                   */
+/*  S.g   … いまの「周」。借金・日数・持ち物に加えて、図鑑・手帳・ログもここ。
+             完済か期限切れで終わり、次の周では白紙から始まる
+    S.rec … 周をまたいで残る通しの記録（最短返済・1日の最高・1周の最高など）。
+             タイトルの〈これまでの記録〉で見る                          */
 const KEY = "yuusha_no_hakaba_v2";
 const DEBT0 = 100000, LIMIT0 = 30;
-const DEFAULT_SAVE = { g: null, dex: { hero: {}, item: {}, cause: {}, mon: {}, notes: [] }, rec: { best: 0, clears: 0, fails: 0, runs: 0, deaths: 0, boss: 0, bestRun: 0, bestTerm: 0, gold: 0, hauls: 0 }, opt: { mute: false, mode: "normal", hand: "right", name: "拾い屋", dbg: false } };
+const newDex = () => ({ hero: {}, item: {}, cause: {}, mon: {}, notes: [], tips: [] });
+const DEFAULT_SAVE = { g: null, rec: { best: 0, clears: 0, fails: 0, runs: 0, deaths: 0, boss: 0, bestDay: 0, bestTerm: 0, gold: 0, hauls: 0, terms: 0 }, opt: { mute: false, mode: "normal", hand: "right", name: "拾い屋", dbg: false } };
 let S = (() => {
   try {
     const raw = JSON.parse(localStorage.getItem(KEY) || "{}");
@@ -400,7 +402,23 @@ let S = (() => {
     return o;
   } catch (e) { return JSON.parse(JSON.stringify(DEFAULT_SAVE)); }
 })();
-let G = S.g;
+let G = S.g, DX = null, LG = [];
+function bindGame() {                              // 図鑑・ログは「その周のもの」
+  if (!G) { DX = newDex(); LG = []; return; }
+  if (!G.dex) G.dex = newDex();
+  for (const k in newDex()) if (G.dex[k] === undefined) G.dex[k] = newDex()[k];
+  if (!G.log) G.log = [];
+  DX = G.dex; LG = G.log;
+}
+(function migrate() {                              // 前のかたち（S.dex / S.log）から引き継ぐ
+  try {
+    const raw = JSON.parse(localStorage.getItem(KEY) || "{}");
+    if (G && !G.dex && raw.dex) { G.dex = raw.dex; if (!G.dex.tips) G.dex.tips = []; }
+    if (G && !G.log && raw.log) G.log = raw.log;
+    if (S.rec && S.rec.bestDay === undefined && raw.rec && raw.rec.bestRun !== undefined) S.rec.bestDay = raw.rec.bestRun;
+  } catch (e) {}
+  bindGame();
+})();
 /* 遊びかた ― ふつう／死なない／見学。検証や下見のための逃げ道。 */
 const MODE_NM = { normal: "ふつう", safe: "死なない", watch: "見学" };
 const MODE_DESC = {
@@ -422,10 +440,12 @@ function newGame() {
     equip: { shield: null, armor: null, helm: null, acc: null },
     deepest: 1, sanctMax: 0, seed: (Math.random() * 4294967296) >>> 0, mem: {}, susp: 0, kind: 0, infamy: 0,
     market: {}, story: { done: [], badge: 0, map: 0, order: 0, cleaner: 0, boss: 0, murderKept: 0, oddDeath: 0, humanKill: 0, witness: 0, house: 0, notebook: 0 },
-    met: [], sold: 0, uid: 1, ended: null, seen: {}, earned: 0, runsDone: 0, bestRun: 0
+    met: [], sold: 0, uid: 1, ended: null, seen: {}, earned: 0, runsDone: 0, bestRun: 0, bestDay: 0,
+    dex: newDex(), log: []
   };
+  bindGame();
   rollMarket();
-  S.rec.runs++;
+  S.rec.runs++; S.rec.terms = (S.rec.terms || 0) + 1;
   save();
 }
 
@@ -1495,30 +1515,31 @@ function makeStoryItem(kind, depth, hi, cz, tr) { return makeItem(depth, { kind,
 
 /* ---------- 図鑑 ---------- */
 function dexHero(h) {
-  const d = S.dex.hero[h.hi] || (S.dex.hero[h.hi] = { n: 0, cz: [], lv: 0, fl: 0, sc: [], odd: 0 });
+  const d = DX.hero[h.hi] || (DX.hero[h.hi] = { n: 0, cz: [], lv: 0, fl: 0, sc: [], odd: 0 });
   d.n++; d.lv = Math.max(d.lv, h.lv); d.fl = d.fl || h.floor;
   if (!d.sc) { d.sc = []; d.odd = 0; }
   if (d.cz.indexOf(h.cz) < 0) d.cz.push(h.cz);
   for (const k of situList(h.sc)) if (d.sc.indexOf(k) < 0) d.sc.push(k);
   if (!explainable(h.cz, h.floor)) d.odd++;
-  const c = S.dex.cause[h.cz] || (S.dex.cause[h.cz] = 0);
-  S.dex.cause[h.cz] = c + 1;
+  const c = DX.cause[h.cz] || (DX.cause[h.cz] = 0);
+  DX.cause[h.cz] = c + 1;
 }
 /* 魔物図鑑 ― 見かけた階層と手口を覚えておく */
+const MON_TIP_SEEN = 4;                      // 何度か見て、はじめて癖が分かる
 function dexMon(type, depth) {
-  if (!S.dex.mon) S.dex.mon = {};
-  const d = S.dex.mon[type] || (S.dex.mon[type] = { n: 0, lo: depth, hi: depth });
+  if (!DX.mon) DX.mon = {};
+  const d = DX.mon[type] || (DX.mon[type] = { n: 0, lo: depth, hi: depth });
   d.n++; d.lo = Math.min(d.lo, depth); d.hi = Math.max(d.hi, depth);
-  tipOn("m:" + type);
+  if (d.n >= MON_TIP_SEEN || MTYPE[type].boss) tipOn("m:" + type);
 }
 function dexItem(it) {
-  const d = S.dex.item[it.k] || (S.dex.item[it.k] = { n: 0, q: -1, e: [] });
+  const d = DX.item[it.k] || (DX.item[it.k] = { n: 0, q: -1, e: [] });
   d.n++; d.q = Math.max(d.q, it.q);
   if (it.e && d.e.indexOf(it.e) < 0) d.e.push(it.e);
 }
-const dexHeroCount = () => Object.keys(S.dex.hero).length;
-const dexItemCount = () => Object.keys(S.dex.item).length;
-const dexCauseCount = () => Object.keys(S.dex.cause).length;
+const dexHeroCount = () => Object.keys(DX.hero).length;
+const dexItemCount = () => Object.keys(DX.item).length;
+const dexCauseCount = () => Object.keys(DX.cause).length;
 
 
 /* ---------- 手帳 ― 拾い屋のメモ。潜るうちに増えていく ---------- */
@@ -1603,14 +1624,14 @@ function monTip(k) {
 }
 const tipIds = () => TIPS.map(t => t.id).concat(Object.keys(MTYPE).map(k => "m:" + k));
 const tipOf = id => id.indexOf("m:") === 0 ? monTip(id.slice(2)) : (TIPS.find(t => t.id === id) || null);
-const tipGot = () => (S.dex.tips || []);
+const tipGot = () => (DX.tips || []);
 const clueGot = () => tipGot().filter(id => { const t = tipOf(id); return t && t.cat === "clue"; }).length;
 function tipOn(id) {
-  if (!S.dex.tips) S.dex.tips = [];
-  if (S.dex.tips.indexOf(id) >= 0) return false;
+  if (!DX.tips) DX.tips = [];
+  if (DX.tips.indexOf(id) >= 0) return false;
   const t = tipOf(id);
   if (!t) return false;
-  S.dex.tips.push(id); save();
+  DX.tips.push(id); save();
   toast("手帳に書きとめた ― " + t.ttl, "good");
   if (typeof logAdd === "function" && run && !run.escaped) logAdd("手帳：" + t.ttl, [t.txt], "");
   return true;
@@ -1625,7 +1646,7 @@ function tipCheck() {                            // 条件のそろったメモ�
 /* ---------- 隠しストーリー ---------- */
 const CASES = [
   {
-    id: "c1", ttl: "CASE 01 ― 同じ傷", need: g => g.story.murderKept >= 3,
+    id: "c1", ttl: "同じ傷", need: g => g.story.murderKept >= 3,
     hint: "刃物で死んだ勇者の遺品を、倉庫に3点そろえる",
     txt: ["倉庫の隅に並べた三つの遺品を、なんとなく明るいところで見比べてみた。",
           "刃こぼれの位置が、三つとも同じだ。左肩の高さから、斜めに一撃。",
@@ -1633,7 +1654,7 @@ const CASES = [
           "……まあ、俺には関係のない話だ。売れれば、それでいい。"]
   },
   {
-    id: "c2", ttl: "CASE 02 ― 徽章", need: g => g.story.badge >= 2,
+    id: "c2", ttl: "徽章", need: g => g.story.badge >= 2,
     hint: "「銀の徽章」を2点見つける",
     txt: ["拾った徽章を裏返すと、小さな刻印がある。二つとも同じ形だ。",
           "見覚えがある。ギルドの受付台の脇、職員の襟にも同じものが光っていた。",
@@ -1641,7 +1662,7 @@ const CASES = [
           "落とし物かもしれない。落とし物だといいのだが。"]
   },
   {
-    id: "c3", ttl: "CASE 03 ― 配られた地図", need: g => g.story.map >= 3,
+    id: "c3", ttl: "配られた地図", need: g => g.story.map >= 3,
     hint: "「古い地図」を3枚見つける",
     txt: ["三枚の地図を床に並べる。筆跡は同じ。刷り物だ。同じ版から何枚も刷られている。",
           "そして、三枚とも道順が違う。しかもどの道順も、俺が知っている行き止まりへ向かっている。",
@@ -1649,7 +1670,7 @@ const CASES = [
           "行き止まりで力尽きた者の荷から、同じ地図が出てくるわけだ。"]
   },
   {
-    id: "c4", ttl: "CASE 04 ― 依頼書", need: g => g.story.order >= 1 && g.story.cleaner >= 1,
+    id: "c4", ttl: "依頼書", need: g => g.story.order >= 1 && g.story.cleaner >= 1,
     hint: "黒い外套の男に出会い、「依頼書の切れ端」を手に入れる",
     txt: ["黒い外套の男が落としていった紙切れ。端が焼かれていて、半分しか読めない。",
           "『……の件、了承。深度十二以深にて処理。報酬は例により……』",
@@ -1657,8 +1678,8 @@ const CASES = [
           "依頼主の署名はない。だが、紙の隅に、あの徽章と同じ刻印が押してある。"]
   },
   {
-    id: "c6", ttl: "CASE 05 ― 出るはずのない傷",
-    need: g => (g.story.oddDeath || 0) >= 3 && (S.dex.mon ? Object.keys(S.dex.mon).length : 0) >= 4,
+    id: "c6", ttl: "出るはずのない傷",
+    need: g => (g.story.oddDeath || 0) >= 3 && (DX.mon ? Object.keys(DX.mon).length : 0) >= 4,
     hint: "階層の魔物では説明のつかない傷を3件見て、魔物図鑑を4種そろえる",
     txt: ["図鑑を開いて、死体の所見と並べてみる。",
           "十五階から下に、刃物を使う魔物はいない。骸骨兵はあの深さまで来ない。",
@@ -1668,7 +1689,7 @@ const CASES = [
           "……誰かが、待ち伏せている。"]
   },
   {
-    id: "c5", ttl: "CASE 06 ― 扉の手前",
+    id: "c5", ttl: "扉の手前",
     need: g => g.story.boss >= 1,
     hint: "地下30階の扉をくぐる",
     txt: ["主は言った。ここまで来た者はいない、お前が最初だ、と。",
@@ -2170,11 +2191,11 @@ function floatTxt(x, y, txt, col) {
 }
 /* 浮き文字は流れて消える。読み返せるように、同じ内容をログにも残す。 */
 function logAdd(t, lines, cls) {
-  if (!S.log) S.log = [];
-  S.log.push({ d: G ? G.day : 0,
+  if (!LG) { if (!G.log) G.log = []; LG = G.log; }
+  LG.push({ d: G ? G.day : 0,
     f: (scene === "dungeon" && run && run.pos) ? levelName(run.pos) : "地上",
     t: t, l: (lines || []).filter(Boolean), c: cls || "" });
-  if (S.log.length > 160) S.log.splice(0, S.log.length - 160);
+  if (LG.length > 160) LG.splice(0, LG.length - 160);
 }
 function toast(txt, cls) {
   logAdd(txt, null, cls);
@@ -2263,7 +2284,7 @@ function enterLevel(pos, from) {
 }
 function startRun(pos) {
   if (safeMode()) G.assist = 1;                  // 一度でも使えば、その周は記録に残さない
-  runSnap = { g: JSON.stringify(G), dex: JSON.stringify(S.dex) };
+  runSnap = JSON.stringify(G);                   // 図鑑もログも G の中なので、これ一本で戻せる
   run = { pos: null, cache: {}, bag: [], t: 0, escaped: false, askAt: -1, floors: 1, looted: 0, killer: null };
   P.hp = maxHearts(); P.invul = 0; P.lamp = true; P.smoke = 0;
   P.st = maxSupply(); P.tired = 0; P.exT = 0; P.armor = armorMax();
@@ -2305,7 +2326,7 @@ function endRun(kind) {
   if (kind === "faint") {
     // 力尽きた日は、まるごと無かったことになる ― 過ぎるのは一日だけ
     const day = G.day;
-    if (runSnap) { G = S.g = JSON.parse(runSnap.g); S.dex = JSON.parse(runSnap.dex); }
+    if (runSnap) { G = S.g = JSON.parse(runSnap); bindGame(); }
     G.day = day + 1;
     S.rec.deaths = (S.rec.deaths || 0) + 1;
     rollMarket(); save();
@@ -2319,9 +2340,9 @@ function endRun(kind) {
   run.haul = haul;
   G.earned = (G.earned || 0) + haul;
   G.runsDone = (G.runsDone || 0) + 1;
-  G.bestRun = Math.max(G.bestRun || 0, haul);
+  if (haul > (G.bestRun || 0)) { G.bestRun = haul; G.bestDay = G.day; }   // 何日目がいちばん稼いだか
   if (!G.assist) {
-    S.rec.bestRun = Math.max(S.rec.bestRun || 0, haul);
+    S.rec.bestDay = Math.max(S.rec.bestDay || 0, haul);
     S.rec.bestTerm = Math.max(S.rec.bestTerm || 0, G.earned);
     S.rec.gold = (S.rec.gold || 0) + haul;
     S.rec.hauls = (S.rec.hauls || 0) + 1;
@@ -2549,7 +2570,7 @@ function finishLoot(c) {
     if (c.hero.tr === "hum") G.story.humanKill = (G.story.humanKill || 0) + 1;
   }
   if (c.memo) {
-    if (S.dex.notes.indexOf(c.memo) < 0) S.dex.notes.push(c.memo);
+    if (DX.notes.indexOf(c.memo) < 0) DX.notes.push(c.memo);
     toast("手記をひろった ― " + (c.hero ? c.hero.name : "?"), "good");
   }
   if (c.type === "blood") {
@@ -3668,7 +3689,7 @@ let isTouch = ("ontouchstart" in window) || navigator.maxTouchPoints > 0;
 const actions = {};
 /* パネルを ［見出し／本文／操作］ の三段に組み直す。
    スクロールするのは本文だけ、とじる手段はつねに画面内に置く。 */
-const CLOSERS = ["back", "resume", "titleback", "optback", "dbgback"];
+const CLOSERS = ["back", "resume", "titleback", "optback", "dbgback"];   // recs も titleback で閉じる
 function buildSheet(p) {
   const kids = Array.prototype.slice.call(p.children);
   const head = document.createElement("div"); head.className = "phead";
@@ -3746,7 +3767,7 @@ const QCLS = ["q0", "q1", "q2", "q3", "q4"];
 function itemRow(it, right, cls, owner, blind) {
   const a = blind ? appraise(it) : null;
   let sub = itemSub(it, blind);
-  if (owner && it.hi >= 0 && S.dex.hero[it.hi]) sub += "<br>元の持ち主：" + HEROES[it.hi].n + "（" + HEROES[it.hi].c + "）";
+  if (owner && it.hi >= 0 && DX.hero[it.hi]) sub += "<br>元の持ち主：" + HEROES[it.hi].n + "（" + HEROES[it.hi].c + "）";
   const q = a ? a.q : it.q;
   const badge = '<span class="qb ' + QCLS[q] + '">' + QUAL[q].nm + (a && a.q !== it.q ? "" : "") + "</span>" +
     (a
@@ -3775,14 +3796,16 @@ function showTitle() {
     (cont ? '<div class="btn pri" data-a="cont">つづきから（' + G.day + "日目）</div>" : "") +
     '<div class="btn' + (cont ? "" : " pri") + '" data-a="newg">' + (cont ? "はじめから" : "はじめる") + "</div></div>" +
     '<div class="btns trio" style="margin-top:8px"><div class="btn" data-a="help">あそびかた</div>' +
-    '<div class="btn" data-a="dex">記録と図鑑</div><div class="btn" data-a="opt">設定</div></div>' +
-    '<div class="note">' + rec + " ／ 勇者 " + dexHeroCount() + "/" + HEROES.length + " ・ 品物 " + dexItemCount() + " ・ 死因 " + dexCauseCount() + "/" + CAUSES.length + "</div>" +
+    '<div class="btn" data-a="recs">これまでの記録</div><div class="btn" data-a="opt">設定</div></div>' +
+    '<div class="note">' + rec +
+    (S.rec.bestDay ? " ／ 1日の最高 " + money(S.rec.bestDay) + " G" : "") +
+    (S.rec.bestTerm ? " ／ 1周の最高 " + money(S.rec.bestTerm) + " G" : "") + "</div>" +
     "</div>", true);
 }
 actions.cont = () => doFade(1, () => showTown());
 actions.newg = () => {
   if (S.g) {
-    openUI("confirm", '<div class="panel"><h2>はじめから</h2><p class="q">いまの借金・持ち物・強化は失われます。図鑑と記録は残ります。</p>' +
+    openUI("confirm", '<div class="panel"><h2>はじめから</h2><p class="q">いまの借金・持ち物・強化と、図鑑・手帳・ログが失われます。<br>これまでの記録（最短返済・稼ぎの最高・見たEND）は残ります。</p>' +
       '<div class="btns" style="margin-top:14px"><div class="btn warn" data-a="newg2">やり直す</div><div class="btn" data-a="titleback">やめる</div></div></div>');
   } else actions.newg2();
 };
@@ -3895,7 +3918,7 @@ actions.dive = () => {
 };
 actions.dive2 = d => {
   const pos = { d: parseInt(d.d, 10), s: d.s === "1" };
-  doFade(1, () => { startRun(pos); if (!S.dex.notes.length && S.rec.runs <= 1 && G.day === 1) actions.help(); });
+  doFade(1, () => { startRun(pos); if (!DX.notes.length && S.rec.runs <= 1 && G.day === 1) actions.help(); });
 };
 
 /* ---------- よろず買取 ---------- */
@@ -4122,11 +4145,11 @@ actions.dbgtab = d => showDebug(d.i);
 actions.dbgback = () => showOpt();
 
 const DBG_FLAGS = [
-  ["boss", "主に会った", "相棒10・結婚20"], ["oddDeath", "説明のつかない傷", "3で CASE05"],
-  ["humanKill", "人の手の死体", "3で陰謀"], ["badge", "銀の徽章", "2で CASE02"],
-  ["map", "配られた地図", "3で CASE03"], ["order", "依頼書", "CASE04"],
-  ["cleaner", "黒い外套に会った", "CASE04"], ["house", "魔物の巣の跡", "補助"],
-  ["witness", "勇者の証言", "真相の鍵"], ["murderKept", "倉庫の人の手の遺品", "3で CASE01"],
+  ["boss", "主に会った", "相棒10・結婚20"], ["oddDeath", "説明のつかない傷", "3で〈出るはずのない傷〉"],
+  ["humanKill", "人の手の死体", "3で陰謀"], ["badge", "銀の徽章", "2で〈徽章〉"],
+  ["map", "配られた地図", "3で〈配られた地図〉"], ["order", "依頼書", "〈依頼書〉"],
+  ["cleaner", "黒い外套に会った", "〈依頼書〉"], ["house", "魔物の巣の跡", "補助"],
+  ["witness", "勇者の証言", "真相の鍵"], ["murderKept", "倉庫の人の手の遺品", "3で〈同じ傷〉"],
   ["notebook", "手帳を並べた", "0/1・真相の鍵"]
 ];
 const DBG_NUM = [["gold", "所持金"], ["debt", "借金"], ["day", "日数"], ["susp", "警戒度"],
@@ -4178,7 +4201,7 @@ function showDebug(tab) {
       '<div class="btns wrap"><div class="btn sm" data-a="dbgPreset" data-i="truth">真相の条件をそろえる</div>' +
       '<div class="btn sm" data-a="dbgPreset" data-i="plot">陰謀まで</div>' +
       '<div class="btn sm" data-a="dbgPreset" data-i="zero">フラグを全部0に</div>' +
-      '<div class="btn sm" data-a="dbgPreset" data-i="cases">CASEを全部開く</div></div>' +
+      '<div class="btn sm" data-a="dbgPreset" data-i="cases">綴じ込みを全部開く</div></div>' +
       '<div class="note">いまのエンディング判定：<b style="color:var(--gold)">' + ENDINGS[judgeEnding()].nm + "END</b></div>";
   } else if (dbgTab === "have") {
     body = '<div class="lbl">金と借金</div>' +
@@ -4211,7 +4234,7 @@ function showDebug(tab) {
       '<div class="btn sm" data-a="dbgTip" data-i="clue">気になることだけ</div>' +
       '<div class="btn sm" data-a="dbgTip" data-i="none">空にする</div></div>' +
       '<div class="lbl">図鑑</div>' +
-      '<div class="btns wrap"><div class="btn sm" data-a="dbgDex" data-i="mon">魔物を全部（' + Object.keys(S.dex.mon || {}).length + "/" + Object.keys(MTYPE).length + "）</div>" +
+      '<div class="btns wrap"><div class="btn sm" data-a="dbgDex" data-i="mon">魔物を全部（' + Object.keys(DX.mon || {}).length + "/" + Object.keys(MTYPE).length + "）</div>" +
       '<div class="btn sm" data-a="dbgDex" data-i="none">図鑑を空に</div>' +
       '<div class="btn sm" data-a="logclear">ログを消す</div></div>' +
       '<div class="lbl">出したEND</div>' +
@@ -4229,9 +4252,9 @@ function showDebug(tab) {
       '<div class="lbl">いまの判定</div>' +
       '<div class="note">この状態で完済すると <b style="color:var(--gold)">' + ENDINGS[judgeEnding()].nm + "END</b> です。</div>" +
       '<div class="btns wrap"><div class="btn sm pri" data-a="dbgEnd" data-i="">判定どおりに完済する（記録に残る）</div></div>' +
-      '<div class="lbl">CASE を読む</div>' +
+      '<div class="lbl">綴じ込みを読む</div>' +
       '<div class="btns wrap">' + CASES.map(c =>
-        '<div class="btn sm" data-a="recase" data-i="' + c.id + '">' + c.ttl.replace(/CASE (\d+).*/, "$1") + "</div>").join("") + "</div>";
+        '<div class="btn sm" data-a="recase" data-i="' + c.id + '">' + c.ttl + "</div>").join("") + "</div>";
   }
   openUI("dbg", '<div class="panel"><h2>検証</h2>' +
     '<div class="sub">この周は記録に残りません（触れた時点で練習あつかい）。</div>' +
@@ -4304,13 +4327,13 @@ actions.dbgItem = d => {
 };
 actions.dbgTip = d => {
   dbgDirty();
-  if (d.i === "none") S.dex.tips = [];
-  else S.dex.tips = tipIds().filter(id => { const t = tipOf(id); return d.i === "all" || (t && t.cat === "clue"); });
+  if (d.i === "none") DX.tips = [];
+  else DX.tips = tipIds().filter(id => { const t = tipOf(id); return d.i === "all" || (t && t.cat === "clue"); });
   save(); showDebug();
 };
 actions.dbgDex = d => {
   dbgDirty();
-  if (d.i === "none") { S.dex.mon = {}; S.dex.hero = {}; S.dex.item = {}; S.dex.cause = {}; }
+  if (d.i === "none") { DX.mon = {}; DX.hero = {}; DX.item = {}; DX.cause = {}; }
   else for (const k in MTYPE) dexMon(k, MTYPE[k].dMin === 99 ? 30 : MTYPE[k].dMin);
   save(); showDebug();
 };
@@ -4363,15 +4386,45 @@ function showOpt() {
   }
 }
 
+/* ---------- これまでの記録（周をまたぐぶん。タイトルから見る） ---------- */
+actions.recs = () => showRecords();
+function showRecords() {
+  const r = S.rec, ends = r.ends || {};
+  const line = (a, b) => '<div class="row thin"><div class="nm">' + a + '</div><div class="val">' + b + "</div></div>";
+  openUI("recs", '<div class="panel"><h2>これまでの記録</h2>' +
+    '<div class="sub">周をまたいで残るぶん。図鑑・手帳・ログは、その周ごとに白紙から始まります。</div>' +
+    '<div class="stat"><span>1日の最高</span><span class="big" style="color:var(--gold)">' + money(r.bestDay || 0) + " G</span></div>" +
+    '<div class="stat"><span>1周の最高</span><span class="big" style="color:var(--gold)">' + money(r.bestTerm || 0) + " G</span></div>" +
+    '<div class="lbl">返済</div><div class="list">' +
+    line("最短返済", r.best ? r.best + " 日" : "―") +
+    line("完済", (r.clears || 0) + " 回") +
+    line("期限切れ", (r.fails || 0) + " 回") +
+    line("背負った借金", (r.terms || r.runs || 0) + " 口") + "</div>" +
+    '<div class="lbl">墓場</div><div class="list">' +
+    line("潜った回数", (r.hauls || 0) + " 回") +
+    line("通算の持ち帰り高", money(r.gold || 0) + " G") +
+    line("倒れた", (r.deaths || 0) + " 回") +
+    line("主に会った", (r.boss || 0) + " 回") + "</div>" +
+    '<div class="lbl">見たエンディング <span style="color:var(--dim);font-weight:400">' +
+    Object.keys(ends).filter(k => ENDINGS[k]).length + " / " + Object.keys(ENDINGS).length + "</span></div>" +
+    '<div class="list">' + Object.keys(ENDINGS).map(k =>
+      '<div class="row' + (ends[k] ? " rar2" : " locked") + '"><div class="nm">' +
+      (ends[k] ? ENDINGS[k].nm + "END" : "？？？") + "<small>" +
+      (ends[k] ? ENDINGS[k].ttl + " ／ " + ends[k] + " 回" : "まだ見ていない") + "</small></div></div>").join("") + "</div>" +
+    '<div class="btns"><div class="btn pri" data-a="titleback">もどる</div></div></div>');
+}
+
 /* ---------- 図鑑 ---------- */
 let dexTab = "hero";
 actions.dex = d => showDex(d && d.i);
 function showDex(tab) {
+  if (!G) { showRecords(); return; }             // タイトルからは通しの記録へ
   dexTab = tab || dexTab;
   let body = "";
   if (dexTab === "hero") {
-    body = '<div class="list" style="max-height:52vh;overflow:auto">' + HEROES.map((h, i) => {
-      const d = S.dex.hero[i];
+    body = '<div class="note">この周で見つけた勇者 <b>' + dexHeroCount() + "</b> 人 ／ 全 " + HEROES.length + " 人</div>" +
+      '<div class="list" style="max-height:52vh;overflow:auto">' + HEROES.map((h, i) => {
+      const d = DX.hero[i];
       if (!d) return '<div class="row locked"><div class="ico" style="background-image:url(' + iconURL.bones + ')"></div><div class="nm">？？？<small>まだ見つけていない</small></div></div>';
       const sc = (d.sc || []).slice(0, 2).map(k => SITU[k]).join(" ／ ");
       return '<div class="row' + (d.odd ? " rar2" : "") + '"><div class="ico" style="background-image:url(' + iconURL.badge + ')"></div>' +
@@ -4382,17 +4435,18 @@ function showDex(tab) {
         "</small></div></div>";
     }).join("") + "</div>";
   } else if (dexTab === "item") {
-    body = '<div class="list" style="max-height:52vh;overflow:auto">' + Object.keys(KIND).map(k => {
-      const d = S.dex.item[k], K = KIND[k];
+    body = '<div class="note">この周で見た品 <b>' + dexItemCount() + "</b> 種</div>" +
+      '<div class="list" style="max-height:52vh;overflow:auto">' + Object.keys(KIND).map(k => {
+      const d = DX.item[k], K = KIND[k];
       if (!d) return '<div class="row locked"><div class="ico"></div><div class="nm">？？？<small>' + CAT_NM[K.cat] + "</small></div></div>";
       return '<div class="row"><div class="ico" style="background-image:url(' + iconURL[K.ico] + ')"></div>' +
         '<div class="nm">' + K.nm + "<small>" + CAT_NM[K.cat] + " ／ 最良 " + (QUAL[d.q].nm || "並") + " ／ " + d.n + " 点<br>" +
         (d.e.length ? "見た付与：" + d.e.map(e => ENCH[e].nm).join("・") : "付与つきは未発見") + "</small></div></div>";
     }).join("") + "</div>";
   } else if (dexTab === "cause") {
-    const seen = S.dex.mon || {};
+    const seen = DX.mon || {};
     body = '<div class="list">' + CAUSES.map(c => {
-      const n = S.dex.cause[c.id];
+      const n = DX.cause[c.id];
       let src = "傷のかたちからは、相手までは分からない";
       if (c.atk) {
         const who = Object.keys(MTYPE).filter(k => MTYPE[k].w > 0 && MTYPE[k].atk.indexOf(c.atk) >= 0 && seen[k]);
@@ -4402,88 +4456,64 @@ function showDex(tab) {
       return '<div class="row' + (n ? "" : " locked") + '"><div class="nm">' + (n ? c.nm : "？？？") +
         "<small>" + (n ? n + " 人 ／ " + src : "未確認") + "</small></div></div>";
     }).join("") + "</div>" +
-      '<div class="note">所見は' + dexCauseCount() + " / " + CAUSES.length + " 種類。<br>" +
+      '<div class="note">この周で見た所見は ' + dexCauseCount() + " / " + CAUSES.length + " 種類。<br>" +
       "死体から読めるのは傷のかたちまでで、誰が、なぜ、までは分からない。魔物図鑑と突き合わせて、はじめて妙なところが見えてくる。</div>";
   } else if (dexTab === "mon") {
-    const seen = S.dex.mon || {};
+    const seen = DX.mon || {};
     body = '<div class="list">' + Object.keys(MTYPE).filter(k => !MTYPE[k].boss || seen[k]).map(k => {
       const t = MTYPE[k], d = seen[k];
       if (!d) return '<div class="row locked"><div class="nm">？？？<small>まだ見ていない</small></div></div>';
       return '<div class="row' + (t.bonus ? " rar2" : "") + '"><div class="nm">' + t.nm +
         "<small>生息：地下 " + t.dMin + "〜" + t.dMax + " 階" + (t.boss ? "（最深部）" : "") +
         (d.lo ? " ／ 見かけた深さ 地下 " + d.lo + "〜" + d.hi + " 階" : "") +
-        "<br>速さ：" + spdNm(t.spd) + " ／ " + MON_AI_NM[t.ai || "chase"] +
         "<br>攻撃：" + (t.atk.length ? t.atk.map(a => MON_ATK_NM[a]).join("・") : "襲ってこない") +
         (t.bonus ? "（捕まえると割のいい品）" : "") + " ／ " + (d.n || 1) + " 体</small></div></div>";
     }).join("") + "</div>" +
-      '<div class="note">見かけた魔物だけが載る。どの階に、どんな手口の魔物がいるか ― それが分かると、死体の所見の読み方が変わる。</div>';
+      '<div class="note">見かけた魔物だけが載る。どの階に、どんな手口の魔物がいるか ― それが分かると、死体の所見の読み方が変わる。<br>' +
+      "動きの癖のほうは、何度か見ているうちに手帳のほうへ書きとまる。</div>";
   } else if (dexTab === "log") {
-    const lg = (S.log || []).slice().reverse();
+    const lg = (LG || []).slice().reverse();
     body = lg.length ? '<div class="list">' + lg.map(e =>
       '<div class="row' + (e.c === "bad" ? " rar2" : "") + '"><div class="nm">' + e.t +
       '<small>' + e.d + " 日目 ／ " + e.f + (e.l.length ? "<br>" + e.l.join("<br>") : "") + "</small></div></div>").join("") + "</div>"
       : '<p class="q">まだ何も起きていない。</p>';
     body += '<div class="btns" style="margin-top:10px"><div class="btn sm" data-a="logclear">ログを消す</div></div>';
   } else if (dexTab === "score") {
-    const g = S.g || {};
-    body = '<div class="stat"><span>今期の持ち帰り高</span><span class="big" style="color:var(--gold)">' + money(g.earned || 0) + " G</span></div>" +
-      '<div class="list">' +
-      [["今期の探索", (g.runsDone || 0) + " 回"],
-       ["今期の最高（1回）", money(g.bestRun || 0) + " G"],
-       ["今期の1回あたり", money(Math.round((g.earned || 0) / Math.max(1, g.runsDone || 0))) + " G"],
-       ["最深", "地下 " + (g.deepest || 1) + " 階"]]
-        .map(r => '<div class="row thin"><div class="nm">' + r[0] + '</div><div class="val">' + r[1] + "</div></div>").join("") + "</div>" +
-      '<div class="lbl">通しの記録</div>' +
-      '<div class="list">' +
-      [["1回の最高", money(S.rec.bestRun || 0) + " G"],
-       ["1タームの最高", money(S.rec.bestTerm || 0) + " G"],
-       ["通算の持ち帰り高", money(S.rec.gold || 0) + " G"],
-       ["探索した回数", (S.rec.hauls || 0) + " 回"],
-       ["最短返済", (S.rec.best ? S.rec.best + " 日" : "―")]]
-        .map(r => '<div class="row thin"><div class="nm">' + r[0] + '</div><div class="val">' + r[1] + "</div></div>").join("") + "</div>" +
+    body = '<div class="stat"><span>いちばん稼いだ日</span>' +
+      (G.bestDay ? '<span class="big" style="color:var(--gold)">' + G.bestDay + " 日目</span>" +
+        "<span><b>" + money(G.bestRun || 0) + "</b> G</span>"
+        : '<span class="q">まだ何も持ち帰っていない</span>') + "</div>" +
       '<div class="note">持ち帰り高は、地上に着いた時点の買取見込みで数えます。' +
-      (g.assist ? "この周は練習を使ったので、通しの記録には残りません。" : "練習・見学を使った周は、通しの記録に残りません。") + "</div>";
+      (G.assist ? "この周は練習を使ったので、通しの記録には残りません。" : "通しの記録はタイトルの〈これまでの記録〉に。") + "</div>";
   } else if (dexTab === "note") {
-    body = S.dex.notes.length ? '<div class="list" style="max-height:52vh;overflow:auto">' + S.dex.notes.map(n =>
+    body = DX.notes.length ? '<div class="list" style="max-height:52vh;overflow:auto">' + DX.notes.map(n =>
       '<div class="row"><div class="ico" style="background-image:url(' + iconURL.note + ')"></div><div class="nm" style="font-size:11.5px">「' + n + '」</div></div>').join("") + "</div>"
       : '<p class="q">まだ手記を拾っていない。</p>';
   } else {
-    const got = tipGot(), all = tipIds();
-    const sect = cat => {
-      const mine = all.filter(id => { const t = tipOf(id); return t && t.cat === cat && got.indexOf(id) >= 0; });
-      const rest = all.filter(id => { const t = tipOf(id); return t && t.cat === cat; }).length - mine.length;
-      return '<div class="lbl">' + TIP_CAT[cat] + " <span style=\"color:var(--dim);font-weight:400\">" + mine.length + " / " + (mine.length + rest) + "</span></div>" +
-        (mine.length ? '<div class="list">' + mine.map(id => { const t = tipOf(id);
-          return '<div class="row"><div class="ico" style="background-image:url(' + iconURL.note + ')"></div>' +
-            '<div class="nm">' + t.ttl + "<small>" + t.txt + "</small></div></div>"; }).join("") + "</div>"
-          : '<p class="q">まだ何も書いていない。</p>') +
-        (rest ? '<div class="note">あと ' + rest + " 件、書けることがありそうだ。</div>" : "");
-    };
-    const cl = clueGot(), truth = G && G.story.notebook;
-    body = '<div class="stat"><span>' + pname() + "の手帳</span><span><b>" + got.length + "</b> / " + all.length + " 件</span>" +
-      "<span>気になること <b>" + cl + "</b></span></div>" +
+    const got = tipGot(), cl = clueGot(), truth = G && G.story.notebook;
+    const done = CASES.filter(c => caseDone(c.id));
+    body = '<div class="sub" style="margin:0 0 8px">' + pname() + "の手帳。書きとめた順に綴じてある。</div>" +
       (cl >= TIP_MIN_TRUTH
         ? '<div class="list" style="margin-bottom:8px"><div class="row rar3" data-a="tiptruth" style="cursor:pointer">' +
           '<div class="ico" style="background-image:url(' + iconURL.note + ')"></div><div class="nm">' +
           (truth ? "繋げてみた ― 読み直す" : "気になることを、順に並べてみる") +
-          "<small>" + (truth ? "もう一度たどる" : "ここまでの " + cl + " 件を、一枚に書き出してみる") + "</small></div></div></div>"
-        : cl > 0 ? '<div class="note">気になることが ' + TIP_MIN_TRUTH + " 件そろえば、並べて考えられそうだ。（いま " + cl + " 件）</div>" : "") +
-      sect("clue") + sect("play") + sect("lore") +
-      '<div class="lbl">綴じ込み ― 見えてきたこと</div>' +
-      '<div class="list">' + CASES.map((c, i) => {
-        const done = S.g && caseDone(c.id);
-        const prev = i === 0 || (S.g && caseDone(CASES[i - 1].id));
-        if (done) return '<div class="row rar2" data-a="recase" data-i="' + c.id + '" style="cursor:pointer"><div class="ico" style="background-image:url(' + iconURL.note + ')"></div><div class="nm">' + c.ttl + "<small>読み直す</small></div></div>";
-        return '<div class="row' + (prev ? "" : " locked") + '"><div class="nm">' + (prev ? c.ttl.replace(/ ― .*/, " ― ？？？") : "？？？") +
-          "<small>" + (prev ? c.hint : "まだ何も見えていない") + "</small></div></div>";
-      }).join("") + "</div>" +
-      '<div class="note">拾い集めたことを書き留めておく手帳。埋めなくても、借金は返せる。</div>';
+          "<small>" + (truth ? "もう一度たどる" : "書きためた紙を、床に並べてみる") + "</small></div></div></div>"
+        : "") +
+      (got.length ? '<div class="list">' + got.map(id => {          // 拾った順。区切りは入れない
+        const t = tipOf(id);
+        if (!t) return "";
+        return '<div class="row' + (t.cat === "clue" ? " rar2" : "") + '"><div class="ico" style="background-image:url(' + iconURL.note + ')"></div>' +
+          '<div class="nm">' + t.ttl + "<small>" + t.txt + "</small></div></div>";
+      }).join("") + "</div>" : '<p class="q">まだ何も書いていない。</p>') +
+      (done.length ? '<div class="list" style="margin-top:8px">' + done.map(c =>
+        '<div class="row rar3" data-a="recase" data-i="' + c.id + '" style="cursor:pointer">' +
+        '<div class="ico" style="background-image:url(' + iconURL.note + ')"></div>' +
+        '<div class="nm">' + c.ttl + "<small>書きなぐった紙を、あとで綴じ込んだぶん ― 読み直す</small></div></div>").join("") + "</div>" : "") +
+      '<div class="note">埋めなくても、借金は返せる。</div>';
   }
   openUI("dex", '<div class="panel"><h2>記録と図鑑</h2>' +
-    '<div class="sub">最短返済 ' + (S.rec.best || "―") + " 日 ／ 完済 " + S.rec.clears + " 回 ／ 期限切れ " + S.rec.fails + " 回 ／ 夢 " + (S.rec.deaths || 0) + " 回" +
-    (S.rec.boss ? " ／ 主に会った " + S.rec.boss + " 回" : "") +
-    (S.rec.ends ? " ／ END " + Object.keys(S.rec.ends).filter(k => ENDINGS[k]).length + "/" + Object.keys(ENDINGS).length +
-      "（" + Object.keys(S.rec.ends).filter(k => ENDINGS[k]).map(k => ENDINGS[k].nm).join("・") + "）" : "") + "</div>" + timeNote() +
+    '<div class="sub">' + G.day + " 日目 ／ 期限まで " + Math.max(0, daysLeft()) + " 日 ／ 最深 地下 " + (G.deepest || 1) + " 階" +
+    " ― この周のぶんです</div>" + timeNote() +
     '<div class="tabs">' +
     ["log:ログ", "score:成績", "hero:勇者", "mon:魔物", "item:品物", "cause:所見", "note:手記", "case:手帳"].map(t => {
       const [k, nm] = t.split(":");
@@ -4491,7 +4521,7 @@ function showDex(tab) {
     }).join("") + "</div>" + body +
     '<div class="btns" style="margin-top:12px"><div class="btn" data-a="back">もどる</div></div></div>');
 }
-actions.logclear = () => { S.log = []; save(); showDex("log"); };
+actions.logclear = () => { LG.length = 0; save(); showDex("log"); };
 actions.log = () => showDex("log");
 actions.recase = d => { const c = CASES.find(x => x.id === d.i); if (c) showCase(c, true); };
 actions.tiptruth = () => {
@@ -4608,7 +4638,7 @@ actions.hHelp = () => {
   if (!(G.story.witness || 0) || chance(0.5)) {      // 証言をひとつ漏らす
     const w = pick(HERO_WITNESS);
     G.story.witness = (G.story.witness || 0) + 1; tipCheck();
-    if (S.dex.notes.indexOf(w) < 0) S.dex.notes.push(w);
+    if (DX.notes.indexOf(w) < 0) DX.notes.push(w);
     setTimeout(() => { if (scene === "dungeon" && !uiOpen) { floatTxt(h.x, h.y - 34, "「……ひとつ言っておく」", "#7fd0ff"); toast("手記に書き留めた ― 勇者 " + h.name + " の話", "good"); } }, 900);
     save();
   }
@@ -4639,15 +4669,15 @@ function askBoss(m) {
   const lines = [
     ["ダンジョンの主", "……人か。"],
     ["ダンジョンの主", "久しいな。どれほど待ったか、もう数えていない。"],
-    ["俺（" + pname() + "）", "……あんた、ずっとここに？"],
+    [pname(), "……あんた、ずっとここに？"],
     ["ダンジョンの主", "そういうものだ。私はこの墓場そのものでな。"],
     ["ダンジョンの主", "私が斬られれば、ここは崩れる。だから下も、この先も無い。"],
     ["ダンジョンの主", "勇者が来るのを待っていた。だが、誰も来ない。ひとりも、だ。"],
-    ["俺（" + pname() + "）", "……ひとりも？　上の階には、そこらじゅうに転がってるぞ。"],
+    [pname(), "……ひとりも？　上の階には、そこらじゅうに転がってるぞ。"],
     ["ダンジョンの主", "ここには誰も来ていない。お前が最初だ。"],
-    ["俺（" + pname() + "）", "……。"],
+    [pname(), "……。"],
     ["ダンジョンの主", "お前は勇者か。"],
-    ["俺（" + pname() + "）", "いや。拾い屋だ。死んだ奴の荷物を集めて売ってる。"],
+    [pname(), "いや。拾い屋だ。死んだ奴の荷物を集めて売ってる。"],
     ["ダンジョンの主", "そうか。……それでも、来たのはお前が最初だ。"]
   ];
   showTalk(lines, bossChoice);
@@ -4789,7 +4819,7 @@ function showResult(kind, kept, lost, depth, floors, haul) {
     '<div class="stat center" style="justify-content:center"><span>' + (G.runsDone || 1) + " 回目の探索</span>" +
     "<span>今期の持ち帰り高 <b>" + money(G.earned || 0) + "</b> G</span>" +
     (total > 0 && total >= (G.bestRun || 0) ? '<span style="color:#8fe3a0">今期の最高</span>' : "") +
-    (!G.assist && total > 0 && total >= (S.rec.bestRun || 0) ? '<span style="color:var(--gold)">自己最高</span>' : "") + "</div>" +
+    (!G.assist && total > 0 && total >= (S.rec.bestDay || 0) ? '<span style="color:var(--gold)">自己最高</span>' : "") + "</div>" +
     '<div class="btns" style="margin-top:14px">' +
     (over ? '<div class="btn pri" data-a="town">地上へ</div>'
       : '<div class="btn pri" data-a="toshop">店で売る</div><div class="btn" data-a="town">地上へ</div>') +
@@ -4853,7 +4883,7 @@ const ENDINGS = {
           "主はしばらく黙っていた。天井の高い玄室に、水の落ちる音だけが響いていた。",
           "「……そうか」",
           "墓場そのものと所帯を持った男の話は、街ではしばらく笑い話になるだろう。",
-          "かまわない。二十回も通えば、それはもう通勤ではないのだ。"] },
+          "かまわない。二十回も顔を出せば、もうそこは通う場所ではない。帰る場所だ。"] },
   buddy: { nm: "相棒", ttl: "返した ― また来る、と言ってしまった",
     txt: ["受付の女は判を押し、証文を破いた。これであんたは自由だ。",
           "自由なのに、明日も三十階まで降りるつもりでいる。",
@@ -4895,7 +4925,7 @@ const ENDINGS = {
 };
 function judgeEnding() {
   const t = G.story;
-  const monDex = S.dex.mon ? Object.keys(S.dex.mon).length : 0;
+  const monDex = DX.mon ? Object.keys(DX.mon).length : 0;
   const clues = [(t.oddDeath || 0) >= 3, (t.humanKill || 0) >= 3, (t.badge || 0) + (t.order || 0) >= 2,
     (t.map || 0) >= 3, monDex >= 4, (t.house || 0) >= 1].filter(Boolean).length;
   const guild = (t.badge || 0) + (t.order || 0) >= 2;
