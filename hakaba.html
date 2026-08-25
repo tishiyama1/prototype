@@ -764,6 +764,24 @@ const GOLEM_A = [
   "..0000....0000.."
 ];
 const KI_PAL = { "0": "#120b1c", "1": "#3a2050", "2": "#5d3a80", "3": "#9268c0", "6": "#ff6b6b", "7": "#ffe7a8", "8": "#e8c46a" };
+const KING_B = [                       // うしろ姿 ― 顔は見えない。冠と外套の合わせ目だけ
+  "......8..8......",
+  "....888888888...",
+  "....08888880....",
+  "...0222222220...",
+  "...0222222220...",
+  "...0222222220...",
+  "..000222222000..",
+  "..011111111110..",
+  ".01111111111110.",
+  ".01111111111110.",
+  "0111111001111110",
+  "0111111001111110",
+  "0111111001111110",
+  "0110110011001110",
+  ".000..00..00000.",
+  "................"
+];
 const KING_A = [
   "......8..8......",
   "....888888888...",
@@ -1077,6 +1095,8 @@ function buildSprites() {
   SPR.ghost = [makeSprite(GHOST_A, GH_PAL), makeSprite(GHOST_A, GH_PAL)];
   SPR.golem = [makeSprite(GOLEM_A, GO_PAL), makeSprite(GOLEM_A, Object.assign({}, GO_PAL, { "6": "#ffd06a" }))];
   SPR.king = [makeSprite(KING_A, KI_PAL), makeSprite(KING_A, Object.assign({}, KI_PAL, { "6": "#ffb0b0" }))];
+  SPR.kingB = [makeSprite(KING_B, KI_PAL),
+    makeSprite(walk(KING_B, "0110011001100110", ".00....00....00."), KI_PAL)];
   const RAT_B = RAT_A.slice(); RAT_B[13] = "..03300..00330..";
   SPR.rat = [makeSprite(RAT_A, RA_PAL), makeSprite(RAT_B, RA_PAL)];
   SPR.spider = [makeSprite(SPIDER_A, SP_PAL), makeSprite(SPIDER_A, Object.assign({}, SP_PAL, { "6": "#e8ff90" }))];
@@ -4355,8 +4375,18 @@ actions.dbgRec = d => {
 };
 actions.dbgWipe = () => { try { localStorage.removeItem(KEY); } catch (e) {} location.reload(); };
 actions.dbgEnd = d => {
+  if (d.i === "away") {                            // 連れ出しは真相ENDの画面から入る
+    dbgDirty();
+    const t = G.story;
+    t.boss = Math.max(t.boss || 0, END_REQ.away);
+    t.badge = Math.max(t.badge || 0, 2); t.order = Math.max(t.order || 0, 1);
+    t.witness = Math.max(t.witness || 0, 1);
+    t.oddDeath = Math.max(t.oddDeath || 0, 3); t.humanKill = Math.max(t.humanKill || 0, 3);
+    t.map = Math.max(t.map || 0, 3); t.house = Math.max(t.house || 0, 1);
+    for (const k of Object.keys(MTYPE).slice(0, 5)) dexMon(k, 10);
+    save(); closeUI(); endClear("truth"); return;
+  }
   closeUI();
-  if (d.i === "away") { doFade(1, () => startEnding()); return; }   // 連れ出しは一枚絵から
   if (d.i) endClear(d.i); else endClear();
 };
 
@@ -4998,11 +5028,8 @@ function judgeEnding() {
    ============================================================ */
 let endT = 0, endRoll = 0, endDone = false, endFast = false;
 const STAFF = [
-  ["t", "勇者の墓場"],
-  ["s", "GRAVE OF HEROES"],
-  ["", ""],
-  ["l", "―― 連れ出し ――"],
-  ["", ""],
+  ["", ""], ["", ""],
+  // ── そのあとの話 ──
   ["p", "主がいなくなった穴は、三日かけて崩れた。"],
   ["p", "四日目には、入口の梯子も土に埋まった。"],
   ["", ""],
@@ -5012,36 +5039,35 @@ const STAFF = [
   ["", ""],
   ["p", "街は静かになった。"],
   ["p", "それが良いことだったのかは、誰にも分からない。"],
-  ["", ""],
-  ["l", "―― 街道にて ――"],
-  ["", ""],
+  ["", ""], ["", ""],
   ["p", "背の高い連れは、屋根のある宿に入れない。"],
   ["p", "だから毎晩、野宿になる。火の番はあいつがやる。眠らないので。"],
   ["", ""],
   ["p", "「どこへ行く」"],
   ["p", "決めていない、と答えた。"],
   ["p", "「二十年ぶりの外だ。決めなくていい」"],
-  ["", ""],
-  ["l", "―― 配役 ――"],
-  ["", ""],
-  ["c", "拾い屋", "PNAME"],
-  ["c", "ダンジョンの主", "この墓場そのもの"],
-  ["c", "勇者", "四十八名"],
-  ["c", "受付の女", "判を押す人"],
-  ["c", "黒い外套の男", "名前は無い"],
-  ["c", "墓ねずみ", "王冠つき"],
-  ["", ""],
-  ["l", "―― 拾い集めたもの ――"],
-  ["", ""],
-  ["c", "潜った日数", "DAYS"],
+  ["", ""], ["", ""], ["", ""], ["", ""], ["", ""],
+  // ── リザルト ──
+  ["c", "返した日", "DAYS"],
+  ["c", "潜った回数", "RUNS"],
   ["c", "持ち帰り高", "EARNED"],
-  ["c", "調べた亡骸", "LOOTED"],
+  ["c", "いちばんの日", "BESTDAY"],
+  ["c", "最深", "DEEP"],
+  ["c", "主に会った", "BOSS"],
   ["c", "手帳", "TIPS"],
+  ["", ""], ["", ""], ["", ""], ["", ""], ["", ""],
+  // ── タイトルとスタッフ ──
+  ["t", "勇者の墓場"],
+  ["s", "GRAVE OF HEROES"],
+  ["", ""], ["", ""], ["", ""],
+  ["l", "STAFF"],
   ["", ""],
-  ["", ""],
-  ["l", "おしまい"],
-  ["", ""],
-  ["s", "遊んでくれてありがとう"]
+  ["l2", "Everything"],
+  ["n", "tish"],
+  ["n", "Claude"],
+  ["n", "GPT"],
+  ["", ""], ["", ""], ["", ""],
+  ["s", "Thank you for playing."]
 ];
 function startEnding() {
   scene = "ending"; endT = 0; endRoll = 0; endDone = false; endFast = false;
@@ -5122,7 +5148,7 @@ function drawEnding(dt) {
   g.restore();
   g.save();                                            // 主 ― ひとまわり大きく、半歩うしろ
   g.translate(cx2 + 11 * sc2, cy2 - 1); g.scale(1.75 * sc2, 1.75 * sc2);
-  g.globalAlpha = 0.95; drawSpr(SPR.king[bob], -8, -16); g.restore();
+  g.globalAlpha = 0.95; drawSpr(SPR.kingB[bob], -8, -16); g.restore();
   g.save();                                            // 拾い屋
   g.translate(cx2 - 12 * sc2, cy2); g.scale(sc2, sc2);
   drawSpr(SPR.plN[bob], -8, -16); g.restore();
@@ -5135,14 +5161,15 @@ function drawEnding(dt) {
   let y = VH + 14 - endRoll;
   for (const ln of STAFF) {
     const kind = ln[0];
-    const gap = kind === "" ? 11 : kind === "t" ? 30 : kind === "l" ? 22 : 15;
+    const gap = kind === "" ? 11 : kind === "t" ? 30 : kind === "l" ? 22 : kind === "l2" ? 18 : kind === "n" ? 14 : 15;
     if (y > -20 && y < VH + 20 && kind) {
       if (kind === "c") {
         wtext(ln[1], VW / 2 - 6, y, "#93876f", 9.5, "right");
         wtext(endVal(ln[2]), VW / 2 + 6, y, "#e8c46a", 9.5, "left");
       } else {
-        const col = kind === "t" ? "#e8c46a" : kind === "s" ? "#cfc6b0" : kind === "l" ? "#e8c46a" : "#e6e0d0";
-        wtext(ln[1], VW / 2, y, col, kind === "t" ? 20 : kind === "l" ? 11 : 10);
+        const col = kind === "t" ? "#e8c46a" : kind === "s" ? "#cfc6b0"
+          : kind === "l" || kind === "l2" ? "#e8c46a" : "#e6e0d0";
+        wtext(ln[1], VW / 2, y, col, kind === "t" ? 20 : kind === "l" ? 12 : kind === "l2" ? 10.5 : 10);
       }
     }
     y += gap;
@@ -5151,10 +5178,14 @@ function drawEnding(dt) {
   if (!endDone && endT > 4.5 && endT < 13) wtext("触れているあいだ 早送り", VW / 2, VH - 8, "rgba(147,135,111,0.7)", 8);
 }
 function endVal(k) {
+  if (!G) return "―";
   if (k === "PNAME") return pname();
-  if (k === "DAYS") return (G ? G.day : 0) + " 日";
-  if (k === "EARNED") return money(G ? G.earned || 0 : 0) + " G";
-  if (k === "LOOTED") return (G && G.story ? (G.story.oddDeath || 0) + (G.story.humanKill || 0) : 0) + " 件に、妙なところがあった";
+  if (k === "DAYS") return G.day + " 日目";
+  if (k === "RUNS") return (G.runsDone || 0) + " 回";
+  if (k === "EARNED") return money(G.earned || 0) + " G";
+  if (k === "BESTDAY") return G.bestDay ? G.bestDay + " 日目 " + money(G.bestRun || 0) + " G" : "―";
+  if (k === "DEEP") return "地下 " + (G.deepest || 1) + " 階";
+  if (k === "BOSS") return (G.story.boss || 0) + " 回";
   if (k === "TIPS") return tipGot().length + " 枚";
   return k;
 }
