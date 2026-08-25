@@ -293,6 +293,8 @@
     display: inline-flex; align-items: center; justify-content: center; }
   .btn.dis { opacity: 0.35; pointer-events: none; }
   .btn.warn { border-color: rgba(180,65,58,0.5); background: rgba(180,65,58,0.12); color: #ffc4bd; }
+  .btns.wrap { flex-wrap: wrap; }
+  .btns.wrap .btn { flex: 0 0 auto; min-width: 34px; }
   .tin {
     width: 100%; padding: 9px 10px; font: inherit; font-size: 13px; letter-spacing: 0.04em;
     color: var(--ink); background: rgba(255,255,255,0.05);
@@ -386,7 +388,7 @@ const hash = (x, y) => { let h = x * 374761393 + y * 668265263; h = (h ^ (h >> 1
     S.rec … 記録（最短返済日数など）                                   */
 const KEY = "yuusha_no_hakaba_v2";
 const DEBT0 = 100000, LIMIT0 = 30;
-const DEFAULT_SAVE = { g: null, dex: { hero: {}, item: {}, cause: {}, mon: {}, notes: [] }, rec: { best: 0, clears: 0, fails: 0, runs: 0, deaths: 0, boss: 0, bestRun: 0, bestTerm: 0, gold: 0, hauls: 0 }, opt: { mute: false, mode: "normal", hand: "right", name: "拾い屋" } };
+const DEFAULT_SAVE = { g: null, dex: { hero: {}, item: {}, cause: {}, mon: {}, notes: [] }, rec: { best: 0, clears: 0, fails: 0, runs: 0, deaths: 0, boss: 0, bestRun: 0, bestTerm: 0, gold: 0, hauls: 0 }, opt: { mute: false, mode: "normal", hand: "right", name: "拾い屋", dbg: false } };
 let S = (() => {
   try {
     const raw = JSON.parse(localStorage.getItem(KEY) || "{}");
@@ -2345,7 +2347,7 @@ function timeNote() {
 }
 const supplyClock = () => { const sc2 = Math.max(0, Math.ceil(P.st / SUPPLY_RATE)); return Math.floor(sc2 / 60) + ":" + String(sc2 % 60).padStart(2, "0"); };
 function hitPlayer(sx, sy, hard, who) {
-  if (P.invul > 0 || run.escaped || watchMode()) return;
+  if (P.invul > 0 || run.escaped || watchMode() || dbgGod) return;
   if (mapOpen) { mapOpen = false; }
   if (uiOpen && CALM_UI.indexOf(uiKind) >= 0) { closeUI(); toast("襲われた ― 手を止めている場合ではない", "bad"); }
   P.invul = 1.7; shake = 7;
@@ -3666,7 +3668,7 @@ let isTouch = ("ontouchstart" in window) || navigator.maxTouchPoints > 0;
 const actions = {};
 /* パネルを ［見出し／本文／操作］ の三段に組み直す。
    スクロールするのは本文だけ、とじる手段はつねに画面内に置く。 */
-const CLOSERS = ["back", "resume", "titleback", "optback"];
+const CLOSERS = ["back", "resume", "titleback", "optback", "dbgback"];
 function buildSheet(p) {
   const kids = Array.prototype.slice.call(p.children);
   const head = document.createElement("div"); head.className = "phead";
@@ -4098,9 +4100,231 @@ actions.optback = () => {
 actions.setmute = d => { muted = d.i === "1"; S.opt.mute = muted; save(); if (!muted) SFX.ui(); showOpt(); };
 actions.sethand = d => { S.opt.hand = d.i === "left" ? "left" : "right"; save(); hudSig = ""; showOpt(); };
 actions.setmode = d => { S.opt.mode = d.i; save(); if (safeMode() && G) { G.assist = 1; save(); } showOpt(); };
+
+/* ============================================================
+   検証（デバッグ）― 設定の見出しを7回叩くと出る。S.opt.dbg に残る
+   ============================================================ */
+let dbgGod = false, dbgTaps = 0, dbgTapT = 0, dbgTab = "go";
+const dbgOn = () => !!(S.opt && S.opt.dbg);
+function dbgDirty() { if (G) { G.assist = 1; save(); } hudSig = ""; }   // 触った周は記録に残さない
+actions.dbgtap = () => {
+  const now = performance.now();
+  if (now - dbgTapT > 1200) dbgTaps = 0;
+  dbgTapT = now; dbgTaps++;
+  if (dbgOn() || dbgTaps < 7) return;
+  S.opt.dbg = true; save(); dbgTaps = 0;
+  SFX.alert(); toast("検証モードを開いた", "good");
+  showOpt();
+};
+actions.dbgoff = () => { S.opt.dbg = false; dbgGod = false; save(); hudSig = ""; toast("検証モードを閉じた", "bad"); showOpt(); };
+actions.dbg = () => showDebug();
+actions.dbgtab = d => showDebug(d.i);
+actions.dbgback = () => showOpt();
+
+const DBG_FLAGS = [
+  ["boss", "主に会った", "相棒10・結婚20"], ["oddDeath", "説明のつかない傷", "3で CASE05"],
+  ["humanKill", "人の手の死体", "3で陰謀"], ["badge", "銀の徽章", "2で CASE02"],
+  ["map", "配られた地図", "3で CASE03"], ["order", "依頼書", "CASE04"],
+  ["cleaner", "黒い外套に会った", "CASE04"], ["house", "魔物の巣の跡", "補助"],
+  ["witness", "勇者の証言", "真相の鍵"], ["murderKept", "倉庫の人の手の遺品", "3で CASE01"],
+  ["notebook", "手帳を並べた", "0/1・真相の鍵"]
+];
+const DBG_NUM = [["gold", "所持金"], ["debt", "借金"], ["day", "日数"], ["susp", "警戒度"],
+  ["kind", "親切"], ["infamy", "奪った回数"], ["deepest", "最深"], ["sanctMax", "聖堂"]];
+
+function showDebug(tab) {
+  if (!G) { toast("先にゲームを始めてください", "bad"); showOpt(); return; }   // タイトルからは触れない
+  dbgTab = tab || dbgTab;
+  const inRun = scene === "dungeon" && run && !run.escaped;
+  let body = "";
+  if (dbgTab === "go") {
+    let f = "";
+    for (let d = 1; d <= BOSS_FLOOR; d++)
+      f += '<div class="btn sm' + (inRun && !run.pos.s && run.pos.d === d ? " pri" : "") +
+        '" data-a="dbgGo" data-i="d:' + d + '">' + d + "</div>";
+    let sc = "";
+    for (let d = SAFE_EVERY; d < BOSS_FLOOR; d += SAFE_EVERY)
+      sc += '<div class="btn sm" data-a="dbgGo" data-i="s:' + d + '">第' + (d / SAFE_EVERY) + "聖堂</div>";
+    body = '<div class="lbl">階へ飛ぶ</div><div class="btns wrap">' + f + "</div>" +
+      '<div class="btns wrap" style="margin-top:6px">' + sc + "</div>" +
+      '<div class="note">潜行中なら荷と水と食料を持ったまま移る。地上からなら新しく潜り直す。</div>' +
+      '<div class="lbl">この階に呼ぶ</div>' +
+      '<div class="btns wrap">' + ["hero:生きた勇者", "cleaner:黒い外套", "rat:墓ねずみ", "king:主"].map(x => {
+        const [k, nm] = x.split(":");
+        return '<div class="btn sm' + (inRun ? "" : " dis") + '" data-a="dbgSpawn" data-i="' + k + '">' + nm + "</div>";
+      }).join("") +
+      Object.keys(MTYPE).filter(k => k !== "king" && k !== "rat").map(k =>
+        '<div class="btn sm' + (inRun ? "" : " dis") + '" data-a="dbgSpawn" data-i="' + k + '">' + MTYPE[k].nm + "</div>").join("") + "</div>" +
+      '<div class="lbl">その場で</div>' +
+      '<div class="btns wrap"><div class="btn sm' + (dbgGod ? " pri" : "") + '" data-a="dbgGod">無敵 ' + (dbgGod ? "入" : "切") + "</div>" +
+      '<div class="btn sm' + (inRun ? "" : " dis") + '" data-a="dbgReveal">地図を全部開く</div>' +
+      '<div class="btn sm' + (inRun ? "" : " dis") + '" data-a="dbgClear">魔物を消す</div>' +
+      '<div class="btn sm' + (inRun ? "" : " dis") + '" data-a="dbgFull">水と食料を満タン</div>' +
+      '<div class="btn sm' + (inRun ? "" : " dis") + '" data-a="dbgLootAll">この階を全部調べた事に</div>' +
+      '<div class="btn sm' + (inRun ? "" : " dis") + '" data-a="dbgOut">地上へ帰る</div></div>';
+  } else if (dbgTab === "flag") {
+    const row = (k, nm, note, v) =>
+      '<div class="row thin"><div class="nm">' + nm + '<small>' + note + "</small></div>" +
+      '<div class="val" style="display:flex;align-items:center;gap:4px">' +
+      '<span class="btn sm" data-a="dbgFlag" data-i="' + k + '" data-v="-1">−</span>' +
+      '<b style="min-width:34px;text-align:center;display:inline-block">' + v + "</b>" +
+      '<span class="btn sm" data-a="dbgFlag" data-i="' + k + '" data-v="1">＋</span>' +
+      '<span class="btn sm" data-a="dbgFlag" data-i="' + k + '" data-v="5">+5</span></div></div>';
+    body = '<div class="lbl">物語のフラグ（G.story）</div><div class="list">' +
+      DBG_FLAGS.map(f => row("story." + f[0], f[1], f[2], G.story[f[0]] || 0)).join("") + "</div>" +
+      '<div class="lbl">数値（G）</div><div class="list">' +
+      DBG_NUM.map(f => row(f[0], f[1], "", G[f[0]] || 0)).join("") + "</div>" +
+      '<div class="lbl">まとめて</div>' +
+      '<div class="btns wrap"><div class="btn sm" data-a="dbgPreset" data-i="truth">真相の条件をそろえる</div>' +
+      '<div class="btn sm" data-a="dbgPreset" data-i="plot">陰謀まで</div>' +
+      '<div class="btn sm" data-a="dbgPreset" data-i="zero">フラグを全部0に</div>' +
+      '<div class="btn sm" data-a="dbgPreset" data-i="cases">CASEを全部開く</div></div>' +
+      '<div class="note">いまのエンディング判定：<b style="color:var(--gold)">' + ENDINGS[judgeEnding()].nm + "END</b></div>";
+  } else if (dbgTab === "have") {
+    body = '<div class="lbl">金と借金</div>' +
+      '<div class="btns wrap"><div class="btn sm" data-a="dbgGold" data-i="10000">+1万</div>' +
+      '<div class="btn sm" data-a="dbgGold" data-i="100000">+10万</div>' +
+      '<div class="btn sm" data-a="dbgGold" data-i="1000000">+100万</div>' +
+      '<div class="btn sm" data-a="dbgGold" data-i="0">所持金0</div>' +
+      '<div class="btn sm" data-a="dbgDebt" data-i="0">借金を消す</div>' +
+      '<div class="btn sm" data-a="dbgDebt" data-i="1">借金を戻す</div></div>' +
+      '<div class="note">いま 所持金 <b>' + money(G.gold) + "</b> G ／ 借金 <b>" + money(G.debt) + "</b> G ／ " + G.day + " 日目（期限 " + G.limit + "）</div>" +
+      '<div class="lbl">日を進める</div>' +
+      '<div class="btns wrap"><div class="btn sm" data-a="dbgDay" data-i="1">+1日</div>' +
+      '<div class="btn sm" data-a="dbgDay" data-i="5">+5日</div>' +
+      '<div class="btn sm" data-a="dbgDay" data-i="-5">-5日</div>' +
+      '<div class="btn sm" data-a="dbgDay" data-i="last">期限の前日へ</div></div>' +
+      '<div class="lbl">強化</div>' +
+      '<div class="btns wrap"><div class="btn sm" data-a="dbgUpg" data-i="max">全部MAX</div>' +
+      '<div class="btn sm" data-a="dbgUpg" data-i="min">全部Lv1（裸一貫）</div></div>' +
+      '<div class="note">' + Object.keys(UPG).map(k => UPG[k].nm + " " + G.up[k]).join(" ／ ") + "</div>" +
+      '<div class="lbl">道具と品</div>' +
+      '<div class="btns wrap"><div class="btn sm" data-a="dbgItem" data-i="potion">ポーション+10</div>' +
+      '<div class="btn sm" data-a="dbgItem" data-i="smoke">煙玉+10</div>' +
+      '<div class="btn sm" data-a="dbgItem" data-i="stash">倉庫に10点</div>' +
+      '<div class="btn sm" data-a="dbgItem" data-i="hum">人の手の遺品を3点</div>' +
+      '<div class="btn sm" data-a="dbgItem" data-i="wipe">倉庫と荷を空に</div></div>';
+  } else if (dbgTab === "rec") {
+    const tg = tipGot().length, ti = tipIds().length;
+    body = '<div class="lbl">手帳</div>' +
+      '<div class="btns wrap"><div class="btn sm" data-a="dbgTip" data-i="all">全部書く（' + tg + "/" + ti + "）</div>" +
+      '<div class="btn sm" data-a="dbgTip" data-i="clue">気になることだけ</div>' +
+      '<div class="btn sm" data-a="dbgTip" data-i="none">空にする</div></div>' +
+      '<div class="lbl">図鑑</div>' +
+      '<div class="btns wrap"><div class="btn sm" data-a="dbgDex" data-i="mon">魔物を全部（' + Object.keys(S.dex.mon || {}).length + "/" + Object.keys(MTYPE).length + "）</div>" +
+      '<div class="btn sm" data-a="dbgDex" data-i="none">図鑑を空に</div>' +
+      '<div class="btn sm" data-a="logclear">ログを消す</div></div>' +
+      '<div class="lbl">出したEND</div>' +
+      '<div class="note">' + (S.rec.ends && Object.keys(S.rec.ends).length
+        ? Object.keys(S.rec.ends).map(k => ENDINGS[k].nm + "×" + S.rec.ends[k]).join(" ／ ") : "まだ無い") + "</div>" +
+      '<div class="btns wrap"><div class="btn sm warn" data-a="dbgRec" data-i="ends">ENDの記録を消す</div>' +
+      '<div class="btn sm warn" data-a="dbgRec" data-i="all">通しの記録を全部消す</div></div>' +
+      '<div class="lbl">セーブ</div>' +
+      '<div class="btns wrap"><div class="btn sm warn" data-a="dbgWipe">セーブを消して最初から</div></div>';
+  } else {
+    body = '<div class="lbl">エンディングを見る</div>' +
+      '<div class="note">記録には残しません。判定を通さず、その画面を直接開きます。</div>' +
+      '<div class="btns wrap">' + ["truth", "marry", "buddy", "cleaner", "rich", "bare", "plot", "odd", "normal"].map(k =>
+        '<div class="btn sm" data-a="dbgEnd" data-i="' + k + '">' + ENDINGS[k].nm + "</div>").join("") + "</div>" +
+      '<div class="lbl">いまの判定</div>' +
+      '<div class="note">この状態で完済すると <b style="color:var(--gold)">' + ENDINGS[judgeEnding()].nm + "END</b> です。</div>" +
+      '<div class="btns wrap"><div class="btn sm pri" data-a="dbgEnd" data-i="">判定どおりに完済する（記録に残る）</div></div>' +
+      '<div class="lbl">CASE を読む</div>' +
+      '<div class="btns wrap">' + CASES.map(c =>
+        '<div class="btn sm" data-a="recase" data-i="' + c.id + '">' + c.ttl.replace(/CASE (\d+).*/, "$1") + "</div>").join("") + "</div>";
+  }
+  openUI("dbg", '<div class="panel"><h2>検証</h2>' +
+    '<div class="sub">この周は記録に残りません（触れた時点で練習あつかい）。</div>' +
+    '<div class="tabs">' + ["go:階と場", "flag:フラグ", "have:持ち物", "rec:記録", "end:END"].map(t => {
+      const [k, nm] = t.split(":");
+      return '<div class="tab' + (dbgTab === k ? " on" : "") + '" data-a="dbgtab" data-i="' + k + '">' + nm + "</div>";
+    }).join("") + "</div>" + body +
+    '<div class="btns"><div class="btn pri" data-a="dbgback">もどる</div></div></div>');
+}
+
+actions.dbgGo = d => {
+  const p = d.i.split(":"), pos = { d: parseInt(p[1], 10), s: p[0] === "s" };
+  dbgDirty(); closeUI();
+  if (scene === "dungeon" && run && !run.escaped) { run.floors++; doFade(1, () => { enterLevel(pos, "down"); SFX.descend(); toast(levelName(pos), "good"); }); }
+  else startRun(pos);
+};
+actions.dbgSpawn = d => {
+  if (!(scene === "dungeon" && run && !run.escaped)) { SFX.deny(); return; }
+  dbgDirty();
+  const tx = clamp(Math.floor(P.x / TILE) + 2, 1, MW - 2), ty = clamp(Math.floor(P.y / TILE), 1, MH - 2);
+  if (d.i === "hero") {
+    const hi = ri(0, HEROES.length - 1), dep = run.pos.d;
+    hero = { x: tx * TILE + 8, y: ty * TILE + 8, hp: 16 + dep, maxHp: 16 + dep, spd: 30, state: "fight", anim: 0, dir: 1,
+      name: HEROES[hi].n, cls: HEROES[hi].c, hi, talk: pick(HERO_TALK),
+      gear: [makeItem(dep, { boost: 0.7, hi }), makeItem(dep, { boost: 0.7, hi })],
+      cd: 0, met: false, atk: 0, hurt: 0, follow: 0 };
+  } else if (d.i === "cleaner") spawnCleaner(run.pos.d);
+  else spawnMon(d.i, tx, ty, run.pos.d);
+  closeUI(); toast("呼んだ", "good");
+};
+actions.dbgGod = () => { dbgGod = !dbgGod; dbgDirty(); showDebug(); };
+actions.dbgReveal = () => { if (!run) return; dbgDirty(); seen.fill(1); closeUI(); toast("地図を開いた", "good"); };
+actions.dbgClear = () => { if (!run) return; dbgDirty(); for (const m of mons) { m.state = "dead"; m.dead = 0.1; } closeUI(); };
+actions.dbgFull = () => { if (!run) return; dbgDirty(); P.st = maxSupply(); P.hp = maxHearts(); P.armor = armorMax(); P.tired = 0; hudSig = ""; closeUI(); };
+actions.dbgLootAll = () => { if (!run) return; dbgDirty(); for (const c of corpses) if (!c.looted) finishLoot(c); closeUI(); };
+actions.dbgOut = () => { if (!run || run.escaped) return; dbgDirty(); closeUI(); endRun("escape"); };
+actions.dbgFlag = (d, el) => {
+  dbgDirty();
+  const v = parseInt(el.dataset.v, 10);
+  if (d.i.indexOf("story.") === 0) { const k = d.i.slice(6); G.story[k] = Math.max(0, (G.story[k] || 0) + v); }
+  else { const k = d.i; G[k] = Math.max(0, (G[k] || 0) + v * (k === "gold" || k === "debt" ? 1000 : 1)); }
+  save(); showDebug();
+};
+actions.dbgPreset = d => {
+  dbgDirty();
+  const t = G.story;
+  if (d.i === "truth") { t.boss = Math.max(1, t.boss || 0); t.badge = 2; t.order = 1; t.witness = 1; t.oddDeath = 3; t.humanKill = 3; t.map = 3; t.house = 1;
+    for (const k of Object.keys(MTYPE).slice(0, 5)) dexMon(k, 10); }
+  else if (d.i === "plot") { t.badge = 2; t.order = 1; t.oddDeath = 3; t.humanKill = 3; }
+  else if (d.i === "zero") { for (const f of DBG_FLAGS) t[f[0]] = 0; t.done = []; }
+  else if (d.i === "cases") { for (const c of CASES) if (t.done.indexOf(c.id) < 0) t.done.push(c.id); }
+  save(); showDebug();
+};
+actions.dbgGold = d => { dbgDirty(); const n = parseInt(d.i, 10); G.gold = n === 0 ? 0 : G.gold + n; save(); showDebug(); };
+actions.dbgDebt = d => { dbgDirty(); G.debt = d.i === "0" ? 0 : DEBT0; save(); showDebug(); };
+actions.dbgDay = d => {
+  dbgDirty();
+  G.day = d.i === "last" ? Math.max(1, G.limit - 1) : clamp(G.day + parseInt(d.i, 10), 1, 999);
+  rollMarket(); save(); showDebug();
+};
+actions.dbgUpg = d => { dbgDirty(); for (const k in UPG) G.up[k] = d.i === "max" ? UPG[k].max : 1; save(); hudSig = ""; showDebug(); };
+actions.dbgItem = d => {
+  dbgDirty();
+  const dep = Math.max(1, G.deepest);
+  if (d.i === "potion" || d.i === "smoke") G.inv[d.i] += 10;
+  else if (d.i === "stash") for (let i = 0; i < 10; i++) G.stash.push(makeItem(dep, { boost: 0.5 }));
+  else if (d.i === "hum") for (let i = 0; i < 3; i++) G.stash.push(makeItem(dep, { boost: 0.6, tr: "hum", cz: "blade" }));
+  else if (d.i === "wipe") { G.stash = []; if (run) run.bag = []; }
+  countMurderKept(); save(); showDebug();
+};
+actions.dbgTip = d => {
+  dbgDirty();
+  if (d.i === "none") S.dex.tips = [];
+  else S.dex.tips = tipIds().filter(id => { const t = tipOf(id); return d.i === "all" || (t && t.cat === "clue"); });
+  save(); showDebug();
+};
+actions.dbgDex = d => {
+  dbgDirty();
+  if (d.i === "none") { S.dex.mon = {}; S.dex.hero = {}; S.dex.item = {}; S.dex.cause = {}; }
+  else for (const k in MTYPE) dexMon(k, MTYPE[k].dMin === 99 ? 30 : MTYPE[k].dMin);
+  save(); showDebug();
+};
+actions.dbgRec = d => {
+  if (d.i === "ends") S.rec.ends = {};
+  else S.rec = JSON.parse(JSON.stringify(DEFAULT_SAVE.rec));
+  save(); showDebug();
+};
+actions.dbgWipe = () => { try { localStorage.removeItem(KEY); } catch (e) {} location.reload(); };
+actions.dbgEnd = d => { closeUI(); if (d.i) endClear(d.i); else endClear(); };
+
 function showOpt() {
   const m = optMode();
-  openUI("opt", '<div class="panel"><h2>設定</h2>' +
+  openUI("opt", '<div class="panel"><h2 data-a="dbgtap">設定</h2>' +
     '<div class="sub">遊びかたは、いつでも変えられる。</div>' +
     '<div class="lbl">名前</div>' +
     '<input class="tin" id="pnin" maxlength="8" value="' + pname() + '" placeholder="' + PNAME0 + '">' +
@@ -4125,6 +4349,9 @@ function showOpt() {
      ["記録", m === "normal" ? "残る" : "この周は残さない"]]
       .map(r => '<div class="row thin"><div class="nm">' + r[0] + '</div><div class="val">' + r[1] + "</div></div>").join("") + "</div>" +
     (G && G.assist && m === "normal" ? '<div class="note" style="color:#ff9a92">この周はすでに練習を使ったので、ふつうに戻しても記録には残りません。</div>' : "") +
+    (dbgOn() && G ? '<div class="lbl">検証</div><div class="btns"><div class="btn" data-a="dbg">検証モードを開く</div>' +
+      '<div class="btn warn" data-a="dbgoff">やめる</div></div>' +
+      '<div class="note">階へ飛ぶ・フラグを立てる・ENDを見る。触れた周は記録に残りません。</div>' : "") +
     (scene === "town" ? '<div class="btns pin"><div class="btn" data-a="totitle">タイトルへ</div></div>' : "") +
     '<div class="btns"><div class="btn pri" data-a="optback">もどる</div></div></div>');
   const nin = document.getElementById("pnin");     // 名前は打った端から覚える
@@ -4683,13 +4910,15 @@ function judgeEnding() {
   if ((t.oddDeath || 0) >= 1 || (t.humanKill || 0) >= 1 || t.boss >= 1) return "odd";
   return "normal";
 }
-function endClear() {
+function endClear(force) {
   const days = G.day;
   const best = S.rec.best;
   const rank = days <= 15 ? "熟練" : days <= 20 ? "優秀" : days <= 25 ? "上出来" : "ぎりぎり";
-  const ek = judgeEnding(), END = ENDINGS[ek];
-  if (!S.rec.ends) S.rec.ends = {};
-  S.rec.ends[ek] = (S.rec.ends[ek] || 0) + 1; save();
+  const ek = force || judgeEnding(), END = ENDINGS[ek];
+  if (!force) {                                   // 検証で開いたぶんは記録に混ぜない
+    if (!S.rec.ends) S.rec.ends = {};
+    S.rec.ends[ek] = (S.rec.ends[ek] || 0) + 1; save();
+  }
   openUI("clear", '<div class="panel center">' +
     '<h2 style="justify-content:center">借金完済 ― ' + END.nm + "END</h2>" +
     '<div class="big" style="margin:10px 0">' + days + " 日</div>" +
@@ -4724,7 +4953,7 @@ function updateHUD() {
   const secs = Math.max(0, Math.ceil(P.st / SUPPLY_RATE));
   const md = optMode();
   const sig = [md, P.hp, P.armor, run.pos.d, run.pos.s, run.bag.length, G.day, secs,
-    P.tired, run.bag.map(i => i.k).join(",")].join("|");
+    P.tired, dbgOn(), dbgGod, run.bag.map(i => i.k).join(",")].join("|");
   if (sig === hudSig) return;
   hudSig = sig;
   const hearts = "♥".repeat(P.hp) + '<span style="color:#3a3040">♥</span>'.repeat(Math.max(0, maxHearts() - P.hp));
@@ -4734,6 +4963,7 @@ function updateHUD() {
     '<span class="chip">' + (run.pos.s ? "第" + sanctNo(run.pos.d) + "聖堂" : "地下 <b>" + run.pos.d + "</b> 階") + "</span>" +
     '<span class="sep"></span>' +
     (md === "normal" ? "" : '<span class="chip mode">' + MODE_NM[md] + "</span>") +
+    (dbgOn() ? '<span class="chip mode" style="background:#7fd0ff">検証' + (dbgGod ? "・無敵" : "") + "</span>" : "") +
     '<span class="chip">' + G.day + " 日目</span>";
   HUD2.innerHTML =                                   // 柱 ― 利き手の反対側。体力もここ
     '<div class="row2"><span class="hearts">' + hearts + "</span>" + shieldPips + "</div>" +
@@ -4784,6 +5014,8 @@ addEventListener("keydown", e => {
       const f = actions[uiCloseAct]; if (f) { SFX.ui(); f({}); }
     }
     if (k === "m" && scene === "dungeon" && !uiOpen) { mapOpen = !mapOpen; SFX.ui(); }
+    if (k === "f9") { S.opt.dbg = !S.opt.dbg; save(); hudSig = ""; toast("検証モード " + (S.opt.dbg ? "入" : "切"), S.opt.dbg ? "good" : "bad"); }
+    if (k === "f10" && dbgOn() && G) { if (uiOpen) closeUI(); showDebug(); }
   }
   keys[k] = true;
   actx();
