@@ -390,7 +390,14 @@ const hash = (x, y) => { let h = x * 374761393 + y * 668265263; h = (h ^ (h >> 1
 const KEY = "yuusha_no_hakaba_v2";
 const DEBT0 = 100000, LIMIT0 = 30;
 const newDex = () => ({ hero: {}, item: {}, cause: {}, mon: {}, notes: [], tips: [] });
-const DEFAULT_SAVE = { g: null, rec: { best: 0, clears: 0, fails: 0, runs: 0, deaths: 0, boss: 0, bestDay: 0, bestTerm: 0, gold: 0, hauls: 0, terms: 0 }, opt: { mute: false, mode: "normal", hand: "right", name: "拾い屋", dbg: false } };
+const newCol = () => ({ hero: [], item: [], cause: [], mon: [], notes: [], tips: [] });   // 周をまたいで貯まるぶん
+function colAdd(k, id) {                        // タイトルの記録は「見たことがある」だけ持つ
+  if (!S.rec.col) S.rec.col = newCol();
+  const a = S.rec.col[k];
+  if (a && a.indexOf(id) < 0) { a.push(id); return true; }
+  return false;
+}
+const DEFAULT_SAVE = { g: null, rec: { best: 0, clears: 0, fails: 0, runs: 0, deaths: 0, boss: 0, bestDay: 0, bestTerm: 0, gold: 0, hauls: 0, terms: 0, col: null }, opt: { mute: false, mode: "normal", hand: "right", name: "拾い屋", dbg: false } };
 let S = (() => {
   try {
     const raw = JSON.parse(localStorage.getItem(KEY) || "{}");
@@ -1516,13 +1523,14 @@ function makeStoryItem(kind, depth, hi, cz, tr) { return makeItem(depth, { kind,
 /* ---------- 図鑑 ---------- */
 function dexHero(h) {
   const d = DX.hero[h.hi] || (DX.hero[h.hi] = { n: 0, cz: [], lv: 0, fl: 0, sc: [], odd: 0 });
+  colAdd("hero", h.hi);
   d.n++; d.lv = Math.max(d.lv, h.lv); d.fl = d.fl || h.floor;
   if (!d.sc) { d.sc = []; d.odd = 0; }
   if (d.cz.indexOf(h.cz) < 0) d.cz.push(h.cz);
   for (const k of situList(h.sc)) if (d.sc.indexOf(k) < 0) d.sc.push(k);
   if (!explainable(h.cz, h.floor)) d.odd++;
   const c = DX.cause[h.cz] || (DX.cause[h.cz] = 0);
-  DX.cause[h.cz] = c + 1;
+  DX.cause[h.cz] = c + 1; colAdd("cause", h.cz);
 }
 /* 魔物図鑑 ― 見かけた階層と手口を覚えておく */
 const MON_TIP_SEEN = 4;                      // 何度か見て、はじめて癖が分かる
@@ -1530,10 +1538,12 @@ function dexMon(type, depth) {
   if (!DX.mon) DX.mon = {};
   const d = DX.mon[type] || (DX.mon[type] = { n: 0, lo: depth, hi: depth });
   d.n++; d.lo = Math.min(d.lo, depth); d.hi = Math.max(d.hi, depth);
+  colAdd("mon", type);
   if (d.n >= MON_TIP_SEEN || MTYPE[type].boss) tipOn("m:" + type);
 }
 function dexItem(it) {
   const d = DX.item[it.k] || (DX.item[it.k] = { n: 0, q: -1, e: [] });
+  colAdd("item", it.k);
   d.n++; d.q = Math.max(d.q, it.q);
   if (it.e && d.e.indexOf(it.e) < 0) d.e.push(it.e);
 }
@@ -1631,7 +1641,7 @@ function tipOn(id) {
   if (DX.tips.indexOf(id) >= 0) return false;
   const t = tipOf(id);
   if (!t) return false;
-  DX.tips.push(id); save();
+  DX.tips.push(id); colAdd("tips", id); save();
   toast("手帳に書きとめた ― " + t.ttl, "good");
   if (typeof logAdd === "function" && run && !run.escaped) logAdd("手帳：" + t.ttl, [t.txt], "");
   return true;
@@ -2571,6 +2581,7 @@ function finishLoot(c) {
   }
   if (c.memo) {
     if (DX.notes.indexOf(c.memo) < 0) DX.notes.push(c.memo);
+    colAdd("notes", c.memo);
     toast("手記をひろった ― " + (c.hero ? c.hero.name : "?"), "good");
   }
   if (c.type === "blood") {
@@ -4247,7 +4258,7 @@ function showDebug(tab) {
   } else {
     body = '<div class="lbl">エンディングを見る</div>' +
       '<div class="note">記録には残しません。判定を通さず、その画面を直接開きます。</div>' +
-      '<div class="btns wrap">' + ["truth", "marry", "buddy", "cleaner", "rich", "bare", "plot", "odd", "normal"].map(k =>
+      '<div class="btns wrap">' + ["truth", "away", "buddy", "cleaner", "rich", "bare", "plot", "odd", "normal"].map(k =>
         '<div class="btn sm" data-a="dbgEnd" data-i="' + k + '">' + ENDINGS[k].nm + "</div>").join("") + "</div>" +
       '<div class="lbl">いまの判定</div>' +
       '<div class="note">この状態で完済すると <b style="color:var(--gold)">' + ENDINGS[judgeEnding()].nm + "END</b> です。</div>" +
@@ -4343,7 +4354,11 @@ actions.dbgRec = d => {
   save(); showDebug();
 };
 actions.dbgWipe = () => { try { localStorage.removeItem(KEY); } catch (e) {} location.reload(); };
-actions.dbgEnd = d => { closeUI(); if (d.i) endClear(d.i); else endClear(); };
+actions.dbgEnd = d => {
+  closeUI();
+  if (d.i === "away") { doFade(1, () => startEnding()); return; }   // 連れ出しは一枚絵から
+  if (d.i) endClear(d.i); else endClear();
+};
 
 function showOpt() {
   const m = optMode();
@@ -4387,30 +4402,69 @@ function showOpt() {
 }
 
 /* ---------- これまでの記録（周をまたぐぶん。タイトルから見る） ---------- */
-actions.recs = () => showRecords();
-function showRecords() {
-  const r = S.rec, ends = r.ends || {};
+let recTab = "rec";
+actions.recs = d => showRecords(d && d.i);
+function showRecords(tab) {
+  recTab = tab || recTab;
+  const r = S.rec, ends = r.ends || {}, col = r.col || newCol();
   const line = (a, b) => '<div class="row thin"><div class="nm">' + a + '</div><div class="val">' + b + "</div></div>";
+  const empty = t => '<p class="q">' + t + "</p>";
+  let body = "";
+  if (recTab === "rec") {
+    body = '<div class="stat"><span>1日の最高</span><span class="big" style="color:var(--gold)">' + money(r.bestDay || 0) + " G</span></div>" +
+      '<div class="stat"><span>1周の最高</span><span class="big" style="color:var(--gold)">' + money(r.bestTerm || 0) + " G</span></div>" +
+      '<div class="lbl">返済</div><div class="list">' +
+      line("最短返済", r.best ? r.best + " 日" : "―") +
+      line("完済", (r.clears || 0) + " 回") +
+      line("期限切れ", (r.fails || 0) + " 回") +
+      line("背負った借金", (r.terms || r.runs || 0) + " 口") + "</div>" +
+      '<div class="lbl">墓場</div><div class="list">' +
+      line("潜った回数", (r.hauls || 0) + " 回") +
+      line("通算の持ち帰り高", money(r.gold || 0) + " G") +
+      line("倒れた", (r.deaths || 0) + " 回") + "</div>" +
+      '<div class="lbl">見たエンディング</div>' +
+      (Object.keys(ends).filter(k => ENDINGS[k]).length
+        ? '<div class="list">' + Object.keys(ENDINGS).filter(k => ends[k]).map(k =>
+          '<div class="row rar2"><div class="nm">' + ENDINGS[k].nm + "END<small>" + ENDINGS[k].ttl + "</small></div></div>").join("") + "</div>"
+        : empty("まだ借金を返せていない。"));
+  } else if (recTab === "hero") {
+    body = col.hero.length ? '<div class="list">' + col.hero.slice().sort((a, b) => a - b).map(i =>
+      '<div class="row"><div class="ico" style="background-image:url(' + iconURL.badge + ')"></div>' +
+      '<div class="nm">' + HEROES[i].n + "（" + HEROES[i].c + "）<small>" + HEROES[i].p + "</small></div></div>").join("") + "</div>"
+      : empty("まだ誰も見つけていない。");
+  } else if (recTab === "mon") {
+    body = col.mon.length ? '<div class="list">' + col.mon.filter(k => MTYPE[k]).map(k =>
+      '<div class="row' + (MTYPE[k].bonus ? " rar2" : "") + '"><div class="nm">' + MTYPE[k].nm +
+      "<small>生息：地下 " + MTYPE[k].dMin + "〜" + MTYPE[k].dMax + " 階" + (MTYPE[k].boss ? "（最深部）" : "") +
+      " ／ " + (MTYPE[k].atk.length ? MTYPE[k].atk.map(a => MON_ATK_NM[a]).join("・") : "襲ってこない") + "</small></div></div>").join("") + "</div>"
+      : empty("まだ何も見ていない。");
+  } else if (recTab === "item") {
+    body = col.item.length ? '<div class="list">' + col.item.filter(k => KIND[k]).map(k =>
+      '<div class="row"><div class="ico" style="background-image:url(' + iconURL[KIND[k].ico] + ')"></div>' +
+      '<div class="nm">' + KIND[k].nm + "<small>" + CAT_NM[KIND[k].cat] + "</small></div></div>").join("") + "</div>"
+      : empty("まだ何も拾っていない。");
+  } else if (recTab === "cause") {
+    body = col.cause.length ? '<div class="list">' + CAUSES.filter(c => col.cause.indexOf(c.id) >= 0).map(c =>
+      '<div class="row"><div class="nm">' + c.nm + "</div></div>").join("") + "</div>"
+      : empty("まだ誰の死体も調べていない。");
+  } else if (recTab === "note") {
+    body = col.notes.length ? '<div class="list">' + col.notes.map(n =>
+      '<div class="row"><div class="ico" style="background-image:url(' + iconURL.note + ')"></div>' +
+      '<div class="nm" style="font-size:11.5px">「' + n + '」</div></div>').join("") + "</div>"
+      : empty("まだ手記を拾っていない。");
+  } else {
+    body = col.tips.length ? '<div class="list">' + col.tips.map(id => {
+      const t = tipOf(id); if (!t) return "";
+      return '<div class="row' + (t.cat === "clue" ? " rar2" : "") + '"><div class="ico" style="background-image:url(' + iconURL.note + ')"></div>' +
+        '<div class="nm">' + t.ttl + "<small>" + t.txt + "</small></div></div>";
+    }).join("") + "</div>" : empty("まだ何も書きとめていない。");
+  }
   openUI("recs", '<div class="panel"><h2>これまでの記録</h2>' +
-    '<div class="sub">周をまたいで残るぶん。図鑑・手帳・ログは、その周ごとに白紙から始まります。</div>' +
-    '<div class="stat"><span>1日の最高</span><span class="big" style="color:var(--gold)">' + money(r.bestDay || 0) + " G</span></div>" +
-    '<div class="stat"><span>1周の最高</span><span class="big" style="color:var(--gold)">' + money(r.bestTerm || 0) + " G</span></div>" +
-    '<div class="lbl">返済</div><div class="list">' +
-    line("最短返済", r.best ? r.best + " 日" : "―") +
-    line("完済", (r.clears || 0) + " 回") +
-    line("期限切れ", (r.fails || 0) + " 回") +
-    line("背負った借金", (r.terms || r.runs || 0) + " 口") + "</div>" +
-    '<div class="lbl">墓場</div><div class="list">' +
-    line("潜った回数", (r.hauls || 0) + " 回") +
-    line("通算の持ち帰り高", money(r.gold || 0) + " G") +
-    line("倒れた", (r.deaths || 0) + " 回") +
-    line("主に会った", (r.boss || 0) + " 回") + "</div>" +
-    '<div class="lbl">見たエンディング <span style="color:var(--dim);font-weight:400">' +
-    Object.keys(ends).filter(k => ENDINGS[k]).length + " / " + Object.keys(ENDINGS).length + "</span></div>" +
-    '<div class="list">' + Object.keys(ENDINGS).map(k =>
-      '<div class="row' + (ends[k] ? " rar2" : " locked") + '"><div class="nm">' +
-      (ends[k] ? ENDINGS[k].nm + "END" : "？？？") + "<small>" +
-      (ends[k] ? ENDINGS[k].ttl + " ／ " + ends[k] + " 回" : "まだ見ていない") + "</small></div></div>").join("") + "</div>" +
+    '<div class="sub">周をまたいで残るぶん。いまの周の図鑑は、街の〈記録と図鑑〉に。</div>' +
+    '<div class="tabs">' + ["rec:記録", "hero:勇者", "mon:魔物", "item:品物", "cause:所見", "note:手記", "tips:手帳"].map(t => {
+      const [k, nm] = t.split(":");
+      return '<div class="tab' + (recTab === k ? " on" : "") + '" data-a="recs" data-i="' + k + '">' + nm + "</div>";
+    }).join("") + "</div>" + body +
     '<div class="btns"><div class="btn pri" data-a="titleback">もどる</div></div></div>');
 }
 
@@ -4422,10 +4476,9 @@ function showDex(tab) {
   dexTab = tab || dexTab;
   let body = "";
   if (dexTab === "hero") {
-    body = '<div class="note">この周で見つけた勇者 <b>' + dexHeroCount() + "</b> 人 ／ 全 " + HEROES.length + " 人</div>" +
-      '<div class="list" style="max-height:52vh;overflow:auto">' + HEROES.map((h, i) => {
-      const d = DX.hero[i];
-      if (!d) return '<div class="row locked"><div class="ico" style="background-image:url(' + iconURL.bones + ')"></div><div class="nm">？？？<small>まだ見つけていない</small></div></div>';
+    const found = HEROES.map((h, i) => i).filter(i => DX.hero[i]);
+    body = found.length ? '<div class="list" style="max-height:52vh;overflow:auto">' + found.map(i => {
+      const h = HEROES[i], d = DX.hero[i];
       const sc = (d.sc || []).slice(0, 2).map(k => SITU[k]).join(" ／ ");
       return '<div class="row' + (d.odd ? " rar2" : "") + '"><div class="ico" style="background-image:url(' + iconURL.badge + ')"></div>' +
         '<div class="nm">' + h.n + "（" + h.c + " Lv" + d.lv + "）<small>" + h.p +
@@ -4433,19 +4486,19 @@ function showDex(tab) {
         (sc ? "<br>状況：" + sc : "") +
         (d.odd ? '<br><span style="color:#ff9a92">この階の魔物では説明がつかない傷が ' + d.odd + " 件</span>" : "") +
         "</small></div></div>";
-    }).join("") + "</div>";
+    }).join("") + "</div>" : '<p class="q">まだ誰の亡骸も見つけていない。</p>';
   } else if (dexTab === "item") {
-    body = '<div class="note">この周で見た品 <b>' + dexItemCount() + "</b> 種</div>" +
-      '<div class="list" style="max-height:52vh;overflow:auto">' + Object.keys(KIND).map(k => {
+    const ks = Object.keys(KIND).filter(k => DX.item[k]);
+    body = ks.length ? '<div class="list" style="max-height:52vh;overflow:auto">' + ks.map(k => {
       const d = DX.item[k], K = KIND[k];
-      if (!d) return '<div class="row locked"><div class="ico"></div><div class="nm">？？？<small>' + CAT_NM[K.cat] + "</small></div></div>";
       return '<div class="row"><div class="ico" style="background-image:url(' + iconURL[K.ico] + ')"></div>' +
         '<div class="nm">' + K.nm + "<small>" + CAT_NM[K.cat] + " ／ 最良 " + (QUAL[d.q].nm || "並") + " ／ " + d.n + " 点<br>" +
         (d.e.length ? "見た付与：" + d.e.map(e => ENCH[e].nm).join("・") : "付与つきは未発見") + "</small></div></div>";
-    }).join("") + "</div>";
+    }).join("") + "</div>" : '<p class="q">まだ何も拾っていない。</p>';
   } else if (dexTab === "cause") {
     const seen = DX.mon || {};
-    body = '<div class="list">' + CAUSES.map(c => {
+    const cs = CAUSES.filter(c => DX.cause[c.id]);
+    body = (cs.length ? '<div class="list">' + cs.map(c => {
       const n = DX.cause[c.id];
       let src = "傷のかたちからは、相手までは分からない";
       if (c.atk) {
@@ -4453,22 +4506,20 @@ function showDex(tab) {
         src = who.length ? "この傷を作れる魔物：" + who.map(k => MTYPE[k].nm + "（地下" + MTYPE[k].dMin + "〜" + MTYPE[k].dMax + "階）").join("、")
           : "この傷を作れる魔物を、まだ見ていない";
       }
-      return '<div class="row' + (n ? "" : " locked") + '"><div class="nm">' + (n ? c.nm : "？？？") +
-        "<small>" + (n ? n + " 人 ／ " + src : "未確認") + "</small></div></div>";
-    }).join("") + "</div>" +
-      '<div class="note">この周で見た所見は ' + dexCauseCount() + " / " + CAUSES.length + " 種類。<br>" +
-      "死体から読めるのは傷のかたちまでで、誰が、なぜ、までは分からない。魔物図鑑と突き合わせて、はじめて妙なところが見えてくる。</div>";
+      return '<div class="row"><div class="nm">' + c.nm + "<small>" + n + " 人 ／ " + src + "</small></div></div>";
+    }).join("") + "</div>" : '<p class="q">まだ誰の死体も調べていない。</p>') +
+      '<div class="note">死体から読めるのは傷のかたちまでで、誰が、なぜ、までは分からない。魔物図鑑と突き合わせて、はじめて妙なところが見えてくる。</div>';
   } else if (dexTab === "mon") {
     const seen = DX.mon || {};
-    body = '<div class="list">' + Object.keys(MTYPE).filter(k => !MTYPE[k].boss || seen[k]).map(k => {
+    const ms = Object.keys(MTYPE).filter(k => seen[k]);
+    body = (ms.length ? '<div class="list">' + ms.map(k => {
       const t = MTYPE[k], d = seen[k];
-      if (!d) return '<div class="row locked"><div class="nm">？？？<small>まだ見ていない</small></div></div>';
       return '<div class="row' + (t.bonus ? " rar2" : "") + '"><div class="nm">' + t.nm +
         "<small>生息：地下 " + t.dMin + "〜" + t.dMax + " 階" + (t.boss ? "（最深部）" : "") +
         (d.lo ? " ／ 見かけた深さ 地下 " + d.lo + "〜" + d.hi + " 階" : "") +
         "<br>攻撃：" + (t.atk.length ? t.atk.map(a => MON_ATK_NM[a]).join("・") : "襲ってこない") +
         (t.bonus ? "（捕まえると割のいい品）" : "") + " ／ " + (d.n || 1) + " 体</small></div></div>";
-    }).join("") + "</div>" +
+    }).join("") + "</div>" : '<p class="q">まだ何も見ていない。</p>') +
       '<div class="note">見かけた魔物だけが載る。どの階に、どんな手口の魔物がいるか ― それが分かると、死体の所見の読み方が変わる。<br>' +
       "動きの癖のほうは、何度か見ているうちに手帳のほうへ書きとまる。</div>";
   } else if (dexTab === "log") {
@@ -4639,6 +4690,7 @@ actions.hHelp = () => {
     const w = pick(HERO_WITNESS);
     G.story.witness = (G.story.witness || 0) + 1; tipCheck();
     if (DX.notes.indexOf(w) < 0) DX.notes.push(w);
+    colAdd("notes", w);
     setTimeout(() => { if (scene === "dungeon" && !uiOpen) { floatTxt(h.x, h.y - 34, "「……ひとつ言っておく」", "#7fd0ff"); toast("手記に書き留めた ― 勇者 " + h.name + " の話", "good"); } }, 900);
     save();
   }
@@ -4855,7 +4907,7 @@ function recordClear() {
 /* 借金を返した日に、それまで拾ってきた違和感を数える。
    明示的なクエストにはしない ― 普通に遊んでいれば勝手に溜まる。 */
 /* エンディングのしきい値 ― ここだけ触れば調整できる */
-const END_REQ = { rich: 1000000, cleaner: 10, buddy: 10, marry: 20 };
+const END_REQ = { rich: 1000000, cleaner: 10, buddy: 10, away: 20 };   // away は真相ENDの中から選ぶ
 const noUpg = () => Object.keys(G.up).every(k => G.up[k] <= 1);   // 何ひとつ強化していない
 const ENDINGS = {
   normal: { nm: "通常", ttl: "返した",
@@ -4875,15 +4927,16 @@ const ENDINGS = {
           "深いところで死んだ勇者が、なぜギルドの徽章を持っている。",
           "誰かが、勇者を間引いている。それだけは確かだ。",
           "……で、俺の借金はもう無い。首を突っ込む理由も、無い。"] },
-  marry: { nm: "結婚", ttl: "返した ― そして、墓場に住むことにした",
-    txt: ["受付の女は判を押し、証文を破いた。これであんたは自由だ。",
-          "自由になったので、荷物をまとめて三十階へ降りた。",
-          "「また来たのか」",
-          "もう来ない、と言った。ここに住む、とも。",
-          "主はしばらく黙っていた。天井の高い玄室に、水の落ちる音だけが響いていた。",
-          "「……そうか」",
-          "墓場そのものと所帯を持った男の話は、街ではしばらく笑い話になるだろう。",
-          "かまわない。二十回も顔を出せば、もうそこは通う場所ではない。帰る場所だ。"] },
+  away: { nm: "連れ出し", ttl: "墓場を、置いていった",
+    txt: ["三十階まで降りて、俺は主に言った。",
+          "「出よう」",
+          "「……私が出れば、ここは崩れる」",
+          "知っている。だから言っている。",
+          "「街はどうする」",
+          "勇者が来なくなれば、宿も武器屋も酒場も干上がる。ギルドは看板を下ろすだろう。",
+          "誰かが困る。困ればいい。二十年、そのために人が死んでいたのだから。",
+          "主はしばらく黙っていた。それから、天井に頭をぶつけながら立ち上がった。",
+          "「……そうか」"] },
   buddy: { nm: "相棒", ttl: "返した ― また来る、と言ってしまった",
     txt: ["受付の女は判を押し、証文を破いた。これであんたは自由だ。",
           "自由なのに、明日も三十階まで降りるつもりでいる。",
@@ -4931,7 +4984,6 @@ function judgeEnding() {
   const guild = (t.badge || 0) + (t.order || 0) >= 2;
   // 珍しいほう・その周で「何をしたか」がはっきり出るほうを先に見る
   if (t.boss >= 1 && guild && ((t.witness || 0) >= 1 || t.notebook) && clues >= 4) return "truth";
-  if ((t.boss || 0) >= END_REQ.marry) return "marry";
   if ((t.boss || 0) >= END_REQ.buddy) return "buddy";
   if ((G.infamy || 0) >= END_REQ.cleaner) return "cleaner";
   if (G.gold >= END_REQ.rich) return "rich";
@@ -4940,6 +4992,188 @@ function judgeEnding() {
   if ((t.oddDeath || 0) >= 1 || (t.humanKill || 0) >= 1 || t.boss >= 1) return "odd";
   return "normal";
 }
+
+/* ============================================================
+   連れ出しEND ― 一枚絵とスタッフロール
+   ============================================================ */
+let endT = 0, endRoll = 0, endDone = false, endFast = false;
+const STAFF = [
+  ["t", "勇者の墓場"],
+  ["s", "GRAVE OF HEROES"],
+  ["", ""],
+  ["l", "―― 連れ出し ――"],
+  ["", ""],
+  ["p", "主がいなくなった穴は、三日かけて崩れた。"],
+  ["p", "四日目には、入口の梯子も土に埋まった。"],
+  ["", ""],
+  ["p", "勇者は来なくなった。宿は畳まれ、武器屋は看板を下ろした。"],
+  ["p", "ギルドの窓口には、しばらく人が並んでいたらしい。"],
+  ["p", "並んだところで、貸す相手がもういない。"],
+  ["", ""],
+  ["p", "街は静かになった。"],
+  ["p", "それが良いことだったのかは、誰にも分からない。"],
+  ["", ""],
+  ["l", "―― 街道にて ――"],
+  ["", ""],
+  ["p", "背の高い連れは、屋根のある宿に入れない。"],
+  ["p", "だから毎晩、野宿になる。火の番はあいつがやる。眠らないので。"],
+  ["", ""],
+  ["p", "「どこへ行く」"],
+  ["p", "決めていない、と答えた。"],
+  ["p", "「二十年ぶりの外だ。決めなくていい」"],
+  ["", ""],
+  ["l", "―― 配役 ――"],
+  ["", ""],
+  ["c", "拾い屋", "PNAME"],
+  ["c", "ダンジョンの主", "この墓場そのもの"],
+  ["c", "勇者", "四十八名"],
+  ["c", "受付の女", "判を押す人"],
+  ["c", "黒い外套の男", "名前は無い"],
+  ["c", "墓ねずみ", "王冠つき"],
+  ["", ""],
+  ["l", "―― 拾い集めたもの ――"],
+  ["", ""],
+  ["c", "潜った日数", "DAYS"],
+  ["c", "持ち帰り高", "EARNED"],
+  ["c", "調べた亡骸", "LOOTED"],
+  ["c", "手帳", "TIPS"],
+  ["", ""],
+  ["", ""],
+  ["l", "おしまい"],
+  ["", ""],
+  ["s", "遊んでくれてありがとう"]
+];
+function startEnding() {
+  scene = "ending"; endT = 0; endRoll = 0; endDone = false; endFast = false;
+  closeUI(); SFX.escape();
+}
+function drawEnding(dt) {
+  endT += dt;
+  const fadeIn = clamp(endT / 2.2, 0, 1);
+  if (endT > 3.0) endRoll += dt * (endFast ? 96 : 22);   // 絵を見せてから流す。触れているあいだは早送り
+  viewOX = 0; viewOY = 0;
+
+  // ---- 夜明けの空 ----
+  const sky = g.createLinearGradient(0, 0, 0, VH);
+  sky.addColorStop(0, "#161232"); sky.addColorStop(0.34, "#3a2b4a");
+  sky.addColorStop(0.52, "#8a5a52"); sky.addColorStop(0.62, "#d28a5a");
+  sky.addColorStop(0.72, "#f0c07a"); sky.addColorStop(1, "#2a2036");
+  g.fillStyle = sky; g.fillRect(0, 0, VW, VH);
+  for (const s2 of townStars) {                        // 消えかけの星
+    if (s2.y > 70) continue;
+    const tw = 0.5 + 0.5 * Math.sin(time * 1.6 + s2.ph);
+    g.fillStyle = "rgba(240,238,255," + ((0.3 + tw * 0.4) * (1 - clamp(endT / 12, 0, 0.85))).toFixed(2) + ")";
+    g.fillRect(s2.x | 0, s2.y | 0, 1, 1);
+  }
+  const GY = 182;                                      // 地平線
+  // 朝日
+  const sx = 150, sy = GY - 16;
+  glow(sx, sy, 78, "255,210,140", 0.5);
+  g.fillStyle = "#ffe6b0"; g.beginPath(); g.arc(sx, sy, 15, 0, Math.PI * 2); g.fill();
+
+  // ---- 崩れた墓場（左うしろ） ----
+  g.fillStyle = "#241d33";
+  for (const f of FARTOWN) g.fillRect(Math.round(f[0] * 0.5), GY - 10 - Math.round(f[1] * 0.55), Math.round(f[2] * 0.7), f[1]);
+  g.fillStyle = "#1b1526";
+  g.beginPath(); g.moveTo(0, GY); g.lineTo(20, GY - 40); g.lineTo(42, GY - 18); g.lineTo(58, GY - 34); g.lineTo(78, GY); g.closePath(); g.fill();
+  for (let i = 0; i < 22; i++) {                       // 舞い上がる土埃
+    const t2 = (endT * 0.22 + i * 0.31) % 1;
+    g.fillStyle = "rgba(150,132,120," + (0.30 * (1 - t2)).toFixed(2) + ")";
+    g.fillRect(10 + ((i * 17) % 64), GY - 34 - t2 * 46, 2, 2);
+  }
+  g.fillStyle = "rgba(20,16,26,0.9)";                  // 埋まった入口
+  g.fillRect(24, GY - 12, 26, 12);
+  drawSpr(SPR.grave, 6, GY - 16); drawSpr(SPR.grave, 62, GY - 14);
+
+  // ---- 地面と街道 ----
+  const gr = g.createLinearGradient(0, GY, 0, VH);
+  gr.addColorStop(0, "#413530"); gr.addColorStop(1, "#1c161f");
+  g.fillStyle = gr; g.fillRect(0, GY, VW, VH - GY);
+  const roadX = t2 => 146 - 78 * t2;                   // 0=地平線 1=手前
+  const roadW = t2 => 3 + 34 * t2 * t2;
+  const roadY = t2 => GY + (VH - GY) * t2;
+  g.fillStyle = "#7f6a55";                             // 遠ざかる街道
+  g.beginPath();
+  g.moveTo(roadX(0) - roadW(0), roadY(0)); g.lineTo(roadX(0) + roadW(0), roadY(0));
+  g.lineTo(roadX(1.1) + roadW(1.1), roadY(1.1)); g.lineTo(roadX(1.1) - roadW(1.1), roadY(1.1));
+  g.closePath(); g.fill();
+  g.fillStyle = "#96805f";                             // 轍
+  for (let i = 1; i < 12; i++) {
+    const t2 = i / 12, w = Math.max(1, roadW(t2) * 0.14);
+    g.fillRect(Math.round(roadX(t2) - roadW(t2) * 0.45), Math.round(roadY(t2)), Math.round(w * 2), 1);
+    g.fillRect(Math.round(roadX(t2) + roadW(t2) * 0.30), Math.round(roadY(t2)), Math.round(w * 2), 1);
+  }
+  g.fillStyle = "#2e2630";                             // 道ばたの草
+  for (let i = 0; i < 26; i++) {
+    const h2 = hash(i * 3, 7), h3 = hash(i * 5, 11);
+    const t2 = 0.05 + h3 * 0.95, y = roadY(t2);
+    const off = (roadW(t2) + 6 + h2 * 46) * (h2 > 0.5 ? 1 : -1);
+    g.fillRect(Math.round(roadX(t2) + off), Math.round(y), 1, 2 + Math.round(h3 * 3));
+  }
+
+  // ---- ふたり（うしろ姿）― 街道を、朝日のほうへ ----
+  const tw2 = 0.62 - Math.min(1, endT / 30) * 0.30;    // 手前から地平線へ
+  const cx2 = roadX(tw2), cy2 = roadY(tw2), sc2 = 0.5 + tw2 * 1.1;
+  const bob = Math.floor(endT * 3.2) % 2;
+  g.save();                                            // 朝日を背に、こちらへ伸びる影
+  g.globalAlpha = 0.32; g.fillStyle = "#170f1c";
+  g.beginPath(); g.ellipse(cx2 - 12 * sc2, cy2 + 1, 6 * sc2, 2 * sc2, 0, 0, Math.PI * 2); g.fill();
+  g.beginPath(); g.ellipse(cx2 + 11 * sc2, cy2 + 1, 11 * sc2, 3 * sc2, 0, 0, Math.PI * 2); g.fill();
+  g.restore();
+  g.save();                                            // 主 ― ひとまわり大きく、半歩うしろ
+  g.translate(cx2 + 11 * sc2, cy2 - 1); g.scale(1.75 * sc2, 1.75 * sc2);
+  g.globalAlpha = 0.95; drawSpr(SPR.king[bob], -8, -16); g.restore();
+  g.save();                                            // 拾い屋
+  g.translate(cx2 - 12 * sc2, cy2); g.scale(sc2, sc2);
+  drawSpr(SPR.plN[bob], -8, -16); g.restore();
+
+  // ---- 暗幕とスタッフロール ----
+  const dim = clamp((endRoll - 30) / 240, 0, 0.62);
+  if (dim > 0) { g.fillStyle = "rgba(6,5,12," + dim.toFixed(2) + ")"; g.fillRect(0, 0, VW, VH); }
+  if (fadeIn < 1) { g.fillStyle = "rgba(4,3,8," + (1 - fadeIn).toFixed(2) + ")"; g.fillRect(0, 0, VW, VH); }
+
+  let y = VH + 14 - endRoll;
+  for (const ln of STAFF) {
+    const kind = ln[0];
+    const gap = kind === "" ? 11 : kind === "t" ? 30 : kind === "l" ? 22 : 15;
+    if (y > -20 && y < VH + 20 && kind) {
+      if (kind === "c") {
+        wtext(ln[1], VW / 2 - 6, y, "#93876f", 9.5, "right");
+        wtext(endVal(ln[2]), VW / 2 + 6, y, "#e8c46a", 9.5, "left");
+      } else {
+        const col = kind === "t" ? "#e8c46a" : kind === "s" ? "#cfc6b0" : kind === "l" ? "#e8c46a" : "#e6e0d0";
+        wtext(ln[1], VW / 2, y, col, kind === "t" ? 20 : kind === "l" ? 11 : 10);
+      }
+    }
+    y += gap;
+  }
+  if (y < -10 && !endDone) { endDone = true; showEndCard(); }
+  if (!endDone && endT > 4.5 && endT < 13) wtext("触れているあいだ 早送り", VW / 2, VH - 8, "rgba(147,135,111,0.7)", 8);
+}
+function endVal(k) {
+  if (k === "PNAME") return pname();
+  if (k === "DAYS") return (G ? G.day : 0) + " 日";
+  if (k === "EARNED") return money(G ? G.earned || 0 : 0) + " G";
+  if (k === "LOOTED") return (G && G.story ? (G.story.oddDeath || 0) + (G.story.humanKill || 0) : 0) + " 件に、妙なところがあった";
+  if (k === "TIPS") return tipGot().length + " 枚";
+  return k;
+}
+function showEndCard() {
+  openUI("endcard", '<div class="panel center">' +
+    '<h2 style="justify-content:center">連れ出しEND</h2>' +
+    '<div class="sub">墓場を、置いていった。</div>' +
+    '<p class="q">背の高い連れは、屋根のある宿に入れない。<br>だから毎晩、野宿になる。火の番はあいつがやる。眠らないので。</p>' +
+    '<div class="btns" style="margin-top:16px"><div class="btn pri" data-a="totitle">タイトルへ</div>' +
+    '<div class="btn" data-a="newg2">新しい借金を背負う</div></div></div>');
+}
+actions.takeout = () => {
+  if (!S.rec.ends) S.rec.ends = {};
+  S.rec.ends.away = (S.rec.ends.away || 0) + 1;
+  G.ended = "away"; save();
+  closeUI();
+  doFade(1, () => startEnding());
+};
+
 function endClear(force) {
   const days = G.day;
   const best = S.rec.best;
@@ -4958,6 +5192,11 @@ function endClear(force) {
     "<span>最高の1回 <b>" + money(G.bestRun || 0) + "</b> G</span></div>" +
     '<div class="lbl" style="text-align:center">' + END.ttl + "</div>" +
     END.txt.map((t2, i) => '<p' + (i >= 2 ? ' class="q"' : "") + ">" + t2 + "</p>").join('<div style="height:6px"></div>') +
+    (ek === "truth" && (G.story.boss || 0) >= END_REQ.away
+      ? '<div class="hr"></div><p>あいつは三十階に座ったまま、誰も来ない扉を二十年見ていた。</p>' +
+        '<p class="q">俺の借金は、もう無い。</p>' +
+        '<div class="btns" style="margin-top:12px"><div class="btn warn" data-a="takeout">あいつを連れ出す</div></div>'
+      : "") +
     (ek === "truth" ? "" : '<div class="note">墓場にはまだ、拾われていない物がある。誰が、どうして死んだのか ― 気にしなければ、それまでの話だが。</div>') +
     '<div class="btns" style="margin-top:16px"><div class="btn pri" data-a="freeplay">このまま続ける</div>' +
     '<div class="btn" data-a="newg2">新しい借金を背負う</div></div>' +
@@ -5125,6 +5364,9 @@ stage.addEventListener("pointermove", ev => {
   stage.style.cursor = h ? "pointer" : "";
 });
 stage.addEventListener("pointerleave", () => { townHover = null; stage.style.cursor = ""; });
+addEventListener("pointerdown", () => { if (scene === "ending") endFast = true; });
+addEventListener("pointerup", () => { endFast = false; });
+addEventListener("pointercancel", () => { endFast = false; });
 $("side").addEventListener("pointerdown", ev => {              // 情報パネルを押したら道具
   if (scene !== "dungeon" || !run || uiOpen || mapOpen) return;
   ev.preventDefault(); ev.stopPropagation(); actx(); SFX.ui(); showItems();
@@ -5202,6 +5444,8 @@ function frame(now) {
     for (let i = floaters.length - 1; i >= 0; i--) { floaters[i].life -= dt; if (floaters[i].life <= 0) floaters.splice(i, 1); }
     drawDungeon(dt);
     if (mapOpen) drawFullMap();
+  } else if (scene === "ending") {
+    drawEnding(dt);
   } else {
     drawTown();
     if (scene === "title") { g.fillStyle = "rgba(4,3,8,0.45)"; g.fillRect(0, 0, VW, VH); }
