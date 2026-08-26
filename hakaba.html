@@ -655,6 +655,8 @@ const SFX = {
    まばらに旋律を落とす。場面ごとに調と間合いを変える。
    prog は根音からの半音、8分音符きざみ、bars 小節ごとに移る。       */
 const semi = (f, n) => f * Math.pow(2, n / 12);
+const MOOD_NM = { title: "タイトル", town: "街", dun: "浅い層", deep: "深い層（15階〜）",
+                  sanct: "聖堂", boss: "最深部・主", dream: "夢", end: "終幕" };
 const MOOD = {
   /* 墓場の入口 ― 冷たく、間を空けて */
   title:   { root: 55.00, bpm: 48, bars: 2, gain: 0.62, cut: 760, oct: 8,
@@ -4886,6 +4888,26 @@ actions.setmode = d => { S.opt.mode = d.i; save(); if (safeMode() && G) { G.assi
    検証（デバッグ）― 設定の見出しを7回叩くと出る。S.opt.dbg に残る
    ============================================================ */
 let dbgGod = false, dbgTaps = 0, dbgTapT = 0, dbgTab = "go";
+let dbgSeq = 0, dbgMusHold = null;
+/* 音がどこで鳴るか ― 検証の〈音〉タブに出す */
+const SFX_LIST = [
+  ["step", "足音", "歩いているあいだ、一定距離ごと"],
+  ["loot", "回収", "調べ終えた瞬間。装備を奪ったときも"],
+  ["get_", "手に入れた", "拾った・飲んだ・勇者に渡した"],
+  ["hurt", "傷つく", "体力が1減った。魔物が倒れたときも"],
+  ["alert", "気づかれた", "魔物に見つかった瞬間・主が動いた"],
+  ["lost", "見失われた", "追ってきた魔物が諦めた"],
+  ["coin", "金", "品物を売った・借金を返した"],
+  ["buy", "取り引き", "買った・強化した・装備を替えた"],
+  ["deny", "通らない", "足りない・押せない・防具が肩代わりした"],
+  ["descend", "階段", "潜りはじめ・階段の上り下り"],
+  ["escape", "帰還", "地上へ生きて戻った・ENDが始まった"],
+  ["faint", "力尽きる", "倒れた"],
+  ["smoke", "煙玉", "煙玉を使った"],
+  ["heroDie", "弔い", "生きていた勇者が事切れた"],
+  ["slash", "刃", "勇者と魔物の斬り合い。毎秒2.2回ほど"],
+  ["ui", "指の下", "画面の開閉・ボタン・灯り・地図"]
+];
 const dbgOn = () => !!(S.opt && S.opt.dbg);
 function dbgDirty() { if (G) { G.assist = 1; save(); } hudSig = ""; }   // 触った周は記録に残さない
 actions.dbgtap = () => {
@@ -4900,7 +4922,25 @@ actions.dbgtap = () => {
 actions.dbgoff = () => { S.opt.dbg = false; dbgGod = false; save(); hudSig = ""; toast("検証モードを閉じた", "bad"); showOpt(); };
 actions.dbg = () => showDebug();
 actions.dbgtab = d => showDebug(d.i);
-actions.dbgback = () => showOpt();
+actions.dbgback = () => { dbgMusRestore(); showOpt(); };
+actions.dbgSfx = d => { if (muted) { muted = false; S.opt.mute = false; save(); } SFX[d.i](); };
+actions.dbgSfxAll = () => {
+  if (dbgSeq) { clearTimeout(dbgSeq); dbgSeq = 0; showDebug(); return; }
+  if (muted) { muted = false; S.opt.mute = false; save(); }
+  let i = 0;
+  const next = () => {
+    if (i >= SFX_LIST.length) { dbgSeq = 0; showDebug(); return; }
+    const x = SFX_LIST[i++];
+    SFX[x[0]](); toast(x[1] + " ― " + x[0], "good");
+    dbgSeq = setTimeout(next, 1000);
+  };
+  next(); showDebug();
+};
+actions.dbgMute = () => { muted = !muted; S.opt.mute = muted; save(); if (!muted) SFX.ui(); showDebug(); };
+actions.dbgNoMus = () => { noMus = !noMus; S.opt.nomus = noMus; save(); musUp(); showDebug(); };
+actions.dbgMus = d => { if (dbgMusHold === null) dbgMusHold = musKind; setMusic(d.i); showDebug(); };
+actions.dbgMusBack = () => { dbgMusRestore(); showDebug(); };
+function dbgMusRestore() { if (dbgMusHold !== null) { setMusic(dbgMusHold); dbgMusHold = null; } }
 
 const DBG_FLAGS = [
   ["boss", "主に会った", "相棒10・結婚20"], ["oddDeath", "説明のつかない傷", "3で〈出るはずのない傷〉"],
@@ -5007,6 +5047,24 @@ function showDebug(tab) {
       '<div class="btn sm warn" data-a="dbgRec" data-i="all">通しの記録を全部消す</div></div>' +
       '<div class="lbl">セーブ</div>' +
       '<div class="btns wrap"><div class="btn sm warn" data-a="dbgWipe">セーブを消して最初から</div></div>';
+  } else if (dbgTab === "snd") {
+    const seq = dbgSeq > 0;
+    body = '<div class="note">ここは触っても練習あつかいにはなりません。鳴らして確かめるだけです。</div>' +
+      '<div class="lbl">入切</div>' +
+      '<div class="btns"><div class="btn sm' + (muted ? " warn" : " pri") + '" data-a="dbgMute">効果音 ' + (muted ? "切" : "入") + "</div>" +
+      '<div class="btn sm' + (noMus ? " warn" : " pri") + '" data-a="dbgNoMus">音楽 ' + (noMus ? "切" : "入") + "</div></div>" +
+      '<div class="lbl">効果音</div>' +
+      '<div class="btns"><div class="btn sm' + (seq ? " warn" : "") + '" data-a="dbgSfxAll">' +
+      (seq ? "止める" : "全部を順に鳴らす（16音・約16秒）") + "</div></div>" +
+      '<div class="list">' + SFX_LIST.map(x =>
+        '<div class="row thin"><div class="nm">' + x[1] + "<small>" + x[2] + "</small></div>" +
+        '<div class="val"><span class="btn sm" data-a="dbgSfx" data-i="' + x[0] + '">鳴らす</span></div></div>').join("") + "</div>" +
+      '<div class="lbl">音楽</div>' +
+      '<div class="btns wrap">' + Object.keys(MOOD).map(k =>
+        '<div class="btn sm' + (musKind === k ? " pri" : "") + '" data-a="dbgMus" data-i="' + k + '">' + MOOD_NM[k] + "</div>").join("") + "</div>" +
+      '<div class="btns" style="margin-top:6px"><div class="btn sm' + (dbgMusHold === null ? " dis" : "") +
+      '" data-a="dbgMusBack">場面の曲に戻す</div></div>' +
+      '<div class="note">曲は 0.7秒でしぼんで 1.3秒で立ち上がります。もどると自動で場面の曲に戻ります。</div>';
   } else {
     body = '<div class="lbl">エンディングを見る</div>' +
       '<div class="note">記録には残しません。判定を通さず、その画面を直接開きます。</div>' +
@@ -5021,7 +5079,7 @@ function showDebug(tab) {
   }
   openUI("dbg", '<div class="panel"><h2>検証</h2>' +
     '<div class="sub">この周は記録に残りません（触れた時点で練習あつかい）。</div>' +
-    '<div class="tabs">' + ["go:階と場", "flag:フラグ", "have:持ち物", "rec:記録", "end:END"].map(t => {
+    '<div class="tabs">' + ["go:階と場", "flag:フラグ", "have:持ち物", "rec:記録", "end:END", "snd:音"].map(t => {
       const [k, nm] = t.split(":");
       return '<div class="tab' + (dbgTab === k ? " on" : "") + '" data-a="dbgtab" data-i="' + k + '">' + nm + "</div>";
     }).join("") + "</div>" + body +
