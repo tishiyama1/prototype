@@ -589,10 +589,12 @@ const SFX = {
   /* 打たれる */
   hurt: () => { vox({ f: 158, f2: 58, dur: 0.28, w: "sawtooth", vol: 0.085, cut: 880, cut2: 190, atk: 0.002 });
                 air({ dur: 0.2, f: 300, f2: 110, q: 0.6, vol: 0.05, soft: 0.62, shape: 2.6 }); },
-  /* 気づかれた ― 息を呑む音と低い二打 */
-  alert: () => { air({ dur: 0.34, f: 320, f2: 1500, q: 1.3, vol: 0.03, soft: 0.5, shape: 1.2, swell: 1 });
-                 vox({ f: 196, f2: 294, dur: 0.22, w: "triangle", vol: 0.05, cut: 1300, atk: 0.006 });
-                 vox({ at: 0.17, f: 294, f2: 208, dur: 0.32, w: "triangle", vol: 0.038, cut: 1100, atk: 0.008 }); },
+  /* 気づかれた ― 「ざわ」。粗い粒を三つずらして立ち上げ、下に沈む底を置く */
+  alert: () => { for (let i = 0; i < 3; i++)
+                   air({ at: i * 0.055, dur: 0.34 - i * 0.05, f: 900 + i * 380, f2: 480 + i * 160, q: 1.6,
+                         vol: 0.044 - i * 0.009, soft: 0.78, shape: 1.7, swell: 1, atk: 0.03 });
+                 air({ dur: 0.55, f: 160, f2: 72, q: 1.1, vol: 0.085, soft: 0.5, shape: 1.5, swell: 1, atk: 0.04 });
+                 vox({ f: 66, f2: 48, dur: 0.75, w: "sine", vol: 0.07, cut: 170, atk: 0.02 }); },
   /* 見失われた ― 息を吐く */
   lost: () => { vox({ f: 330, f2: 185, dur: 0.42, w: "sine", vol: 0.038, cut: 1200, atk: 0.03 });
                 air({ dur: 0.3, f: 700, f2: 300, q: 0.9, vol: 0.018, soft: 0.35, shape: 2 }); },
@@ -608,19 +610,26 @@ const SFX = {
   /* 通らない */
   deny: () => { vox({ f: 148, f2: 96, dur: 0.22, w: "sine", vol: 0.058, cut: 560, atk: 0.004 });
                 air({ dur: 0.1, f: 210, q: 0.7, vol: 0.03, soft: 0.65, shape: 3 }); },
-  /* 降りる ― 深いところへ落ちていく */
-  descend: () => { vox({ f: 220, f2: 55, dur: 0.9, w: "sine", vol: 0.085, cut: 900, cut2: 200, atk: 0.02 });
-                   air({ dur: 0.85, f: 1100, f2: 140, q: 0.5, vol: 0.034, soft: 0.7, shape: 1.4 });
-                   vox({ at: 0.06, f: 110, f2: 82, dur: 1.3, w: "triangle", vol: 0.028, cut: 380, atk: 0.16 }); },
+  /* 降りる ― 段を四つ踏み下りて、下の広間が低く残る */
+  descend: () => { for (let i = 0; i < 4; i++) {
+                     const t = i * 0.135, d = 1 - i * 0.11;
+                     air({ at: t, dur: 0.15, f: 760 - i * 110, f2: 250 - i * 30, q: 0.95, vol: 0.062 * d, soft: 0.42, shape: 2.4, atk: 0.005 });
+                     air({ at: t + 0.02, dur: 0.1, f: 250 - i * 24, q: 1.3, vol: 0.05 * d, soft: 0.58, shape: 2.8, atk: 0.004 });
+                     vox({ at: t, f: 104 - i * 9, f2: 58, dur: 0.11, w: "sine", vol: 0.05 * d, cut: 280, atk: 0.003 });
+                   }
+                   vox({ at: 0.52, f: 78, f2: 44, dur: 1.1, w: "sine", vol: 0.055, cut: 200, atk: 0.06 });
+                   air({ at: 0.52, dur: 1.0, f: 380, f2: 100, q: 0.5, vol: 0.026, soft: 0.45, shape: 1.5, atk: 0.04 }); },
   /* 地上に出た */
   escape: () => { vox({ f: 294, dur: 0.3, w: "triangle", vol: 0.048, cut: 1600, atk: 0.012 });
                   vox({ at: 0.15, f: 392, dur: 0.34, w: "triangle", vol: 0.044, cut: 1900, atk: 0.012 });
                   vox({ at: 0.32, f: 587, dur: 0.8, w: "sine", vol: 0.04, cut: 2400, atk: 0.02 });
                   vox({ at: 0.32, f: 880, dur: 0.7, w: "sine", vol: 0.014, cut: 3000, atk: 0.03 }); },
-  /* 力尽きる */
-  faint: () => { vox({ f: 330, f2: 41, dur: 1.7, w: "sawtooth", vol: 0.07, cut: 1400, cut2: 110, atk: 0.02 });
-                 air({ dur: 1.5, f: 620, f2: 85, q: 0.4, vol: 0.038, soft: 0.6, shape: 1.1 });
-                 vox({ at: 0.45, f: 98, f2: 49, dur: 2.3, w: "sine", vol: 0.05, cut: 300, atk: 0.35 }); },
+  /* 力尽きる ― 噴き出して、崩れ落ちて、遠のく */
+  faint: () => { air({ dur: 0.4, f: 800, f2: 190, q: 0.65, vol: 0.1, soft: 0.72, shape: 1.5, atk: 0.004 });
+                 vox({ at: 0.05, f: 92, f2: 36, dur: 0.95, w: "sine", vol: 0.095, cut: 210, atk: 0.005 });
+                 air({ at: 0.14, dur: 0.5, f: 320, f2: 120, q: 0.8, vol: 0.06, soft: 0.6, shape: 1.8, atk: 0.02 });
+                 air({ at: 0.3, dur: 2.2, f: 190, f2: 58, q: 0.55, vol: 0.045, soft: 0.35, shape: 1.1, atk: 0.2 });
+                 vox({ at: 0.35, f: 52, dur: 2.4, w: "triangle", vol: 0.05, cut: 150, atk: 0.5 }); },
   /* 煙玉 */
   smoke: () => { air({ dur: 0.62, f: 2100, f2: 460, q: 0.5, vol: 0.055, soft: 0.5, shape: 1.3, atk: 0.02 });
                  air({ at: 0.02, dur: 0.32, f: 900, q: 0.8, vol: 0.028, soft: 0.6, shape: 2 }); },
@@ -629,10 +638,13 @@ const SFX = {
                    vox({ at: 0.01, f: 164.8, dur: 1.3, w: "sine", vol: 0.03, cut: 1200, atk: 0.005 });
                    vox({ at: 0.02, f: 82.4, dur: 2.4, w: "triangle", vol: 0.038, cut: 360, atk: 0.06 });
                    air({ dur: 0.22, f: 1900, f2: 560, q: 1.5, vol: 0.02, soft: 0.7 }); },
-  /* 刃 */
-  slash: () => { const k = rnd(0.86, 1.16);
-                 air({ dur: 0.13, f: 900 * k, f2: 2600 * k, q: 0.9, vol: 0.042, soft: 0.5, shape: 1.2, swell: 1, atk: 0.012 });
-                 vox({ f: 1320 * k, f2: 700 * k, dur: 0.16, w: "triangle", vol: 0.018, cut: 3400, atk: 0.006 }); },
+  /* 刃 ― 振り抜く風のあと、刃が噛み合う。共振を非整数倍に散らすと鐘ではなく鋼になる */
+  slash: () => { const k = rnd(0.88, 1.15);
+                 air({ dur: 0.13, f: 500 * k, f2: 1900 * k, q: 1.0, vol: 0.042, soft: 0.55, shape: 1.4, swell: 1, atk: 0.012 });
+                 [1840, 2710, 3930].forEach((f, i) =>
+                   air({ at: 0.05, dur: 0.26 - i * 0.06, f: f * k, q: 11 - i * 2,
+                         vol: 0.032 - i * 0.009, soft: 0.9, shape: 2.2, atk: 0.003 }));
+                 vox({ at: 0.05, f: 150 * k, f2: 88 * k, dur: 0.12, w: "sine", vol: 0.024, cut: 380, atk: 0.004 }); },
   /* 指の下 */
   ui: () => { vox({ f: 760, f2: 560, dur: 0.075, w: "sine", vol: 0.03, cut: 1800, atk: 0.004 });
               vox({ f: 1520, f2: 1140, dur: 0.035, w: "sine", vol: 0.008, cut: 2600, atk: 0.003 }); }
