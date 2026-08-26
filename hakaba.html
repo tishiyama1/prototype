@@ -2675,7 +2675,7 @@ function computeFlow(sx, sy) {
    ============================================================ */
 let scene = "title";          // title | town | dungeon | result
 let run = null;
-let time = 0, shake = 0, flash = 0, fade = 0, fadeDir = 0, fadeCb = null;
+let time = 0, shake = 0, flash = 0, fade = 0, fadeDir = 0, fadeCb = null, fadeLock = false;
 let camx = 0, camy = 0;
 let uiOpen = false, uiKind = "", mapOpen = false;
 const P = {
@@ -2707,7 +2707,13 @@ function toast(txt, cls) {
   setTimeout(() => { d.style.transition = "opacity .4s"; d.style.opacity = "0"; setTimeout(() => d.remove(), 420); }, 2400);
   while (TOAST.children.length > 5) TOAST.firstChild.remove();
 }
-function doFade(dir, cb) { fadeDir = dir; fadeCb = cb || null; if (dir > 0) fade = 0; }
+/*  幕引き（その日が終わる暗転）は、あとから来た暗転に横取りさせない。
+    倒れた瞬間に階段の「降りる」を押しても、行き先が書き換わらないように。 */
+function doFade(dir, cb, lock) {
+  if (fadeLock && !lock) return;
+  if (lock) fadeLock = true;
+  fadeDir = dir; fadeCb = cb || null; if (dir > 0) fade = 0;
+}
 
 /* ---------- 食料と水 ― もぐっていられる時間そのもの ---------- */
 /*  持って入った分だけ潜れる。聖堂の中では減らない。尽きれば動けなくなる。 */
@@ -2796,6 +2802,7 @@ function startRun(pos) {
   SFX.descend();
 }
 function goDown() {
+  if (!run || run.escaped) return;           // 倒れたあとの階段は、もう動かない
   const p = run.pos;
   const next = p.s ? { d: p.d + 1, s: false }
     : hasSanctBelow(p.d) ? { d: p.d, s: true } : { d: p.d + 1, s: false };
@@ -2803,6 +2810,7 @@ function goDown() {
   doFade(1, () => { enterLevel(next, "down"); SFX.descend(); toast(levelName(next) + (next.s ? "" : " ― " + themeOf(next.d).nm), "good"); });
 }
 function goUp() {
+  if (!run || run.escaped) return;
   const p = run.pos;
   if (!p.s && p.d <= 1) { endRun("escape"); return; }
   const next = p.s ? { d: p.d, s: false }
@@ -2823,6 +2831,8 @@ function dropItem(it, x, y, delay) { loose.push({ it, x, y, vx: rnd(-24, 24), vy
 function endRun(kind) {
   if (!run || run.escaped) return;
   run.escaped = true;
+  closeUI(); mapOpen = false;                // 階段の問いなどを残したまま終わらせない
+  P.invul = 0; P.looting = null; P.lootT = 0;
   const depth = run.pos.d, floors = run.floors, killer = run.killer;
 
   if (kind === "faint") {
@@ -2832,7 +2842,7 @@ function endRun(kind) {
     G.day = day + 1;
     S.rec.deaths = (S.rec.deaths || 0) + 1;
     rollMarket(); save();
-    doFade(1, () => { showDream(depth, floors, killer); });
+    doFade(1, () => { showDream(depth, floors, killer); }, true);
     SFX.faint();
     return;
   }
@@ -2854,7 +2864,7 @@ function endRun(kind) {
   rollMarket();
   if (G.deepest >= 12) addSusp(1);
   save();
-  doFade(1, () => { showResult(kind, kept, [], depth, floors, haul); });
+  doFade(1, () => { showResult(kind, kept, [], depth, floors, haul); }, true);
   SFX.escape();
 }
 
@@ -5221,7 +5231,7 @@ function askExit() {
     "<span>見積り <b>" + money(total) + "</b> G</span><span>体力 <b>" + P.hp + "</b></span></div>" +
     '<div class="btns"><div class="btn pri" data-a="goup2">地上へ戻る</div><div class="btn" data-a="closeask">まだ潜る</div></div></div>');
 }
-actions.goup2 = () => { closeUI(); endRun("escape"); };
+actions.goup2 = () => { if (!run || run.escaped) return; closeUI(); endRun("escape"); };
 actions.closeask = () => closeUI();
 
 function askDown() {
@@ -5237,7 +5247,7 @@ function askDown() {
     "<span>防具 <b>" + P.armor + "/" + armorMax() + "</b></span><span>水と食料 <b>" + Math.max(0, Math.round(P.st / SUPPLY_RATE)) + "</b> 秒</span></div>" +
     '<div class="btns"><div class="btn pri" data-a="godown">降りる</div><div class="btn" data-a="closeask">やめておく</div></div></div>');
 }
-actions.godown = () => { closeUI(); goDown(); };
+actions.godown = () => { if (!run || run.escaped) return; closeUI(); goDown(); };
 
 function askUp() {
   const p = run.pos;
@@ -5256,7 +5266,7 @@ function askUp() {
     "<span>水と食料 <b>" + Math.max(0, Math.round(P.st / SUPPLY_RATE)) + "</b> 秒</span></div>" +
     '<div class="btns"><div class="btn pri" data-a="goupstair">のぼる</div><div class="btn" data-a="closeask">やめておく</div></div></div>');
 }
-actions.goupstair = () => { closeUI(); goUp(); };
+actions.goupstair = () => { if (!run || run.escaped) return; closeUI(); goUp(); };
 
 function askHero() {
   const h = hero;
@@ -6078,7 +6088,7 @@ function frame(now) {
   // フェード
   if (fadeDir > 0) {
     fade = Math.min(1, fade + dt * 3.2);
-    if (fade >= 1) { fadeDir = -1; if (fadeCb) { const c = fadeCb; fadeCb = null; c(); } }
+    if (fade >= 1) { fadeDir = -1; if (fadeCb) { const c = fadeCb; fadeCb = null; fadeLock = false; c(); } }
   } else if (fadeDir < 0) {
     fade = Math.max(0, fade - dt * 2.4);
     if (fade <= 0) fadeDir = 0;
