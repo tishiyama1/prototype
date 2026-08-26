@@ -2962,6 +2962,12 @@ function doFade(dir, cb, lock) {
 /* ---------- 食料と水 ― もぐっていられる時間そのもの ---------- */
 /*  持って入った分だけ潜れる。聖堂の中では減らない。尽きれば動けなくなる。 */
 const SUPPLY_RATE = 0.5;                    // 1秒あたり
+/* 持ち込みの上限 ― 倉庫にいくら積んでも、袋に入るのはここまで。
+   使うたび G.inv と run.carry の両方が減るので、carry ≤ inv は崩れない。 */
+const CARRY_MAX = 5;
+const carrying = () => scene === "dungeon" && run && !run.escaped && run.carry;
+const potHave = () => carrying() ? run.carry.potion : G.inv.potion;
+const smkHave = () => carrying() ? run.carry.smoke : G.inv.smoke;
 function tickSupply(dt, inSafe) {
   if (inSafe || watchMode()) return;
   P.st = clamp(P.st - SUPPLY_RATE * dt, 0, maxSupply());
@@ -3038,7 +3044,8 @@ function enterLevel(pos, from) {
 function startRun(pos) {
   if (safeMode()) G.assist = 1;                  // 一度でも使えば、その周は記録に残さない
   runSnap = JSON.stringify(G);                   // 図鑑もログも G の中なので、これ一本で戻せる
-  run = { pos: null, cache: {}, bag: [], t: 0, escaped: false, askAt: -1, floors: 1, looted: 0, killer: null };
+  run = { pos: null, cache: {}, bag: [], t: 0, escaped: false, askAt: -1, floors: 1, looted: 0, killer: null,
+          carry: { potion: Math.min(G.inv.potion, CARRY_MAX), smoke: Math.min(G.inv.smoke, CARRY_MAX) } };
   P.hp = maxHearts(); P.invul = 0; P.lamp = true; P.smoke = 0;
   P.st = maxSupply(); P.tired = 0; P.exT = 0; P.armor = armorMax();
   enterLevel(pos, "start");
@@ -3182,17 +3189,19 @@ function toggleLamp() {
 
 /* ---------- 道具 ---------- */
 function useSmoke() {
-  if (G.inv.smoke <= 0) { SFX.deny(); toast("煙玉がない", "bad"); return; }
-  G.inv.smoke--; sawIt("smoke"); save(); SFX.smoke();
+  if (smkHave() <= 0) { SFX.deny(); toast(G.inv.smoke > 0 ? "持ってきた煙玉は使い切った" : "煙玉がない", "bad"); return; }
+  G.inv.smoke--; if (carrying()) run.carry.smoke--;
+  sawIt("smoke"); save(); SFX.smoke();
   P.smoke = 7;
   for (const m of mons) if (dist2(m.x, m.y, P.x, P.y) < (TILE * 7) ** 2) { m.state = "patrol"; m.alert = 0; }
   for (let i = 0; i < 26; i++) addPart(P.x, P.y, { vx: rnd(-60, 60), vy: rnd(-60, 60), life: rnd(0.6, 1.4), max: 1.4, col: "#9aa2b8", sz: 3 });
   floatTxt(P.x, P.y - 16, "煙にまぎれた", "#cfd6e6");
 }
 function usePotion() {
-  if (G.inv.potion <= 0) { SFX.deny(); toast("ポーションがない", "bad"); return; }
+  if (potHave() <= 0) { SFX.deny(); toast(G.inv.potion > 0 ? "持ってきたポーションは使い切った" : "ポーションがない", "bad"); return; }
   if (P.hp >= maxHearts()) { SFX.deny(); toast("傷はない", "bad"); return; }
-  G.inv.potion--; P.hp++; save(); SFX.get_();
+  G.inv.potion--; if (carrying()) run.carry.potion--;
+  P.hp++; save(); SFX.get_();
   for (let i = 0; i < 12; i++) addPart(P.x, P.y, { vx: rnd(-25, 25), vy: rnd(-45, -10), life: 0.7, max: 0.7, col: "#ff8a7a", sz: 2 });
   floatTxt(P.x, P.y - 16, "傷がふさがった", "#ff8a7a");
 }
@@ -4633,7 +4642,7 @@ function showTown() {
   if (pendingCase) { const c = pendingCase; pendingCase = null; showCase(c); return; }
   if (G.ended === "fail") { endFail(); return; }
   if (G.debt <= 0 && !G.ended) { G.ended = "clear"; recordClear(); endClear(); return; }
-  if (G.day > G.limit && G.debt > 0) { G.ended = "fail"; if (!G.assist) S.rec.fails++; save(); endFail(); return; }
+  if (G.day > G.limit && G.debt > 0) { G.ended = "fail"; if (!G.assist) { S.rec.fails++; recordEnd("fail"); } save(); endFail(); return; }
   if (G.gift) {
     G.stash.push(G.gift);
     toast("店の前に置かれていた ― " + itemName(G.gift) + "（勇者からの贈り物）", "good");
@@ -4671,6 +4680,8 @@ actions.dive = () => {
   openUI("dive", '<div class="panel"><h2>どこから潜る</h2>' +
     '<div class="sub">聖堂は5階ごとに挟まっている独立した階だ。<b>転移碑</b>で地上へ帰れて、<b>行ったことのある聖堂へは直接降りられる</b>。<br>' +
     "階段は上下ともに使える。水と食料 " + supplyMin(G.up.sup) + " 分 ／ 背負える重さ " + bagCap() + " ／ 体力 " + maxHearts() + " ／ 防具 " + armorMax() +
+    "<br>持ち込み ― ポーション <b>" + Math.min(G.inv.potion, CARRY_MAX) + "</b> ／ 煙玉 <b>" + Math.min(G.inv.smoke, CARRY_MAX) +
+    "</b>（<b>各 " + CARRY_MAX + " 個まで</b>。残りは倉庫に置いていく）" +
     (watchMode() ? '<br><b style="color:var(--gold)">見学中 ― まだ行っていない聖堂にも降りられる</b>' : "") + "</div>" +
     '<div class="list" style="max-height:44vh;overflow:auto">' + rows + "</div>" +
     '<div class="btns"><div class="btn" data-a="back">やめる</div></div></div>');
@@ -4702,7 +4713,8 @@ function showShop(tab) {
     body = '<div class="list">' + GOODS.map(gd => {
       const can = G.gold >= gd.price;
       return '<div class="row"><div class="ico" style="background-image:url(' + iconURL[gd.ico] + ')"></div>' +
-        '<div class="nm">' + gd.nm + "<small>" + gd.desc + " ／ 所持 " + G.inv[gd.id] + "</small></div>" +
+        '<div class="nm">' + gd.nm + "<small>" + gd.desc + " ／ 所持 " + G.inv[gd.id] +
+        (gd.id === "potion" || gd.id === "smoke" ? "（持ち込みは " + CARRY_MAX + " 個まで）" : "") + "</small></div>" +
         '<div class="pr">' + money(gd.price) + ' G<span class="btn sm' + (can ? "" : " dis") + '" data-a="buy" data-i="' + gd.id + '" style="margin-left:8px">買う</span></div></div>';
     }).join("") + "</div>";
   } else {
@@ -5070,7 +5082,7 @@ function showDebug(tab) {
   } else {
     body = '<div class="lbl">エンディングを見る</div>' +
       '<div class="note">記録には残しません。判定を通さず、その画面を直接開きます。</div>' +
-      '<div class="btns wrap">' + ["truth", "away", "buddy", "cleaner", "rich", "bare", "plot", "odd", "normal"].map(k =>
+      '<div class="btns wrap">' + ["truth", "away", "buddy", "cleaner", "rich", "bare", "plot", "odd", "normal", "fail"].map(k =>
         '<div class="btn sm" data-a="dbgEnd" data-i="' + k + '">' + ENDINGS[k].nm + "</div>").join("") + "</div>" +
       '<div class="lbl">いまの判定</div>' +
       '<div class="note">この状態で完済すると <b style="color:var(--gold)">' + ENDINGS[judgeEnding()].nm + "END</b> です。</div>" +
@@ -5196,6 +5208,7 @@ actions.dbgEnd = d => {
     save(); closeUI(); endClear("truth"); return;
   }
   closeUI();
+  if (d.i === "fail") { endFail(); return; }
   if (d.i) endClear(d.i); else endClear();
 };
 
@@ -5582,7 +5595,7 @@ function askHero() {
     "<p>「" + h.talk + "」</p>" +
     '<div class="qbar" style="margin:10px 0 14px"><i style="width:' + Math.round(h.hp / h.maxHp * 100) + '%"></i></div>' +
     '<div class="btns"><div class="btn" data-a="hTalk">話を聞く</div>' +
-    '<div class="btn' + (G.inv.potion > 0 ? " pri" : " dis") + '" data-a="hHelp">ポーションを渡す（' + G.inv.potion + "）</div></div>" +
+    '<div class="btn' + (potHave() > 0 ? " pri" : " dis") + '" data-a="hHelp">ポーションを渡す（' + potHave() + "）</div></div>" +
     '<div class="btns" style="margin-top:8px"><div class="btn warn" data-a="hRob">装備を奪う</div>' +
     '<div class="btn" data-a="hLeave">そっとしておく</div></div>' +
     '<div class="note">奪えば良い品が手に入る。だが、彼は許さないだろう。</div></div>');
@@ -5613,8 +5626,9 @@ actions.hTalk = () => {
 };
 actions.hHelp = () => {
   closeUI();
-  if (G.inv.potion <= 0) { SFX.deny(); return; }
-  G.inv.potion--; G.kind++; save(); SFX.get_();
+  if (potHave() <= 0) { SFX.deny(); return; }
+  G.inv.potion--; if (carrying()) run.carry.potion--;
+  G.kind++; save(); SFX.get_();
   const h = hero;
   h.hp = h.maxHp; h.state = "follow"; h.follow = 45;
   floatTxt(h.x, h.y - 24, "「恩に着る。しばらく守ってやる」", "#7fd0ff");
@@ -5727,13 +5741,15 @@ function showItems(tab) {
   itemTab = tab || itemTab;
   let body = "";
   if (itemTab === "tool") {
-    const row = (id, ico, nm, desc, act) =>
+    const row = (id, ico, nm, desc, act, n) =>
       '<div class="row"><div class="ico" style="background-image:url(' + iconURL[ico] + ')"></div>' +
       '<div class="nm">' + nm + "<small>" + desc + "</small></div>" +
-      '<div class="pr">' + G.inv[id] + '<span class="btn sm' + (G.inv[id] > 0 ? "" : " dis") + '" data-a="' + act + '" style="margin-left:8px">使う</span></div></div>';
+      '<div class="pr">' + n + '<span class="btn sm' + (n > 0 ? "" : " dis") + '" data-a="' + act + '" style="margin-left:8px">使う</span></div></div>';
     body = '<div class="list">' +
-      row("potion", "potion", "ポーション", "体力を1つ回復", "uPot") +
-      row("smoke", "smoke", "煙玉", "追跡を振り切る", "uSmk") + "</div>";
+      row("potion", "potion", "ポーション", "体力を1つ回復", "uPot", potHave()) +
+      row("smoke", "smoke", "煙玉", "追跡を振り切る", "uSmk", smkHave()) + "</div>" +
+      (carrying() ? '<div class="note">袋に入るのは各 ' + CARRY_MAX + ' 個まで。残りは倉庫（ポーション ' +
+        Math.max(0, G.inv.potion - run.carry.potion) + " ／ 煙玉 " + Math.max(0, G.inv.smoke - run.carry.smoke) + "）に置いてきた。</div>" : "");
   } else {
     const total = estSum(run.bag);
     body = '<div class="stat"><span>重さ <b>' + bagWeight().toFixed(1) + "/" + bagCap() + "</b></span>" +
@@ -5833,6 +5849,10 @@ actions.toshop = () => { scene = "town"; showShop("sell"); };
 actions.town = () => showTown();
 
 /* ---------- 結末 ---------- */
+function recordEnd(k) {                          // 見たエンディングを一度だけ数える
+  if (!S.rec.ends) S.rec.ends = {};
+  S.rec.ends[k] = (S.rec.ends[k] || 0) + 1;
+}
 function recordClear() {
   if (G.assist) { save(); return; }              // 練習・見学の周は記録に混ぜない
   S.rec.clears++;
@@ -5901,6 +5921,14 @@ const ENDINGS = {
           "死んだ奴の荷物だ、と答えた。それ以上の説明はいらないだろう。",
           "墓場は掘れば出る。掘る奴がいないだけだ。",
           "……明日から何をしてもいい。とりあえず、もう少し良い長靴を買おうと思う。"] },
+  fail: { nm: "取り立て", ttl: "返せなかった",
+    txt: ["受付の女はもういない。判を押す相手が、判を持って帰ってしまった。",
+          "三人のうちいちばん体格のいいのが、証文をひらひらさせて言った。",
+          "「話は聞いてるよ。よく働いたそうじゃないか」",
+          "「だが、話と金は別だ」",
+          "袋を取り上げられ、提灯を渡された。俺が初日に持たされたのと同じ、安物だ。",
+          "明日からは、俺が誰かに拾われる側になる。",
+          "……あの階段を、今度は帰りの当てなしに降りることになる。"] },
   truth: { nm: "真相", ttl: "返した ― 墓場の仕組み",
     txt: ["受付の女は判を押し、証文を破いた。これであんたは自由だ。",
           "最深部の主は、来たのはお前が最初だと言った。",
@@ -6103,8 +6131,7 @@ function showEndCard() {
     '<div class="btn" data-a="newg2">新しい借金を背負う</div></div></div>');
 }
 actions.takeout = () => {
-  if (!S.rec.ends) S.rec.ends = {};
-  S.rec.ends.away = (S.rec.ends.away || 0) + 1;
+  recordEnd("away");
   G.ended = "away"; save();
   closeUI();
   doFade(1, () => startEnding());
@@ -6115,10 +6142,7 @@ function endClear(force) {
   const best = S.rec.best;
   const rank = days <= 15 ? "熟練" : days <= 20 ? "優秀" : days <= 25 ? "上出来" : "ぎりぎり";
   const ek = force || judgeEnding(), END = ENDINGS[ek];
-  if (!force) {                                   // 検証で開いたぶんは記録に混ぜない
-    if (!S.rec.ends) S.rec.ends = {};
-    S.rec.ends[ek] = (S.rec.ends[ek] || 0) + 1; save();
-  }
+  if (!force) { recordEnd(ek); save(); }          // 検証で開いたぶんは記録に混ぜない
   openUI("clear", '<div class="panel center">' +
     '<h2 style="justify-content:center">借金完済 ― ' + END.nm + "END</h2>" +
     '<div class="big" style="margin:10px 0">' + days + " 日</div>" +
@@ -6140,11 +6164,17 @@ function endClear(force) {
 }
 actions.freeplay = () => { G.limit = 9999; save(); showTown(); };
 function endFail() {
+  const END = ENDINGS.fail;
   openUI("fail", '<div class="panel center">' +
-    '<h2 style="justify-content:center">期限切れ</h2>' +
-    '<div class="sub">' + G.limit + " 日目の朝。玄関の前に、三人ばかり立っていた。</div>" +
-    "<p>「話は聞いてるよ。よく働いたそうじゃないか」<br>「だが、話と金は別だ」</p>" +
-    '<p class="q">残った借金 ' + money(G.debt) + " G。<br>あんたは今日から、ダンジョンの中で働くことになるらしい。<br>……回収される側にならないよう、祈っておこう。</p>" +
+    '<h2 style="justify-content:center">期限切れ ― ' + END.nm + "END</h2>" +
+    '<div class="big" style="margin:10px 0;color:#b4413a">' + money(G.debt) + " G</div>" +
+    '<div class="sub">' + G.limit + " 日目の朝。玄関の前に、三人ばかり立っていた。" +
+    (G.assist ? "<br>" + MODE_NM[optMode()] + " ― 記録には残らない" : "") + "</div>" +
+    '<div class="stat center" style="justify-content:center"><span>' + (G.runsDone || 0) + " 回潜って</span>" +
+    "<span>持ち帰り高 <b>" + money(G.earned || 0) + "</b> G</span>" +
+    "<span>最高の1回 <b>" + money(G.bestRun || 0) + "</b> G</span></div>" +
+    '<div class="lbl" style="text-align:center">' + END.ttl + "</div>" +
+    END.txt.map((t2, i) => '<p' + (i >= 2 ? ' class="q"' : "") + ">" + t2 + "</p>").join('<div style="height:6px"></div>') +
     '<div class="btns" style="margin-top:16px"><div class="btn pri" data-a="newg2">もう一度やり直す</div>' +
     '<div class="btn" data-a="dex">記録と図鑑</div></div></div>');
 }
@@ -6188,17 +6218,17 @@ function updatePad() {
   const live = scene === "dungeon" && run && G && !uiOpen;
   if (!live) { padSig = ""; return; }
   const near = mapOpen ? null : nearestRemain();
-  const sig = [P.lamp, G.inv.potion, G.inv.smoke, near ? 1 : 0, mapOpen ? 1 : 0].join("|");
+  const sig = [P.lamp, potHave(), smkHave(), near ? 1 : 0, mapOpen ? 1 : 0].join("|");
   if (sig === padSig) return;
   padSig = sig;
   stick.classList.toggle("hot", !!near);         // 足元に拾えるものがある
   $("bB").textContent = "灯り";
   $("bB").classList.toggle("on", P.lamp);
   $("bB").classList.toggle("off", !P.lamp);
-  $("bE").innerHTML = "煙玉<small>" + G.inv.smoke + "</small>";
-  $("bE").classList.toggle("off", G.inv.smoke <= 0);
-  $("bF").innerHTML = "回復<small>" + G.inv.potion + "</small>";
-  $("bF").classList.toggle("off", G.inv.potion <= 0);
+  $("bE").innerHTML = "煙玉<small>" + smkHave() + "</small>";
+  $("bE").classList.toggle("off", smkHave() <= 0);
+  $("bF").innerHTML = "回復<small>" + potHave() + "</small>";
+  $("bF").classList.toggle("off", potHave() <= 0);
 }
 
 /* ============================================================
