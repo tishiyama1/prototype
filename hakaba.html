@@ -293,6 +293,15 @@
     display: inline-flex; align-items: center; justify-content: center; }
   .btn.dis { opacity: 0.35; pointer-events: none; }
   .btn.warn { border-color: rgba(180,65,58,0.5); background: rgba(180,65,58,0.12); color: #ffc4bd; }
+  .art {
+    display: block; margin: 2px auto 10px; width: 96px; height: 96px;
+    image-rendering: pixelated;
+    background: radial-gradient(60% 60% at 50% 55%, rgba(232,196,106,0.10), rgba(0,0,0,0) 70%);
+    background-repeat: no-repeat; background-position: center; background-size: 96px 96px, cover;
+  }
+  .art.tall { width: 112px; height: 112px; background-size: 112px 112px, cover; }
+  .row[data-a] .nm { cursor: pointer; }
+  .row .go { color: var(--dim); font-size: 14px; padding-left: 6px; }
   .btns.wrap { flex-wrap: wrap; }
   .btns.wrap .btn { flex: 0 0 auto; min-width: 34px; }
   .tin {
@@ -1118,6 +1127,16 @@ function buildSprites() {
 buildSprites();
 const iconURL = {};
 for (const k in SPR.icon) iconURL[k] = SPR.icon[k].toDataURL();
+const bigURL = {};                               // 詳細画面で大きく出すぶん（呼ばれてから焼く）
+function bigOf(key) {
+  if (bigURL[key] !== undefined) return bigURL[key];
+  let sp = null;
+  if (key.indexOf("m:") === 0) { const t = MTYPE[key.slice(2)]; sp = t ? SPR[t.spr] : null; }
+  else sp = SPR[key];
+  sp = sp && sp.length !== undefined && sp[0] ? sp[0] : sp;
+  bigURL[key] = sp && sp.toDataURL ? sp.toDataURL() : "";
+  return bigURL[key];
+}
 
 function drawSpr(s, x, y, flip) {
   if (!s) return;
@@ -1195,10 +1214,13 @@ const wearNm = w => w < 0.12 ? "新品同様" : w < 0.32 ? "良好" : w < 0.55 ?
 /* 死因。他殺もふつうの死因のひとつとして起こる */
 /* 所見 ― 死体から読み取れるのはここまで。誰が、なぜ、はわからない。
    atk は「その傷を作りうる攻撃手段」。魔物図鑑と突き合わせるための鍵。 */
+/*  susp … 「その階の魔物では説明がつかない」と印をつける所見。
+    人の手で作れる傷だけに立てる。溶解や魔法は人には出せないので、
+    そこに印をつけても「よその階の魔物」しか示せず、推理の筋が通らない。 */
 const CAUSES = [
   { id: "blade",  nm: "刃物による致命傷", atk: "blade", susp: true },
-  { id: "melt",   nm: "溶解",             atk: "melt",  susp: true },
-  { id: "magic",  nm: "魔法による損傷",   atk: "magic", susp: true },
+  { id: "melt",   nm: "溶解",             atk: "melt" },
+  { id: "magic",  nm: "魔法による損傷",   atk: "magic" },
   { id: "blunt",  nm: "鈍器による外傷",   atk: "blunt" },
   { id: "bite",   nm: "咬傷",             atk: "bite" },
   { id: "poison", nm: "毒",               atk: null },
@@ -1539,6 +1561,7 @@ function makeItem(depth, opt) {
   return it;
 }
 function makeStoryItem(kind, depth, hi, cz, tr) { return makeItem(depth, { kind, q: 1, wear: rnd(0.2, 0.6), hi, cz, tr }); }
+
 
 /* ---------- 図鑑 ---------- */
 function dexHero(h) {
@@ -4265,7 +4288,12 @@ function showDebug(tab) {
       '<div class="btn sm" data-a="dbgTip" data-i="clue">気になることだけ</div>' +
       '<div class="btn sm" data-a="dbgTip" data-i="none">空にする</div></div>' +
       '<div class="lbl">図鑑</div>' +
-      '<div class="btns wrap"><div class="btn sm" data-a="dbgDex" data-i="mon">魔物を全部（' + Object.keys(DX.mon || {}).length + "/" + Object.keys(MTYPE).length + "）</div>" +
+      '<div class="btns wrap"><div class="btn sm" data-a="dbgDex" data-i="all">全部（勇者・魔物・品物・所見・手記）</div>' +
+      '<div class="btn sm" data-a="dbgDex" data-i="hero">勇者 ' + Object.keys(DX.hero).length + "/" + HEROES.length + "</div>" +
+      '<div class="btn sm" data-a="dbgDex" data-i="mon">魔物 ' + Object.keys(DX.mon || {}).length + "/" + Object.keys(MTYPE).length + "</div>" +
+      '<div class="btn sm" data-a="dbgDex" data-i="item">品物 ' + Object.keys(DX.item).length + "/" + Object.keys(KIND).length + "</div>" +
+      '<div class="btn sm" data-a="dbgDex" data-i="cause">所見 ' + Object.keys(DX.cause).length + "/" + CAUSES.length + "</div>" +
+      '<div class="btn sm" data-a="dbgDex" data-i="note">手記 ' + DX.notes.length + "/" + HEROES.length + "</div>" +
       '<div class="btn sm" data-a="dbgDex" data-i="none">図鑑を空に</div>' +
       '<div class="btn sm" data-a="logclear">ログを消す</div></div>' +
       '<div class="lbl">出したEND</div>' +
@@ -4364,8 +4392,25 @@ actions.dbgTip = d => {
 };
 actions.dbgDex = d => {
   dbgDirty();
-  if (d.i === "none") { DX.mon = {}; DX.hero = {}; DX.item = {}; DX.cause = {}; }
-  else for (const k in MTYPE) dexMon(k, MTYPE[k].dMin === 99 ? 30 : MTYPE[k].dMin);
+  const all = d.i === "all";
+  if (d.i === "none") { DX.mon = {}; DX.hero = {}; DX.item = {}; DX.cause = {}; DX.notes = []; }
+  if (all || d.i === "mon") for (const k in MTYPE) {
+    const dep = MTYPE[k].dMin === 99 ? 30 : MTYPE[k].dMin;
+    for (let i = 0; i < MON_TIP_SEEN; i++) dexMon(k, dep);   // 癖まで開く
+  }
+  if (all || d.i === "item") for (const k in KIND)
+    dexItem({ k, q: 3, e: 0, wear: 0, d: 1, hi: -1, cz: null, tr: null });
+  if (all || d.i === "hero") for (let i = 0; i < HEROES.length; i++) {
+    const dep = clamp(1 + (i % 29), 1, 29);
+    dexHero(makeHeroRecord(dep, { hi: i }));
+  }
+  if (all || d.i === "cause") for (const c of CAUSES) {
+    DX.cause[c.id] = (DX.cause[c.id] || 0) + 1; colAdd("cause", c.id);
+  }
+  if (all || d.i === "note") for (const h of HEROES) {
+    if (DX.notes.indexOf(h.l) < 0) DX.notes.push(h.l);
+    colAdd("notes", h.l);
+  }
   save(); showDebug();
 };
 actions.dbgRec = d => {
@@ -4498,6 +4543,67 @@ function showRecords(tab) {
     '<div class="btns"><div class="btn pri" data-a="titleback">もどる</div></div></div>');
 }
 
+/* ---------- 図鑑の詳細 ― ドット絵と、分かっていることを全部 ---------- */
+const dline = (a, b2) => '<div class="row thin"><div class="nm">' + a + '</div><div class="val">' + b2 + "</div></div>";
+actions.dexHero = d => {
+  const i = parseInt(d.i, 10), h = HEROES[i], r = DX.hero[i];
+  if (!h || !r) return;
+  const sc = situList(r.sc || {});
+  openUI("dexd", '<div class="panel"><h2>' + h.n + "</h2>" +
+    '<div class="sub">' + h.c + " ／ 見つけた回数 " + r.n + " 回</div>" +
+    '<div class="art tall" style="background-image:url(' + bigOf(r.odd ? "corpseFresh" : "corpse") + ')"></div>' +
+    '<p class="q">' + h.p + "</p>" +
+    '<div class="list">' +
+    dline("いちばん深い所", "地下 " + r.fl + " 階") +
+    dline("最後に見た階級", "Lv " + r.lv) +
+    dline("見た所見", r.cz.map(causeNm).join("・") || "―") + "</div>" +
+    (sc.length ? '<div class="lbl">現場の様子</div><div class="list">' +
+      sc.map(k => '<div class="row thin"><div class="nm">' + SITU[k] + "</div></div>").join("") + "</div>" : "") +
+    (r.odd ? '<div class="note" style="color:#ff9a92">この階の魔物では説明のつかない傷が ' + r.odd + " 件。魔物の仕業ではない。</div>" : "") +
+    (DX.notes.indexOf(h.l) >= 0 ? '<div class="lbl">手記</div><p>「' + h.l + "」</p>" : "") +
+    '<div class="btns"><div class="btn pri" data-a="dex" data-i="hero">もどる</div></div></div>');
+};
+actions.dexMonD = d => {
+  const k = d.i, t = MTYPE[k], r = (DX.mon || {})[k];
+  if (!t || !r) return;
+  openUI("dexd", '<div class="panel"><h2>' + t.nm + "</h2>" +
+    '<div class="sub">見かけた数 ' + (r.n || 1) + " 体" + (t.bonus ? " ／ 襲ってこない当たり" : "") + "</div>" +
+    '<div class="art tall" style="background-image:url(' + bigOf("m:" + k) + ')"></div>' +
+    '<div class="list">' +
+    dline("生息", t.boss ? "最深部だけ" : "地下 " + t.dMin + " 〜 " + t.dMax + " 階") +
+    dline("見かけた深さ", r.lo ? "地下 " + r.lo + " 〜 " + r.hi + " 階" : "―") +
+    dline("つける傷", t.atk.length ? t.atk.map(a => MON_ATK_NM[a]).join("・") : "襲ってこない") +
+    dline("耐える力", t.hp >= 100 ? "桁が違う" : t.hp >= 26 ? "とても硬い" : t.hp >= 14 ? "硬い" : "もろい") + "</div>" +
+    (tipGot().indexOf("m:" + k) >= 0
+      ? '<div class="lbl">癖</div><p class="q">' + tipOf("m:" + k).txt + "</p>"
+      : '<div class="note">あと ' + Math.max(1, MON_TIP_SEEN - (r.n || 0)) + " 体ほど見れば、動きの癖が手帳に書きとまる。</div>") +
+    '<div class="btns"><div class="btn pri" data-a="dex" data-i="mon">もどる</div></div></div>');
+};
+actions.dexItem = d => {
+  const k = d.i, K = KIND[k], r = DX.item[k];
+  if (!K || !r) return;
+  const who = Object.keys(KIND).filter(x => KIND[x].cat === K.cat).length;
+  openUI("dexd", '<div class="panel"><h2>' + K.nm + "</h2>" +
+    '<div class="sub">' + CAT_NM[K.cat] + " ／ 拾った数 " + r.n + " 点</div>" +
+    '<div class="art" style="background-image:url(' + iconURL[K.ico] + ')"></div>' +
+    (K.use ? '<p class="q">潜っているあいだに使える。</p>' : "") +
+    '<div class="list">' +
+    dline("重さ", K.wt.toFixed(1)) +
+    dline("素の値", money(K.base) + " G") +
+    dline("出る深さ", "地下 " + (K.minD || 1) + " 階から") +
+    dline("見た最良", (QUAL[r.q] ? QUAL[r.q].nm : "並") || "並") +
+    (K.atk ? dline("攻撃", K.atk[0] + " 〜 " + K.atk[1]) : "") +
+    (K.def ? dline("守り", K.def[0] + " 〜 " + K.def[1]) : "") +
+    dline("値踏みのしやすさ", (h2 => h2 <= 0.35 ? "数えれば分かる" : h2 <= 0.9 ? "だいたい読める" : "目が要る")(apprHard(K))) +
+    dline("同じ種別", who + " 種") + "</div>" +
+    '<div class="lbl">見た付与</div>' +
+    (r.e && r.e.length ? '<div class="list">' + r.e.map(e =>
+      '<div class="row thin"><div class="nm">' + ENCH[e].nm + '</div><div class="val">×' + ENCH[e].mul + "</div></div>").join("") + "</div>"
+      : '<p class="q">付与つきは、まだ見ていない。</p>') +
+    '<div class="note">売値は 品の値 × 品質 × 付与 × 傷み × 深さ × その日の相場。暗がりでの見立ては当てにならない。</div>' +
+    '<div class="btns"><div class="btn pri" data-a="dex" data-i="item">もどる</div></div></div>');
+};
+
 /* ---------- 図鑑 ---------- */
 let dexTab = "hero";
 actions.dex = d => showDex(d && d.i);
@@ -4510,20 +4616,22 @@ function showDex(tab) {
     body = found.length ? '<div class="list" style="max-height:52vh;overflow:auto">' + found.map(i => {
       const h = HEROES[i], d = DX.hero[i];
       const sc = (d.sc || []).slice(0, 2).map(k => SITU[k]).join(" ／ ");
-      return '<div class="row' + (d.odd ? " rar2" : "") + '"><div class="ico" style="background-image:url(' + iconURL.badge + ')"></div>' +
+      return '<div class="row' + (d.odd ? " rar2" : "") + '" data-a="dexHero" data-i="' + i + '" style="cursor:pointer">' +
+        '<div class="ico" style="background-image:url(' + iconURL.badge + ')"></div>' +
         '<div class="nm">' + h.n + "（" + h.c + " Lv" + d.lv + "）<small>" + h.p +
         "<br>所見：" + d.cz.map(causeNm).join("・") + " ／ 地下" + d.fl + "階 ／ " + d.n + " 回" +
         (sc ? "<br>状況：" + sc : "") +
         (d.odd ? '<br><span style="color:#ff9a92">この階の魔物では説明がつかない傷が ' + d.odd + " 件</span>" : "") +
-        "</small></div></div>";
+        '</small></div><div class="go">\u203a</div></div>';
     }).join("") + "</div>" : '<p class="q">まだ誰の亡骸も見つけていない。</p>';
   } else if (dexTab === "item") {
     const ks = Object.keys(KIND).filter(k => DX.item[k]);
     body = ks.length ? '<div class="list" style="max-height:52vh;overflow:auto">' + ks.map(k => {
       const d = DX.item[k], K = KIND[k];
-      return '<div class="row"><div class="ico" style="background-image:url(' + iconURL[K.ico] + ')"></div>' +
+      return '<div class="row" data-a="dexItem" data-i="' + k + '" style="cursor:pointer">' +
+        '<div class="ico" style="background-image:url(' + iconURL[K.ico] + ')"></div>' +
         '<div class="nm">' + K.nm + "<small>" + CAT_NM[K.cat] + " ／ 最良 " + (QUAL[d.q].nm || "並") + " ／ " + d.n + " 点<br>" +
-        (d.e.length ? "見た付与：" + d.e.map(e => ENCH[e].nm).join("・") : "付与つきは未発見") + "</small></div></div>";
+        (d.e.length ? "見た付与：" + d.e.map(e => ENCH[e].nm).join("・") : "付与つきは未発見") + '</small></div><div class="go">›</div></div>';
     }).join("") + "</div>" : '<p class="q">まだ何も拾っていない。</p>';
   } else if (dexTab === "cause") {
     const seen = DX.mon || {};
@@ -4532,9 +4640,11 @@ function showDex(tab) {
       const n = DX.cause[c.id];
       let src = "傷のかたちからは、相手までは分からない";
       if (c.atk) {
-        const who = Object.keys(MTYPE).filter(k => MTYPE[k].w > 0 && MTYPE[k].atk.indexOf(c.atk) >= 0 && seen[k]);
+        const any = Object.keys(MTYPE).filter(k => MTYPE[k].atk.indexOf(c.atk) >= 0);
+        const who = any.filter(k => MTYPE[k].w > 0 && seen[k]);
         src = who.length ? "この傷を作れる魔物：" + who.map(k => MTYPE[k].nm + "（地下" + MTYPE[k].dMin + "〜" + MTYPE[k].dMax + "階）").join("、")
-          : "この傷を作れる魔物を、まだ見ていない";
+          : any.length ? "この傷を作れる魔物を、まだ見ていない"
+          : "この傷をつけられる魔物は、墓場にいない";
       }
       return '<div class="row"><div class="nm">' + c.nm + "<small>" + n + " 人 ／ " + src + "</small></div></div>";
     }).join("") + "</div>" : '<p class="q">まだ誰の死体も調べていない。</p>') +
@@ -4544,11 +4654,13 @@ function showDex(tab) {
     const ms = Object.keys(MTYPE).filter(k => seen[k]);
     body = (ms.length ? '<div class="list">' + ms.map(k => {
       const t = MTYPE[k], d = seen[k];
-      return '<div class="row' + (t.bonus ? " rar2" : "") + '"><div class="nm">' + t.nm +
+      return '<div class="row' + (t.bonus ? " rar2" : "") + '" data-a="dexMonD" data-i="' + k + '" style="cursor:pointer">' +
+        '<div class="ico" style="background-image:url(' + bigOf("m:" + k) + ');background-size:20px 20px"></div>' +
+        '<div class="nm">' + t.nm +
         "<small>生息：地下 " + t.dMin + "〜" + t.dMax + " 階" + (t.boss ? "（最深部）" : "") +
         (d.lo ? " ／ 見かけた深さ 地下 " + d.lo + "〜" + d.hi + " 階" : "") +
         "<br>攻撃：" + (t.atk.length ? t.atk.map(a => MON_ATK_NM[a]).join("・") : "襲ってこない") +
-        (t.bonus ? "（捕まえると割のいい品）" : "") + " ／ " + (d.n || 1) + " 体</small></div></div>";
+        (t.bonus ? "（捕まえると割のいい品）" : "") + " ／ " + (d.n || 1) + " 体" + '</small></div><div class="go">›</div></div>';
     }).join("") + "</div>" : '<p class="q">まだ何も見ていない。</p>') +
       '<div class="note">見かけた魔物だけが載る。どの階に、どんな手口の魔物がいるか ― それが分かると、死体の所見の読み方が変わる。<br>' +
       "動きの癖のほうは、何度か見ているうちに手帳のほうへ書きとまる。</div>";
