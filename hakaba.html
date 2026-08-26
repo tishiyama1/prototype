@@ -1682,14 +1682,14 @@ const BIG_ART = {
     ".....0jjjjkjjjjjjjjjjkjjjj0.....", "......00000000000000000000......", "................................", "................................"
   ],
   kingsword: [
-    ".............0oojk0.............", "............0ooojjk0............", "............0oojjjk0............", ".............0oojk0.............",
-    ".............0oojk0.............", ".............0oojk0.............", ".............0oojk0.............", ".............0oojk0.............",
-    ".....000000000oojk0000000000....", "....0oooooojjjjjjjjjjjjkkkkk0...", "...0oooooooooooooooooooojjjj0...", "...0jjjjjjjjjjjjjjjkkkkkkkk0....",
-    "....00000000aa9999980000000.....", "...........099aa98880...........", "...........099aa98880...........", "...........099aa98880...........",
-    "...........099aa98880...........", "...........099aa98880...........", "...........099aa98880...........", "...........099aa98880...........",
-    "...........099aa98880...........", "...........099aa98880...........", "...........099aa98880...........", "............09aa9880............",
-    "............09aa9880............", "..........0000aa980000..........", "......0000dddddddddddd0000......", "...000ddddccccccccccccdddd000...",
-    ".00dddcccccdcccccccccdccccddd00.", "0ddccccccbcccccccccccccccccbcdd0", "dcccccccccccccccccccccbccccccccd", "cccccccccccccbcccccccccccccccccc"
+    "............00oojk00............", "...........0oojjjjjk0...........", "...........0oojjjjjk0...........", "............0oojjjk0............",
+    "............0oojjjk0............", "............0oojjjk0............", "............0oojjjk0............", "............0oojjjk0............",
+    "....000000000oojjjk000000000....", "...0oojjjjjjjjjjjjjjjjjjjjjk0...", "..0oooooooooooooooooooooooooj0..", "...0jjjjjjjjjjjjjjjjkkkkkkkk0...",
+    "....000000000oojjjk000000000....", "............0oojjjk0............", "............0oojjjk0............", "............0oojjjk0............",
+    "............0oojjjk0............", "............0oojjjk0............", "............0oojjjk0............", "............0oojjjk0............",
+    "............09aa9880............", "............09aa9880............", "............09aa9880............", ".............0aa980.............",
+    ".............0aa980.............", ".........000000a9000000.........", "........0333333333333330........", ".....0000322222222222110000.....",
+    "....033333333333333333333330....", "....033222222222222222222110....", "....021111111111111111111110....", ".....0000000000000000000000....."
   ],
 };
 
@@ -2254,6 +2254,21 @@ function makeItem(depth, opt) {
   return it;
 }
 function makeStoryItem(kind, depth, hi, cz, tr) { return makeItem(depth, { kind, q: 1, wear: rnd(0.2, 0.6), hi, cz, tr }); }
+
+/* 王の剣 ― 地下29階に、まれにこれひとつだけが置かれた部屋ができる。
+   抜かれた跡がないので損耗はなく、品質は名工から上。部屋の中はほかに何も無い。 */
+const KING_FLOOR = 29, KING_CHANCE = 0.1;
+function placeKingSword(depth, pool) {
+  const cand = pool.filter(r => r !== houseRoom && r !== rooms[0]);
+  const r = pick(cand.length ? cand : pool);
+  const inR = (tx, ty) => tx >= r.x && tx < r.x + r.w && ty >= r.y && ty < r.y + r.h;
+  corpses = corpses.filter(c => !inR(c.tx, c.ty));                       // 亡骸は払う
+  mons = mons.filter(m => !inR(Math.floor(m.x / TILE), Math.floor(m.y / TILE)));
+  if (hero && inR(Math.floor(hero.x / TILE), Math.floor(hero.y / TILE))) hero = null;
+  const box = makeRemain(depth, r.cx, r.cy, { type: "chest" });
+  box.items = [makeItem(depth, { kind: "kingsword", q: chance(0.3) ? 4 : 3, wear: 0 })];
+  corpses.push(box);
+}
 
 
 /* ---------- 図鑑 ---------- */
@@ -2831,6 +2846,7 @@ function populateFloor(depth) {
   }
   cleanerT = -1;
   if (G.susp >= 35 && depth >= 6 && chance(clamp(G.susp / 180 + depth * 0.004, 0, 0.6))) cleanerT = rnd(14, 45);
+  if (depth === KING_FLOOR && rooms.length > 2 && chance(KING_CHANCE)) placeKingSword(depth, pool);
 }
 
 function spawnMon(type, tx, ty, depth) {
