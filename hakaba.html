@@ -485,6 +485,10 @@ function setPName(v) {
          │        └ 送り ── 残響 ── 返り
          └ 音楽   ┴ 同じ送り                                   */
 let AC = null, muted = false, noMus = false;
+/* 検証の〈音〉にいるあいだは、場面の曲も自動で鳴る音も止め、押したものだけを鳴らす */
+let dbgSnd = false, sfxLet = false;
+const sfxOn = () => dbgSnd ? sfxLet : !muted;
+const musOn = () => dbgSnd || !noMus;
 let LIM = null, REV = null, SBUS = null, MBUS = null;
 
 function actx() {
@@ -529,7 +533,7 @@ function buildMix(a) {
 /* 一声 ― 濾波した振動子。裸では鳴らさない */
 function vox(p) {
   const a = actx(); if (!a) return;
-  const to = p.to || SBUS; if (!to || (to === SBUS && muted)) return;
+  const to = p.to || SBUS; if (!to || (to === SBUS && !sfxOn())) return;
   const t = a.currentTime + (p.at || 0), dur = p.dur;
   const o = a.createOscillator();
   o.type = p.w || "triangle";
@@ -552,7 +556,7 @@ function vox(p) {
 /* 息と擦れ ― 帯を絞った雑音 */
 function air(p) {
   const a = actx(); if (!a) return;
-  const to = p.to || SBUS; if (!to || (to === SBUS && muted)) return;
+  const to = p.to || SBUS; if (!to || (to === SBUS && !sfxOn())) return;
   const t = a.currentTime + (p.at || 0);
   const n = Math.max(1, Math.floor(a.sampleRate * p.dur));
   const buf = a.createBuffer(1, n, a.sampleRate), d = buf.getChannelData(0);
@@ -691,6 +695,7 @@ const MOOD = {
              lead: [0, 2, 4, 5, 7, 9, 11, 12], p: 0.26, pluck: 1, bell: 1 }
 };
 let musKind = "", musWant = null, musStep = 0, musAt = 0, musTimer = 0, musSwap = 0;
+const musNow = () => musWant !== null ? musWant : musKind;
 
 function setMusic(k) {
   if (!MOOD[k]) k = "";
@@ -711,11 +716,11 @@ function musUp() {
   const a = AC; if (!a || !MBUS) return;
   const g = MBUS.gain, t = a.currentTime;
   g.cancelScheduledValues(t); g.setValueAtTime(Math.max(0.0001, g.value), t);
-  g.linearRampToValueAtTime(noMus || !musKind ? 0.0001 : 1, t + 1.3);
+  g.linearRampToValueAtTime(!musOn() || !musKind ? 0.0001 : 1, t + 1.3);
 }
 function musTick() {
   const a = AC;
-  if (!a || a.state !== "running" || !MBUS || noMus || !musKind) return;
+  if (!a || a.state !== "running" || !MBUS || !musOn() || !musKind) return;
   const M = MOOD[musKind]; if (!M) return;
   const spb = 60 / M.bpm / 2;
   if (musAt < a.currentTime + 0.02) musAt = a.currentTime + 0.1;
@@ -4512,7 +4517,7 @@ function openUI(kind, html, clear) {
   if (sheet && sheet.body) sheet.body.scrollTop = scrollMem[scrollKey(UI)] || 0;
   UI.scrollTop = 0;
 }
-function closeUI() { uiOpen = false; uiKind = ""; uiCloseAct = ""; UI.classList.remove("on"); UI.classList.remove("clear"); UI.innerHTML = ""; }
+function closeUI() { if (dbgSnd) sndMode(false); uiOpen = false; uiKind = ""; uiCloseAct = ""; UI.classList.remove("on"); UI.classList.remove("clear"); UI.innerHTML = ""; }
 /* 幕を叩いてもとじる */
 UI.addEventListener("pointerdown", ev => {
   if (ev.target !== UI || !uiCloseAct) return;
@@ -4888,7 +4893,17 @@ actions.setmode = d => { S.opt.mode = d.i; save(); if (safeMode() && G) { G.assi
    検証（デバッグ）― 設定の見出しを7回叩くと出る。S.opt.dbg に残る
    ============================================================ */
 let dbgGod = false, dbgTaps = 0, dbgTapT = 0, dbgTab = "go";
-let dbgSeq = 0, dbgMusHold = null;
+let dbgSeq = 0, sndHold = null;
+/* 〈音〉タブの出入り。入ったら場面の曲を覚えて止め、出たら戻す */
+function sndMode(on) {
+  if (on === dbgSnd) return;
+  dbgSnd = on;
+  if (on) { sndHold = musNow(); setMusic(""); }
+  else { setMusic(sndHold || ""); sndHold = null; }
+  if (dbgSeq) { clearTimeout(dbgSeq); dbgSeq = 0; }
+}
+/* 押したときだけ関門を開ける */
+function playSfx(k) { sfxLet = true; try { SFX[k](); } finally { sfxLet = false; } }
 /* 音がどこで鳴るか ― 検証の〈音〉タブに出す */
 const SFX_LIST = [
   ["step", "足音", "歩いているあいだ、一定距離ごと"],
@@ -4922,25 +4937,20 @@ actions.dbgtap = () => {
 actions.dbgoff = () => { S.opt.dbg = false; dbgGod = false; save(); hudSig = ""; toast("検証モードを閉じた", "bad"); showOpt(); };
 actions.dbg = () => showDebug();
 actions.dbgtab = d => showDebug(d.i);
-actions.dbgback = () => { dbgMusRestore(); showOpt(); };
-actions.dbgSfx = d => { if (muted) { muted = false; S.opt.mute = false; save(); } SFX[d.i](); };
+actions.dbgback = () => { sndMode(false); showOpt(); };
+actions.dbgSfx = d => playSfx(d.i);
 actions.dbgSfxAll = () => {
   if (dbgSeq) { clearTimeout(dbgSeq); dbgSeq = 0; showDebug(); return; }
-  if (muted) { muted = false; S.opt.mute = false; save(); }
   let i = 0;
   const next = () => {
     if (i >= SFX_LIST.length) { dbgSeq = 0; showDebug(); return; }
     const x = SFX_LIST[i++];
-    SFX[x[0]](); toast(x[1] + " ― " + x[0], "good");
+    playSfx(x[0]); toast(x[1] + " ― " + x[0], "good");
     dbgSeq = setTimeout(next, 1000);
   };
   next(); showDebug();
 };
-actions.dbgMute = () => { muted = !muted; S.opt.mute = muted; save(); if (!muted) SFX.ui(); showDebug(); };
-actions.dbgNoMus = () => { noMus = !noMus; S.opt.nomus = noMus; save(); musUp(); showDebug(); };
-actions.dbgMus = d => { if (dbgMusHold === null) dbgMusHold = musKind; setMusic(d.i); showDebug(); };
-actions.dbgMusBack = () => { dbgMusRestore(); showDebug(); };
-function dbgMusRestore() { if (dbgMusHold !== null) { setMusic(dbgMusHold); dbgMusHold = null; } }
+actions.dbgMus = d => { setMusic(d.i); showDebug(); };
 
 const DBG_FLAGS = [
   ["boss", "主に会った", "相棒10・結婚20"], ["oddDeath", "説明のつかない傷", "3で〈出るはずのない傷〉"],
@@ -4956,6 +4966,7 @@ const DBG_NUM = [["gold", "所持金"], ["debt", "借金"], ["day", "日数"], [
 function showDebug(tab) {
   if (!G) { toast("先にゲームを始めてください", "bad"); showOpt(); return; }   // タイトルからは触れない
   dbgTab = tab || dbgTab;
+  sndMode(dbgTab === "snd");
   const inRun = scene === "dungeon" && run && !run.escaped;
   let body = "";
   if (dbgTab === "go") {
@@ -5049,10 +5060,7 @@ function showDebug(tab) {
       '<div class="btns wrap"><div class="btn sm warn" data-a="dbgWipe">セーブを消して最初から</div></div>';
   } else if (dbgTab === "snd") {
     const seq = dbgSeq > 0;
-    body = '<div class="note">ここは触っても練習あつかいにはなりません。鳴らして確かめるだけです。</div>' +
-      '<div class="lbl">入切</div>' +
-      '<div class="btns"><div class="btn sm' + (muted ? " warn" : " pri") + '" data-a="dbgMute">効果音 ' + (muted ? "切" : "入") + "</div>" +
-      '<div class="btn sm' + (noMus ? " warn" : " pri") + '" data-a="dbgNoMus">音楽 ' + (noMus ? "切" : "入") + "</div></div>" +
+    body = '<div class="note">この画面にいるあいだ、<b>場面の曲も自動で鳴る音もすべて止めて</b>います。押したものだけが鳴ります。設定の入切とは関わりなく鳴り、もどれば元どおりです。触っても練習あつかいにはなりません。</div>' +
       '<div class="lbl">効果音</div>' +
       '<div class="btns"><div class="btn sm' + (seq ? " warn" : "") + '" data-a="dbgSfxAll">' +
       (seq ? "止める" : "全部を順に鳴らす（16音・約16秒）") + "</div></div>" +
@@ -5061,10 +5069,10 @@ function showDebug(tab) {
         '<div class="val"><span class="btn sm" data-a="dbgSfx" data-i="' + x[0] + '">鳴らす</span></div></div>').join("") + "</div>" +
       '<div class="lbl">音楽</div>' +
       '<div class="btns wrap">' + Object.keys(MOOD).map(k =>
-        '<div class="btn sm' + (musKind === k ? " pri" : "") + '" data-a="dbgMus" data-i="' + k + '">' + MOOD_NM[k] + "</div>").join("") + "</div>" +
-      '<div class="btns" style="margin-top:6px"><div class="btn sm' + (dbgMusHold === null ? " dis" : "") +
-      '" data-a="dbgMusBack">場面の曲に戻す</div></div>' +
-      '<div class="note">曲は 0.7秒でしぼんで 1.3秒で立ち上がります。もどると自動で場面の曲に戻ります。</div>';
+        '<div class="btn sm' + (musNow() === k ? " pri" : "") + '" data-a="dbgMus" data-i="' + k + '">' + MOOD_NM[k] + "</div>").join("") +
+      '<div class="btn sm' + (musNow() ? " warn" : " dis") + '" data-a="dbgMus" data-i="">止める</div></div>' +
+      '<div class="note">' + (musNow() ? "いま鳴っているのは <b>" + MOOD_NM[musNow()] + "</b>。" : "いまは何も鳴っていません。") +
+      '押すと 0.7秒でしぼんで 1.3秒で次が立ち上がります。</div>';
   } else {
     body = '<div class="lbl">エンディングを見る</div>' +
       '<div class="note">記録には残しません。判定を通さず、その画面を直接開きます。</div>' +
