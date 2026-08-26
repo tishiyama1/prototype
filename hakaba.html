@@ -2257,11 +2257,33 @@ function makeItem(depth, opt) {
 }
 function makeStoryItem(kind, depth, hi, cz, tr) { return makeItem(depth, { kind, q: 1, wear: rnd(0.2, 0.6), hi, cz, tr }); }
 
+/* 宝箱 ― どの階にもごく稀に置かれる。中身は墓ねずみの当たりより上。
+   1階を組むごとに CHEST_CHANCE。30日で3〜8階ずつ潜れば、通しで1〜2回に落ち着く。 */
+const CHEST_CHANCE = 0.008;
+function placeChest(depth, pool) {
+  const r = pick(pool);
+  const p = freeSpotIn(r, corpses);
+  const box = makeRemain(depth, p.x, p.y, { type: "chest" });
+  const n = chance(0.35) ? 3 : 2;                       // 2〜3点
+  box.items = [];
+  for (let i = 0; i < n; i++)
+    box.items.push(makeItem(depth, {
+      cat: i === 0 ? "val" : pick(["val", "weapon", "armor", "shield", "acc"]),
+      boost: 1.8,
+      q: i === 0 ? 4 : chance(0.6) ? 4 : 3,             // 一点目は必ず伝説 ― 墓ねずみの当たりを下回らせない
+      wear: rnd(0, 0.1)
+    }));
+  corpses.push(box);
+  return box;
+}
+
 /* 王の剣 ― 地下29階に、まれにこれひとつだけが置かれた部屋ができる。
    抜かれた跡がないので損耗はなく、品質は名工から上。部屋の中はほかに何も無い。 */
 const KING_FLOOR = 29, KING_CHANCE = 0.1;
 function placeKingSword(depth, pool) {
-  const cand = pool.filter(r => r !== houseRoom && r !== rooms[0]);
+  const box0 = corpses.find(c => c.type === "chest");   // 宝箱の部屋は避ける
+  const cand = pool.filter(r => r !== houseRoom && r !== rooms[0] &&
+    !(box0 && box0.tx >= r.x && box0.tx < r.x + r.w && box0.ty >= r.y && box0.ty < r.y + r.h));
   const r = pick(cand.length ? cand : pool);
   const inR = (tx, ty) => tx >= r.x && tx < r.x + r.w && ty >= r.y && ty < r.y + r.h;
   corpses = corpses.filter(c => !inR(c.tx, c.ty));                       // 亡骸は払う
@@ -2848,6 +2870,7 @@ function populateFloor(depth) {
   }
   cleanerT = -1;
   if (G.susp >= 35 && depth >= 6 && chance(clamp(G.susp / 180 + depth * 0.004, 0, 0.6))) cleanerT = rnd(14, 45);
+  if (chance(CHEST_CHANCE)) placeChest(depth, pool);
   if (depth === KING_FLOOR && rooms.length > 2 && chance(KING_CHANCE)) placeKingSword(depth, pool);
 }
 
