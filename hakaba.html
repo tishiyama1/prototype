@@ -578,18 +578,23 @@ function air(p) {
   src.start(t);
 }
 
+/* 一歩 ― 砂利を擦る音とごく低い接地音。階段はこれを速く続けるだけ */
+function foot(at, k, v) {
+  air({ at, dur: 0.08, f: 560 * k, f2: 290 * k, q: 0.9, vol: 0.022 * v, soft: 0.38, shape: 3, atk: 0.006 });
+  vox({ at, f: 128 * k, f2: 74 * k, dur: 0.06, w: "sine", vol: 0.014 * v, cut: 380, atk: 0.003 });
+}
 const SFX = {
   /* 砂利を擦る足 */
-  step: () => { air({ dur: 0.08, f: 560, f2: 290, q: 0.9, vol: 0.022, soft: 0.38, shape: 3, atk: 0.006 });
-                vox({ f: 128, f2: 74, dur: 0.06, w: "sine", vol: 0.014, cut: 380, atk: 0.003 }); },
-  /* 布と骨を漁る */
-  loot: () => { air({ dur: 0.17, f: 700, f2: 380, q: 0.7, vol: 0.032, soft: 0.6, shape: 1.7 });
-                air({ at: 0.12, dur: 0.14, f: 520, f2: 950, q: 0.8, vol: 0.026, soft: 0.5, shape: 2 });
-                vox({ f: 172, f2: 124, dur: 0.08, w: "sine", vol: 0.028, cut: 620, atk: 0.003 }); },
-  /* 見つけた ― くぐもった鈴 */
-  get_: () => { vox({ f: 523, dur: 0.55, w: "sine", vol: 0.052, cut: 2600, atk: 0.004 });
-                vox({ at: 0.015, f: 784, dur: 0.44, w: "sine", vol: 0.03, cut: 3000, atk: 0.004 });
-                vox({ at: 0.05, f: 1245, dur: 0.3, w: "triangle", vol: 0.012, cut: 4200, atk: 0.004 }); },
+  step: () => foot(0, rnd(0.94, 1.08), 1),
+  /* がさ、がさ ― 布と枯れ枝をかき分ける。調べているあいだ繰り返す */
+  loot: () => { const k = rnd(0.9, 1.16);
+                air({ dur: 0.13, f: 620 * k, f2: 330 * k, q: 0.8, vol: 0.03, soft: 0.5, shape: 1.9, atk: 0.012 });
+                air({ at: 0.16, dur: 0.12, f: 450 * k, f2: 720 * k, q: 0.9, vol: 0.024, soft: 0.45, shape: 2.1, atk: 0.01 });
+                vox({ at: 0.02, f: 150 * k, f2: 106 * k, dur: 0.09, w: "sine", vol: 0.016, cut: 500, atk: 0.006 }); },
+  /* 手に入れた ― くぐもった鈴 */
+  get_: () => { vox({ f: 523, dur: 0.55, w: "sine", vol: 0.026, cut: 2600, atk: 0.004 });
+                vox({ at: 0.015, f: 784, dur: 0.44, w: "sine", vol: 0.015, cut: 3000, atk: 0.004 });
+                vox({ at: 0.05, f: 1245, dur: 0.3, w: "triangle", vol: 0.006, cut: 4200, atk: 0.004 }); },
   /* 打たれる */
   hurt: () => { vox({ f: 158, f2: 58, dur: 0.28, w: "sawtooth", vol: 0.085, cut: 880, cut2: 190, atk: 0.002 });
                 air({ dur: 0.2, f: 300, f2: 110, q: 0.6, vol: 0.05, soft: 0.62, shape: 2.6 }); },
@@ -599,9 +604,6 @@ const SFX = {
                          vol: 0.044 - i * 0.009, soft: 0.78, shape: 1.7, swell: 1, atk: 0.03 });
                  air({ dur: 0.55, f: 160, f2: 72, q: 1.1, vol: 0.085, soft: 0.5, shape: 1.5, swell: 1, atk: 0.04 });
                  vox({ f: 66, f2: 48, dur: 0.75, w: "sine", vol: 0.07, cut: 170, atk: 0.02 }); },
-  /* 見失われた ― 息を吐く */
-  lost: () => { vox({ f: 330, f2: 185, dur: 0.42, w: "sine", vol: 0.038, cut: 1200, atk: 0.03 });
-                air({ dur: 0.3, f: 700, f2: 300, q: 0.9, vol: 0.018, soft: 0.35, shape: 2 }); },
   /* 金 */
   coin: () => { vox({ f: 1568, dur: 0.2, w: "triangle", vol: 0.028, cut: 5400, atk: 0.002 });
                 vox({ at: 0.012, f: 2093, dur: 0.15, w: "sine", vol: 0.018, cut: 6000, atk: 0.002 });
@@ -614,15 +616,8 @@ const SFX = {
   /* 通らない */
   deny: () => { vox({ f: 148, f2: 96, dur: 0.22, w: "sine", vol: 0.058, cut: 560, atk: 0.004 });
                 air({ dur: 0.1, f: 210, q: 0.7, vol: 0.03, soft: 0.65, shape: 3 }); },
-  /* 降りる ― 段を四つ踏み下りて、下の広間が低く残る */
-  descend: () => { for (let i = 0; i < 4; i++) {
-                     const t = i * 0.135, d = 1 - i * 0.11;
-                     air({ at: t, dur: 0.15, f: 760 - i * 110, f2: 250 - i * 30, q: 0.95, vol: 0.062 * d, soft: 0.42, shape: 2.4, atk: 0.005 });
-                     air({ at: t + 0.02, dur: 0.1, f: 250 - i * 24, q: 1.3, vol: 0.05 * d, soft: 0.58, shape: 2.8, atk: 0.004 });
-                     vox({ at: t, f: 104 - i * 9, f2: 58, dur: 0.11, w: "sine", vol: 0.05 * d, cut: 280, atk: 0.003 });
-                   }
-                   vox({ at: 0.52, f: 78, f2: 44, dur: 1.1, w: "sine", vol: 0.055, cut: 200, atk: 0.06 });
-                   air({ at: 0.52, dur: 1.0, f: 380, f2: 100, q: 0.5, vol: 0.026, soft: 0.45, shape: 1.5, atk: 0.04 }); },
+  /* 段を下りる ― 足音を5つ、歩きの倍の速さで（歩きは約0.59秒おき） */
+  descend: () => { for (let i = 0; i < 5; i++) foot(i * 0.29, rnd(0.9, 1.1), 1.9 - i * 0.17); },
   /* 地上に出た */
   escape: () => { vox({ f: 294, dur: 0.3, w: "triangle", vol: 0.048, cut: 1600, atk: 0.012 });
                   vox({ at: 0.15, f: 392, dur: 0.34, w: "triangle", vol: 0.044, cut: 1900, atk: 0.012 });
@@ -635,8 +630,8 @@ const SFX = {
                  air({ at: 0.3, dur: 2.2, f: 190, f2: 58, q: 0.55, vol: 0.045, soft: 0.35, shape: 1.1, atk: 0.2 });
                  vox({ at: 0.35, f: 52, dur: 2.4, w: "triangle", vol: 0.05, cut: 150, atk: 0.5 }); },
   /* 煙玉 */
-  smoke: () => { air({ dur: 0.62, f: 2100, f2: 460, q: 0.5, vol: 0.055, soft: 0.5, shape: 1.3, atk: 0.02 });
-                 air({ at: 0.02, dur: 0.32, f: 900, q: 0.8, vol: 0.028, soft: 0.6, shape: 2 }); },
+  smoke: () => { air({ dur: 0.5, f: 2400, f2: 700, q: 0.6, vol: 0.062, soft: 0.5, shape: 1.5, atk: 0.025 });
+                 air({ at: 0.02, dur: 0.26, f: 1100, q: 0.9, vol: 0.03, soft: 0.55, shape: 2.2, atk: 0.012 }); },
   /* 勇者が事切れる ― 遠い弔いの鐘 */
   heroDie: () => { vox({ f: 110, dur: 1.7, w: "sine", vol: 0.065, cut: 800, atk: 0.005 });
                    vox({ at: 0.01, f: 164.8, dur: 1.3, w: "sine", vol: 0.03, cut: 1200, atk: 0.005 });
@@ -3233,6 +3228,7 @@ function updatePlayer(dt, frozen) {
       P.lootT += dt;
       if (P.lootT > 0.42) {
         P.lootT = 0;
+        SFX.loot();                                   // がさ、がさ ― 手を動かしているあいだ
         addPart(P.x, P.y - 6, { life: 0.8, max: 0.8, type: "ring", col: "#e8c46a", sz: 3 });
         for (const m of mons) {
           if (m.state === "dead" || m.state === "chase" || !hearsNoise(m)) continue;
@@ -3312,7 +3308,6 @@ const remainLabel = c => c.type === "blood" ? "血痕" : c.type === "memo" ? "�
 
 function finishLoot(c) {
   c.looted = true; P.looting = null; run.looted++;
-  SFX.loot();
   const logLines = [];
   if (c.hero) {
     dexHero(c.hero);
@@ -3357,6 +3352,7 @@ function finishLoot(c) {
     if (addToBag(it)) { got++; logLines.push("拾った：" + itemName(it) + " " + estPlain(it)); floatTxt(c.x + 8, c.y - 30 - got * 9, itemName(it) + " " + estPlain(it), rarOf(it) >= 2 ? "#e29ce0" : "#e8c46a"); }
     else { full = true; dropItem(it, c.x + 8, c.y + 8); }
   }
+  if (got) SFX.get_();                               // 手に入ったときだけ鳴る
   if (full) toast("これ以上は背負えない", "bad");
   if (c.story === "badge") { G.story.badge++; save(); }
   if (c.story === "mapfrag") { G.story.map++; save(); }
@@ -3403,7 +3399,6 @@ function updateMons(dt) {
       m.lost = (m.lost || 0) + dt;
       if (m.lost > (P.lamp ? 2.4 : 1.2)) {          // 暗ければ早く見失う
         m.state = "search"; m.cd = 3; m.alert = 0;
-        SFX.lost();
         if (Math.hypot(m.x - P.x, m.y - P.y) / TILE < 9) floatTxt(m.x, m.y - 26, "見失った", "#cfe6b6");
       }
     }
@@ -4907,15 +4902,14 @@ function playSfx(k) { sfxLet = true; try { SFX[k](); } finally { sfxLet = false;
 /* 音がどこで鳴るか ― 検証の〈音〉タブに出す */
 const SFX_LIST = [
   ["step", "足音", "歩いているあいだ、一定距離ごと"],
-  ["loot", "回収", "調べ終えた瞬間。装備を奪ったときも"],
-  ["get_", "手に入れた", "拾った・飲んだ・勇者に渡した"],
+  ["loot", "回収中", "調べているあいだ、0.42秒ごとに繰り返す"],
+  ["get_", "手に入れた", "品物が荷に入った。拾った・飲んだ・渡した"],
   ["hurt", "傷つく", "体力が1減った。魔物が倒れたときも"],
   ["alert", "気づかれた", "魔物に見つかった瞬間・主が動いた"],
-  ["lost", "見失われた", "追ってきた魔物が諦めた"],
   ["coin", "金", "品物を売った・借金を返した"],
   ["buy", "取り引き", "買った・強化した・装備を替えた"],
   ["deny", "通らない", "足りない・押せない・防具が肩代わりした"],
-  ["descend", "階段", "潜りはじめ・階段の上り下り"],
+  ["descend", "階段", "潜りはじめ・上り下り。足音を5つ、倍の速さで"],
   ["escape", "帰還", "地上へ生きて戻った・ENDが始まった"],
   ["faint", "力尽きる", "倒れた"],
   ["smoke", "煙玉", "煙玉を使った"],
@@ -5063,7 +5057,7 @@ function showDebug(tab) {
     body = '<div class="note">この画面にいるあいだ、<b>場面の曲も自動で鳴る音もすべて止めて</b>います。押したものだけが鳴ります。設定の入切とは関わりなく鳴り、もどれば元どおりです。触っても練習あつかいにはなりません。</div>' +
       '<div class="lbl">効果音</div>' +
       '<div class="btns"><div class="btn sm' + (seq ? " warn" : "") + '" data-a="dbgSfxAll">' +
-      (seq ? "止める" : "全部を順に鳴らす（16音・約16秒）") + "</div></div>" +
+      (seq ? "止める" : "全部を順に鳴らす（" + SFX_LIST.length + "音・約" + SFX_LIST.length + "秒）") + "</div></div>" +
       '<div class="list">' + SFX_LIST.map(x =>
         '<div class="row thin"><div class="nm">' + x[1] + "<small>" + x[2] + "</small></div>" +
         '<div class="val"><span class="btn sm" data-a="dbgSfx" data-i="' + x[0] + '">鳴らす</span></div></div>').join("") + "</div>" +
@@ -5642,7 +5636,7 @@ actions.hRob = () => {
   let got = 0;
   for (const it of h.gear) { it.hi = h.hi; if (addToBag(it)) got++; else dropItem(it, h.x, h.y); }
   h.gear = [];
-  G.infamy++; addSusp(3); save(); SFX.loot();
+  G.infamy++; addSusp(3); save(); SFX.loot(); if (got) SFX.get_();
   h.state = "hostile"; h.hp = Math.max(h.hp, h.maxHp * 0.8);
   floatTxt(h.x, h.y - 24, "「貴様……！」", "#ff9a92");
   toast("装備を奪った（" + got + " 点）― 追われている", "bad");
