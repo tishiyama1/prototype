@@ -406,7 +406,7 @@ function colAdd(k, id) {                        // タイトルの記録は「�
   if (a && a.indexOf(id) < 0) { a.push(id); return true; }
   return false;
 }
-const DEFAULT_SAVE = { g: null, rec: { best: 0, clears: 0, fails: 0, runs: 0, deaths: 0, boss: 0, bestDay: 0, bestTerm: 0, gold: 0, hauls: 0, terms: 0, col: null }, opt: { mute: false, mode: "normal", hand: "right", name: "拾い屋", dbg: false } };
+const DEFAULT_SAVE = { g: null, rec: { best: 0, clears: 0, fails: 0, runs: 0, deaths: 0, boss: 0, bestDay: 0, bestTerm: 0, gold: 0, hauls: 0, terms: 0, col: null }, opt: { mute: false, nomus: false, mode: "normal", hand: "right", name: "拾い屋", dbg: false } };
 let S = (() => {
   try {
     const raw = JSON.parse(localStorage.getItem(KEY) || "{}");
@@ -476,53 +476,275 @@ function setPName(v) {
   S.opt.name = n || PNAME0; save();
 }
 
-/* ---------- 音 ---------- */
-let AC = null, muted = false;
+/* ---------- 音 ----------
+   石と土の下の音。裸の矩形波はどこにも出さない。どの声もかならず
+   濾波と包絡を通し、石の廊下の返りに送る。
+
+       master ── lim ── destination
+         ├ 効果音 ┬ そのまま
+         │        └ 送り ── 残響 ── 返り
+         └ 音楽   ┴ 同じ送り                                   */
+let AC = null, muted = false, noMus = false;
+let LIM = null, REV = null, SBUS = null, MBUS = null;
+
 function actx() {
   if (!AC) { try { AC = new (window.AudioContext || window.webkitAudioContext)(); } catch (e) { AC = null; } }
   if (AC && AC.state === "suspended") AC.resume();
+  if (AC && !LIM) buildMix(AC);
   return AC;
 }
-function tone(f0, f1, dur, type, vol, delay) {
-  const a = actx(); if (!a || muted) return;
-  const t = a.currentTime + (delay || 0);
-  const o = a.createOscillator(), gn = a.createGain();
-  o.type = type || "square";
-  o.frequency.setValueAtTime(f0, t);
-  if (f1 && f1 !== f0) o.frequency.exponentialRampToValueAtTime(Math.max(20, f1), t + dur);
-  gn.gain.setValueAtTime(0.0001, t);
-  gn.gain.exponentialRampToValueAtTime(vol || 0.08, t + 0.008);
-  gn.gain.exponentialRampToValueAtTime(0.0001, t + dur);
-  o.connect(gn); gn.connect(a.destination);
-  o.start(t); o.stop(t + dur + 0.03);
+/* 石の廊下の返り ― 高いところは返ってこない */
+function stoneIR(a, dur, dark) {
+  const n = Math.floor(a.sampleRate * dur), b = a.createBuffer(2, n, a.sampleRate);
+  for (let c = 0; c < 2; c++) {
+    const d = b.getChannelData(c);
+    let lp = 0;
+    for (let i = 0; i < n; i++) {
+      lp += ((Math.random() * 2 - 1) * Math.pow(1 - i / n, 3.4) - lp) * dark;
+      d[i] = lp * (i < 90 ? i / 90 : 1);
+    }
+  }
+  return b;
 }
-function noise(dur, vol, hp) {
-  const a = actx(); if (!a || muted) return;
-  const n = Math.floor(a.sampleRate * dur);
+function mkBus(a, dry, wet) {
+  const g = a.createGain();
+  const d = a.createGain(); d.gain.value = dry; g.connect(d); d.connect(LIM);
+  const s = a.createGain(); s.gain.value = wet; g.connect(s); s.connect(REV);
+  return g;
+}
+function buildMix(a) {
+  LIM = a.createDynamicsCompressor();
+  LIM.threshold.value = -6; LIM.knee.value = 8; LIM.ratio.value = 8;
+  LIM.attack.value = 0.003; LIM.release.value = 0.16;
+  LIM.connect(a.destination);
+  REV = a.createConvolver(); REV.buffer = stoneIR(a, 2.1, 0.26);
+  const ret = a.createGain(); ret.gain.value = 0.9;
+  REV.connect(ret); ret.connect(LIM);
+  SBUS = mkBus(a, 2.15, 1.0);
+  MBUS = mkBus(a, 0.56, 0.34);
+  MBUS.gain.value = 0.0001;
+  if (!musTimer) musTimer = setInterval(musTick, 90);
+}
+
+/* 一声 ― 濾波した振動子。裸では鳴らさない */
+function vox(p) {
+  const a = actx(); if (!a) return;
+  const to = p.to || SBUS; if (!to || (to === SBUS && muted)) return;
+  const t = a.currentTime + (p.at || 0), dur = p.dur;
+  const o = a.createOscillator();
+  o.type = p.w || "triangle";
+  o.frequency.setValueAtTime(p.f, t);
+  if (p.f2 && p.f2 !== p.f) o.frequency.exponentialRampToValueAtTime(Math.max(18, p.f2), t + (p.bend || dur));
+  if (p.det) o.detune.value = p.det;
+  const f = a.createBiquadFilter();
+  f.type = "lowpass"; f.Q.value = p.q === undefined ? 0.6 : p.q;
+  f.frequency.setValueAtTime(p.cut || 2400, t);
+  if (p.cut2) f.frequency.exponentialRampToValueAtTime(Math.max(80, p.cut2), t + dur);
+  const g = a.createGain();
+  const v = p.vol === undefined ? 0.07 : p.vol, atk = p.atk === undefined ? 0.01 : p.atk;
+  g.gain.setValueAtTime(0.0001, t);
+  g.gain.linearRampToValueAtTime(v, t + atk);
+  if (p.hold) g.gain.setValueAtTime(v, t + atk + p.hold);
+  g.gain.exponentialRampToValueAtTime(0.0001, t + Math.max(atk + 0.04, dur));
+  o.connect(f); f.connect(g); g.connect(to);
+  o.start(t); o.stop(t + dur + 0.08);
+}
+/* 息と擦れ ― 帯を絞った雑音 */
+function air(p) {
+  const a = actx(); if (!a) return;
+  const to = p.to || SBUS; if (!to || (to === SBUS && muted)) return;
+  const t = a.currentTime + (p.at || 0);
+  const n = Math.max(1, Math.floor(a.sampleRate * p.dur));
   const buf = a.createBuffer(1, n, a.sampleRate), d = buf.getChannelData(0);
-  for (let i = 0; i < n; i++) d[i] = (Math.random() * 2 - 1) * Math.pow(1 - i / n, 2.2);
+  const sm = p.soft === undefined ? 0.45 : p.soft, sh = p.shape === undefined ? 2.4 : p.shape;
+  let lp = 0;
+  for (let i = 0; i < n; i++) {
+    lp += ((Math.random() * 2 - 1) - lp) * sm;
+    const e = Math.pow(1 - i / n, sh);
+    d[i] = lp * (p.swell ? Math.min(1, i / (n * 0.3)) * e : e);
+  }
   const src = a.createBufferSource(); src.buffer = buf;
-  const f = a.createBiquadFilter(); f.type = "highpass"; f.frequency.value = hp || 700;
-  const gn = a.createGain(); gn.gain.value = vol || 0.05;
-  src.connect(f); f.connect(gn); gn.connect(a.destination); src.start();
+  const f = a.createBiquadFilter();
+  f.type = p.ft || "bandpass"; f.Q.value = p.q === undefined ? 1.0 : p.q;
+  f.frequency.setValueAtTime(p.f || 800, t);
+  if (p.f2 && p.f2 !== p.f) f.frequency.exponentialRampToValueAtTime(Math.max(60, p.f2), t + p.dur);
+  const g = a.createGain(); g.gain.value = p.vol === undefined ? 0.05 : p.vol;
+  src.connect(f); f.connect(g); g.connect(to);
+  src.start(t);
 }
+
 const SFX = {
-  step: () => noise(0.05, 0.022, 1400),
-  loot: () => { tone(520, 780, 0.09, "square", 0.05); tone(780, 1180, 0.1, "square", 0.045, 0.08); },
-  get_: () => { tone(660, 990, 0.08, "triangle", 0.06); tone(990, 1320, 0.09, "triangle", 0.05, 0.07); },
-  hurt: () => { tone(220, 70, 0.28, "sawtooth", 0.1); noise(0.16, 0.06, 400); },
-  alert: () => { tone(180, 480, 0.1, "square", 0.07); tone(480, 180, 0.14, "square", 0.055, 0.1); },
-  coin: () => { tone(880, 880, 0.05, "square", 0.05); tone(1320, 1320, 0.09, "square", 0.045, 0.05); },
-  buy: () => { tone(440, 660, 0.07, "triangle", 0.06); tone(880, 880, 0.1, "triangle", 0.05, 0.07); },
-  deny: () => tone(180, 120, 0.16, "square", 0.06),
-  descend: () => { tone(300, 120, 0.5, "sine", 0.09); noise(0.5, 0.03, 200); },
-  escape: () => { tone(392, 523, 0.12, "triangle", 0.07); tone(523, 784, 0.22, "triangle", 0.06, 0.11); },
-  faint: () => { tone(300, 60, 0.7, "sawtooth", 0.09); },
-  smoke: () => noise(0.4, 0.07, 300),
-  heroDie: () => { tone(160, 90, 0.6, "sawtooth", 0.08); tone(300, 120, 0.5, "square", 0.04, 0.1); },
-  slash: () => { noise(0.09, 0.05, 1800); tone(700, 300, 0.07, "sawtooth", 0.03); },
-  ui: () => tone(600, 600, 0.04, "square", 0.035)
+  /* 砂利を擦る足 */
+  step: () => { air({ dur: 0.075, f: 620, f2: 300, q: 0.9, vol: 0.022, soft: 0.55, shape: 3 });
+                vox({ f: 128, f2: 74, dur: 0.06, w: "sine", vol: 0.014, cut: 380, atk: 0.003 }); },
+  /* 布と骨を漁る */
+  loot: () => { air({ dur: 0.17, f: 700, f2: 380, q: 0.7, vol: 0.032, soft: 0.6, shape: 1.7 });
+                air({ at: 0.12, dur: 0.14, f: 520, f2: 950, q: 0.8, vol: 0.026, soft: 0.5, shape: 2 });
+                vox({ f: 172, f2: 124, dur: 0.08, w: "sine", vol: 0.028, cut: 620, atk: 0.003 }); },
+  /* 見つけた ― くぐもった鈴 */
+  get_: () => { vox({ f: 523, dur: 0.55, w: "sine", vol: 0.052, cut: 2600, atk: 0.004 });
+                vox({ at: 0.015, f: 784, dur: 0.44, w: "sine", vol: 0.03, cut: 3000, atk: 0.004 });
+                vox({ at: 0.05, f: 1245, dur: 0.3, w: "triangle", vol: 0.012, cut: 4200, atk: 0.004 }); },
+  /* 打たれる */
+  hurt: () => { vox({ f: 158, f2: 58, dur: 0.28, w: "sawtooth", vol: 0.085, cut: 880, cut2: 190, atk: 0.002 });
+                air({ dur: 0.2, f: 300, f2: 110, q: 0.6, vol: 0.05, soft: 0.62, shape: 2.6 }); },
+  /* 気づかれた ― 息を呑む音と低い二打 */
+  alert: () => { air({ dur: 0.34, f: 320, f2: 1500, q: 1.3, vol: 0.03, soft: 0.5, shape: 1.2, swell: 1 });
+                 vox({ f: 196, f2: 294, dur: 0.22, w: "triangle", vol: 0.05, cut: 1300, atk: 0.006 });
+                 vox({ at: 0.17, f: 294, f2: 208, dur: 0.32, w: "triangle", vol: 0.038, cut: 1100, atk: 0.008 }); },
+  /* 見失われた ― 息を吐く */
+  lost: () => { vox({ f: 330, f2: 185, dur: 0.42, w: "sine", vol: 0.038, cut: 1200, atk: 0.03 });
+                air({ dur: 0.3, f: 700, f2: 300, q: 0.9, vol: 0.018, soft: 0.35, shape: 2 }); },
+  /* 金 */
+  coin: () => { vox({ f: 1568, dur: 0.2, w: "triangle", vol: 0.028, cut: 5400, atk: 0.002 });
+                vox({ at: 0.012, f: 2093, dur: 0.15, w: "sine", vol: 0.018, cut: 6000, atk: 0.002 });
+                vox({ at: 0.035, f: 1174, dur: 0.3, w: "sine", vol: 0.016, cut: 4000, atk: 0.003 });
+                air({ dur: 0.05, f: 3600, q: 2.2, vol: 0.014, soft: 0.95 }); },
+  /* 取り引き */
+  buy: () => { vox({ f: 392, dur: 0.24, w: "triangle", vol: 0.048, cut: 1700, atk: 0.008 });
+               vox({ at: 0.1, f: 587, dur: 0.36, w: "triangle", vol: 0.042, cut: 2100, atk: 0.008 });
+               vox({ at: 0.1, f: 880, dur: 0.3, w: "sine", vol: 0.016, cut: 3000, atk: 0.008 }); },
+  /* 通らない */
+  deny: () => { vox({ f: 148, f2: 96, dur: 0.22, w: "sine", vol: 0.058, cut: 560, atk: 0.004 });
+                air({ dur: 0.1, f: 210, q: 0.7, vol: 0.03, soft: 0.65, shape: 3 }); },
+  /* 降りる ― 深いところへ落ちていく */
+  descend: () => { vox({ f: 220, f2: 55, dur: 0.9, w: "sine", vol: 0.085, cut: 900, cut2: 200, atk: 0.02 });
+                   air({ dur: 0.85, f: 1100, f2: 140, q: 0.5, vol: 0.034, soft: 0.7, shape: 1.4 });
+                   vox({ at: 0.06, f: 110, f2: 82, dur: 1.3, w: "triangle", vol: 0.028, cut: 380, atk: 0.16 }); },
+  /* 地上に出た */
+  escape: () => { vox({ f: 294, dur: 0.3, w: "triangle", vol: 0.048, cut: 1600, atk: 0.012 });
+                  vox({ at: 0.15, f: 392, dur: 0.34, w: "triangle", vol: 0.044, cut: 1900, atk: 0.012 });
+                  vox({ at: 0.32, f: 587, dur: 0.8, w: "sine", vol: 0.04, cut: 2400, atk: 0.02 });
+                  vox({ at: 0.32, f: 880, dur: 0.7, w: "sine", vol: 0.014, cut: 3000, atk: 0.03 }); },
+  /* 力尽きる */
+  faint: () => { vox({ f: 330, f2: 41, dur: 1.7, w: "sawtooth", vol: 0.07, cut: 1400, cut2: 110, atk: 0.02 });
+                 air({ dur: 1.5, f: 620, f2: 85, q: 0.4, vol: 0.038, soft: 0.6, shape: 1.1 });
+                 vox({ at: 0.45, f: 98, f2: 49, dur: 2.3, w: "sine", vol: 0.05, cut: 300, atk: 0.35 }); },
+  /* 煙玉 */
+  smoke: () => { air({ dur: 0.6, f: 3000, f2: 480, q: 0.5, vol: 0.055, soft: 0.95, shape: 1.3 });
+                 air({ at: 0.02, dur: 0.32, f: 900, q: 0.8, vol: 0.028, soft: 0.6, shape: 2 }); },
+  /* 勇者が事切れる ― 遠い弔いの鐘 */
+  heroDie: () => { vox({ f: 110, dur: 1.7, w: "sine", vol: 0.065, cut: 800, atk: 0.005 });
+                   vox({ at: 0.01, f: 164.8, dur: 1.3, w: "sine", vol: 0.03, cut: 1200, atk: 0.005 });
+                   vox({ at: 0.02, f: 82.4, dur: 2.4, w: "triangle", vol: 0.038, cut: 360, atk: 0.06 });
+                   air({ dur: 0.22, f: 1900, f2: 560, q: 1.5, vol: 0.02, soft: 0.7 }); },
+  /* 刃 */
+  slash: () => { air({ dur: 0.12, f: 1100, f2: 4600, q: 0.9, vol: 0.05, soft: 0.95, shape: 1.1, swell: 1 });
+                 vox({ f: 1760, f2: 880, dur: 0.15, w: "triangle", vol: 0.022, cut: 6000, atk: 0.002 }); },
+  /* 指の下 */
+  ui: () => { vox({ f: 820, f2: 620, dur: 0.07, w: "sine", vol: 0.028, cut: 2400, atk: 0.003 });
+              air({ dur: 0.03, f: 2200, q: 2.2, vol: 0.012, soft: 0.85 }); }
 };
+
+/* ---------- 音楽 ----------
+   曲は持ち込めないので、その場で組む。低い持続音の上に和音を重ね、
+   まばらに旋律を落とす。場面ごとに調と間合いを変える。
+   prog は根音からの半音、8分音符きざみ、bars 小節ごとに移る。       */
+const semi = (f, n) => f * Math.pow(2, n / 12);
+const MOOD = {
+  /* 墓場の入口 ― 冷たく、間を空けて */
+  title:   { root: 55.00, bpm: 48, bars: 2, gain: 0.62, cut: 760, oct: 8,
+             prog: [[0, 3, 7], [-4, 0, 3], [3, 7, 10], [-2, 2, 5]],
+             lead: [0, 3, 5, 7, 10, 12], p: 0.13 },
+  /* 街 ― 生きている場所。少しだけあたたかい */
+  town:    { root: 73.42, bpm: 68, bars: 2, gain: 0.5, cut: 1150, oct: 8,
+             prog: [[0, 4, 7], [-3, 0, 4], [-7, -3, 0], [-5, -1, 2]],
+             lead: [0, 2, 4, 7, 9, 11, 12], p: 0.26, pluck: 1 },
+  /* 浅い層 ― ほとんど持続音だけ */
+  dun:     { root: 41.20, bpm: 54, bars: 2, gain: 0.5, cut: 620, oct: 12,
+             prog: [[0, 3, 7], [1, 5, 8], [0, 3, 7], [-2, 1, 5]],
+             lead: [0, 1, 3, 5, 7, 8, 10], p: 0.09 },
+  /* 深い層 ― 濁りを足し、鼓動を置く */
+  deep:    { root: 38.89, bpm: 50, bars: 2, gain: 0.55, cut: 520, oct: 12,
+             prog: [[0, 3, 7], [0, 1, 6], [-2, 1, 8], [0, 3, 6]],
+             lead: [0, 1, 3, 6, 7, 8], p: 0.11, pulse: 1 },
+  /* 聖堂 ― 息をつける */
+  sanct:   { root: 110.0, bpm: 44, bars: 2, gain: 0.42, cut: 1500, oct: 4,
+             prog: [[0, 4, 7], [-5, -1, 2], [-7, -3, 0], [-5, -1, 2]],
+             lead: [0, 2, 4, 7, 9, 12], p: 0.1, bell: 1 },
+  /* 最深部 ― 追い立てられる */
+  boss:    { root: 49.00, bpm: 104, bars: 1, gain: 0.6, cut: 900, oct: 8,
+             prog: [[0, 3, 7], [0, 1, 7], [0, 3, 6], [-1, 3, 6]],
+             lead: [0, 1, 3, 6, 7, 10], p: 0.2, pulse: 1, ost: 1 },
+  /* 夢 ― 輪郭がない */
+  dream:   { root: 55.00, bpm: 40, bars: 4, gain: 0.4, cut: 700, oct: 12,
+             prog: [[0, 3, 10], [-2, 3, 8]], lead: [0, 3, 7, 10], p: 0.05 },
+  /* 終わり ― ようやくほどける */
+  end:     { root: 65.41, bpm: 60, bars: 2, gain: 0.55, cut: 1300, oct: 8,
+             prog: [[0, 4, 7], [-5, -1, 2], [-3, 0, 4], [-7, -3, 0]],
+             lead: [0, 2, 4, 5, 7, 9, 11, 12], p: 0.26, pluck: 1, bell: 1 }
+};
+let musKind = "", musWant = null, musStep = 0, musAt = 0, musTimer = 0, musSwap = 0;
+
+function setMusic(k) {
+  if (!MOOD[k]) k = "";
+  if (k === musKind && !musWant) return;
+  if (musWant === k) return;
+  const a = actx();
+  musWant = k;
+  clearTimeout(musSwap);
+  if (!a || !MBUS) { musKind = k; musWant = null; musStep = 0; musAt = 0; return; }
+  const g = MBUS.gain, t = a.currentTime;
+  g.cancelScheduledValues(t); g.setValueAtTime(Math.max(0.0001, g.value), t);
+  g.exponentialRampToValueAtTime(0.0001, t + (musKind ? 0.7 : 0.05));
+  musSwap = setTimeout(() => {
+    musKind = musWant; musWant = null; musStep = 0; musAt = 0; musUp();
+  }, musKind ? 740 : 60);
+}
+function musUp() {
+  const a = AC; if (!a || !MBUS) return;
+  const g = MBUS.gain, t = a.currentTime;
+  g.cancelScheduledValues(t); g.setValueAtTime(Math.max(0.0001, g.value), t);
+  g.linearRampToValueAtTime(noMus || !musKind ? 0.0001 : 1, t + 1.3);
+}
+function musTick() {
+  const a = AC;
+  if (!a || a.state !== "running" || !MBUS || noMus || !musKind) return;
+  const M = MOOD[musKind]; if (!M) return;
+  const spb = 60 / M.bpm / 2;
+  if (musAt < a.currentTime + 0.02) musAt = a.currentTime + 0.1;
+  while (musAt < a.currentTime + 0.45) {
+    musBeat(M, musStep, Math.max(0, musAt - a.currentTime));
+    musStep++; musAt += spb;
+  }
+}
+function musBeat(M, s, at) {
+  const per = 8 * (M.bars || 2), spb = 60 / M.bpm / 2, root = M.root, gv = M.gain;
+  if (s % per === 0) {                                  // 和音が移る
+    const ch = M.prog[Math.floor(s / per) % M.prog.length], len = per * spb;
+    vox({ to: MBUS, at, f: root, dur: len * 1.04, w: "sine", vol: 0.2 * gv,
+          cut: 240, atk: len * 0.16, hold: len * 0.45 });
+    ch.forEach((n, i) => vox({ to: MBUS, at: at + i * 0.06, f: semi(root * M.oct, n), dur: len * 0.92,
+          w: "triangle", vol: 0.05 * gv, cut: M.cut, atk: len * 0.24, hold: len * 0.28, det: (i - 1) * 6 }));
+  }
+  if (M.ost && s % 2 === 0) {                           // 追い立てる刻み
+    vox({ to: MBUS, at, f: root * 2, f2: root * 1.88, dur: 0.22, w: "triangle",
+          vol: 0.075 * gv, cut: 340, atk: 0.004 });
+  }
+  if (M.pulse && s % 8 === 0) {                         // 鼓動
+    vox({ to: MBUS, at, f: root * 1.6, f2: root * 0.9, dur: 0.42, w: "sine", vol: 0.1 * gv, cut: 260, atk: 0.006 });
+    vox({ to: MBUS, at: at + 0.26, f: root * 1.4, f2: root * 0.9, dur: 0.34, w: "sine", vol: 0.055 * gv, cut: 240, atk: 0.006 });
+  }
+  if (M.p && s % 2 === 1 && chance(M.p)) {              // まばらな旋律
+    const n = M.lead[ri(0, M.lead.length - 1)] + (chance(0.25) ? 12 : 0);
+    const f = semi(root * M.oct * 2, n);
+    if (M.bell) {
+      vox({ to: MBUS, at, f, dur: 1.5, w: "sine", vol: 0.05 * gv, cut: 3200, atk: 0.006 });
+      vox({ to: MBUS, at, f: f * 2.76, dur: 0.7, w: "sine", vol: 0.012 * gv, cut: 5000, atk: 0.006 });
+    } else if (M.pluck) {
+      vox({ to: MBUS, at, f, dur: 0.6, w: "triangle", vol: 0.055 * gv, cut: 2400, cut2: 900, atk: 0.005 });
+    } else {
+      vox({ to: MBUS, at, f, dur: 1.1, w: "sine", vol: 0.04 * gv, cut: 1800, atk: 0.09 });
+    }
+  }
+}
+/* 今いる場所の曲 */
+function floorMus() {
+  if (!run || !run.pos) return "dun";
+  if (run.pos.s) return "sanct";
+  if (run.pos.d >= BOSS_FLOOR) return "boss";
+  return run.pos.d >= 15 ? "deep" : "dun";
+}
 
 /* ---------- スプライト ---------- */
 function makeSprite(art, pal) {
@@ -1810,7 +2032,7 @@ const MTYPE = {
   bone:   { nm: "骸骨兵",   spr: "bone",  spd: 30, sight: 6.2, hp: 14, dMin: 2,  dMax: 14, w: 3, wander: 0.9, gold: 0.3,  ai: "wall",     atk: ["blade"] },
   spider: { nm: "糸蜘蛛",   spr: "spider", spd: 30, sight: 5.4, hp: 11, dMin: 3, dMax: 17, w: 3, wander: 0.8, gold: 0.3,  ai: "corridor", atk: ["bite"] },
   ghost:  { nm: "亡霊",     spr: "ghost", spd: 21, sight: 5.6, hp: 18, dMin: 6,  dMax: 30, w: 2, phase: true, wander: 0.6, gold: 0.35, ai: "chase", atk: ["magic"] },
-  wisp:   { nm: "燐火",     spr: "wisp",  spd: 30, sight: 6.6, hp: 12, dMin: 7,  dMax: 22, w: 2, phase: true, wander: 1.1, gold: 0.4,  ai: "drift",    atk: ["magic"] },
+  wisp:   { nm: "燐火",     spr: "wisp",  spd: 30, sight: 6.6, hp: 12, dMin: 7,  dMax: 22, w: 2, float: true, wander: 1.1, gold: 0.4,  ai: "drift",    atk: ["magic"] },
   golem:  { nm: "石の番人", spr: "golem", spd: 14, sight: 99,  hp: 34, dMin: 10, dMax: 30, w: 2, wander: 0.4, gold: 0.5,  ai: "hunter",   atk: ["crush"] },
   worm:   { nm: "骨喰い蟲", spr: "worm",  spd: 22, sight: 0,   hp: 26, dMin: 12, dMax: 26, w: 2, wander: 0.7, gold: 0.4,  ai: "scavenge", atk: ["bite"] },
   wraith: { nm: "影法師",   spr: "wraith", spd: 32, sight: 7.4, hp: 22, dMin: 17, dMax: 30, w: 2, phase: true, wander: 0.5, gold: 0.55, ai: "chase", atk: ["magic"] },
@@ -1828,6 +2050,12 @@ const MON_AI_NM = {
   scavenge: "死体や落ちた物に群がる。人は追わない"
 };
 const spdNm = v => v < 17 ? "とても遅い" : v < 25 ? "遅い" : v < 37 ? "普通" : v < 50 ? "速い" : "とても速い";
+/* 物音に寄ってくるか ― もともと人を追う気のない手合いは、聞いても来ない */
+const DEAF_AI = ["random", "flee", "scavenge"];
+function hearsNoise(m) {
+  const t = MTYPE[m.type];
+  return !t.boss && DEAF_AI.indexOf(t.ai || "chase") < 0;
+}
 /* その階層に出る魔物が持っている攻撃手段 */
 function atkAtDepth(d) {
   const set = {};
@@ -2056,7 +2284,7 @@ const TIPS = [
   { id: "p_warp", cat: "play", ttl: "転移碑で地上へ帰れる", need: g => g.sanctMax >= 1,
     txt: "聖堂の碑からは地上へ戻れる。一度行った聖堂へは、翌日から直接降りられる。" },
   { id: "p_noise", cat: "play", ttl: "回収は物音を立てる", need: g => (g.seen.loot || 0) >= 1,
-    txt: "調べているあいだ、五マスほどの魔物がこちらを探しはじめる。要らない亡骸のそばで足を止めない。" },
+    txt: "調べているあいだ、五マスほどの魔物がこちらを探しはじめる。ただし、そもそも人を追わない手合い ― 墓ねずみ、こうもり、骨喰い蟲 ― は物音では来ない。要らない亡骸のそばで足を止めない。" },
   { id: "p_lamp", cat: "play", ttl: "灯りを消せば見失われる", need: g => (g.seen.lampoff || 0) >= 1,
     txt: "消すと感知の距離が半分になる。三マスほど離れてから消せば一秒ほどで撒ける。すぐ隣では効かない。" },
   { id: "p_weight", cat: "play", ttl: "背負える重さは決まっている", need: g => (g.seen.full || 0) >= 1,
@@ -2784,6 +3012,7 @@ function enterLevel(pos, from) {
   run.askAt = idx(Math.floor(P.x / TILE), Math.floor(P.y / TILE));   // 降り立った階段では聞かない
   camx = clamp(P.x - VW / 2, 0, MW * TILE - VW); camy = clamp(P.y - VH / 2, 0, MH * TILE - VH);
   if (!pos.s && pos.d > G.deepest) { G.deepest = pos.d; save(); }
+  setMusic(floorMus());
   if (pos.s) {
     P.armor = armorMax();
     if (pos.d > (G.sanctMax || 0)) { G.sanctMax = pos.d; save(); toast("新しい聖堂を見つけた", "good"); }
@@ -2985,7 +3214,7 @@ function updatePlayer(dt, frozen) {
         P.lootT = 0;
         addPart(P.x, P.y - 6, { life: 0.8, max: 0.8, type: "ring", col: "#e8c46a", sz: 3 });
         for (const m of mons) {
-          if (m.state === "dead" || m.state === "chase" || MTYPE[m.type].boss) continue;
+          if (m.state === "dead" || m.state === "chase" || !hearsNoise(m)) continue;
           if (dist2(m.x, m.y, P.x, P.y) < (TILE * 5.5) ** 2) { m.state = "search"; m.lx = Math.floor(P.x / TILE); m.ly = Math.floor(P.y / TILE); m.alert = 0.6; }
         }
       }
@@ -3153,7 +3382,7 @@ function updateMons(dt) {
       m.lost = (m.lost || 0) + dt;
       if (m.lost > (P.lamp ? 2.4 : 1.2)) {          // 暗ければ早く見失う
         m.state = "search"; m.cd = 3; m.alert = 0;
-        tone(420, 260, 0.12, "sine", 0.045);
+        SFX.lost();
         if (Math.hypot(m.x - P.x, m.y - P.y) / TILE < 9) floatTxt(m.x, m.y - 26, "見失った", "#cfe6b6");
       }
     }
@@ -3749,9 +3978,9 @@ function drawDungeon(dt) {
       if (!m.seen && m.dead <= 0) { m.seen = 1; dexMon(m.type, run.pos.d); }
       g.save();
       if (m.state === "dead") { g.globalAlpha = clamp(m.dead / 0.45, 0, 1); g.translate(0, (1 - m.dead / 0.45) * 4); }
-      if (t.phase || t.dim) g.globalAlpha *= 0.78;
+      if (t.phase || t.dim || t.float) g.globalAlpha *= 0.78;
       if (m.hurt > 0) g.globalAlpha *= 0.6;
-      const bob = (t.phase || t.dim) ? Math.sin(time * 2.4 + m.ph) * 2 : 0;
+      const bob = (t.phase || t.dim || t.float) ? Math.sin(time * 2.4 + m.ph) * 2 : 0;
       const fr = Math.floor(m.anim * (t.erratic ? 9 : 4)) % 2;
       drawSpr(SPR[t.spr][fr], m.x - 8, m.y - 10 + bob, m.state === "chase" ? P.x < m.x : false);
       g.restore();
@@ -4297,7 +4526,7 @@ function itemRow(it, right, cls, owner, blind) {
 
 /* ---------- タイトル ---------- */
 function showTitle() {
-  scene = "title";
+  scene = "title"; setMusic("title");
   const cont = !!S.g;
   const rec = S.rec.best ? "最短返済 <b>" + S.rec.best + "</b> 日 ／ 完済 " + S.rec.clears + " 回" : "まだ一度も返せていない";
   openUI("title",
@@ -4347,7 +4576,7 @@ function showHelp(tab) {
   } else if (helpTab === "hide") {
     body = "<p>・<b>灯り</b>を消すと感知距離が半分になり、見失われるのも早い（自分も見えなくなる）<br>" +
       "　追われていても、<b>3マスほど離れてから消せば1秒ほどで撒ける</b>。すぐ隣では効かない<br>" +
-      "・回収は<b>足を止めるだけ</b>で始まり、<b>物音</b>を立てる。近くの魔物が寄ってくるので、要らない亡骸のそばで立ち止まらない<br>" +
+      "・回収は<b>足を止めるだけ</b>で始まり、<b>物音</b>を立てる。<b>人を追う魔物</b>が寄ってくるので、要らない亡骸のそばで立ち止まらない<br>" +
       "・拾った<b>防具</b>は身につけられる。殴られを肩代わりするが、その分傷んで売値が落ちる<br>" +
       "・<b>煙玉</b>は追跡を切る。<b>ポーション</b>は体力をひとつ戻す</p>";
   } else if (helpTab === "sell") {
@@ -4384,7 +4613,7 @@ actions.back = () => {
 /* ---------- 地上 ---------- */
 function daysLeft() { return G.limit - G.day + 1; }
 function showTown() {
-  scene = "town";
+  scene = "town"; setMusic("town");
   if (pendingCase) { const c = pendingCase; pendingCase = null; showCase(c); return; }
   if (G.ended === "fail") { endFail(); return; }
   if (G.debt <= 0 && !G.ended) { G.ended = "clear"; recordClear(); endClear(); return; }
@@ -4635,6 +4864,7 @@ actions.optback = () => {
   else actions.back({});
 };
 actions.setmute = d => { muted = d.i === "1"; S.opt.mute = muted; save(); if (!muted) SFX.ui(); showOpt(); };
+actions.setmus = d => { noMus = d.i === "1"; S.opt.nomus = noMus; save(); SFX.ui(); musUp(); showOpt(); };
 actions.sethand = d => { S.opt.hand = d.i === "left" ? "left" : "right"; save(); hudSig = ""; showOpt(); };
 actions.setmode = d => { S.opt.mode = d.i; save(); if (safeMode() && G) { G.assist = 1; save(); } showOpt(); };
 
@@ -4902,9 +5132,12 @@ function showOpt() {
     '<div class="lbl">名前</div>' +
     '<input class="tin" id="pnin" maxlength="8" value="' + pname() + '" placeholder="' + PNAME0 + '">' +
     '<div class="note">墓場での呼ばれ方です。空にすると「' + PNAME0 + '」に戻ります。</div>' +
-    '<div class="lbl">音</div>' +
+    '<div class="lbl">効果音</div>' +
     '<div class="btns"><div class="btn' + (muted ? "" : " pri") + '" data-a="setmute" data-i="0">鳴らす</div>' +
     '<div class="btn' + (muted ? " pri" : "") + '" data-a="setmute" data-i="1">消す</div></div>' +
+    '<div class="lbl">音楽</div>' +
+    '<div class="btns"><div class="btn' + (noMus ? "" : " pri") + '" data-a="setmus" data-i="0">鳴らす</div>' +
+    '<div class="btn' + (noMus ? " pri" : "") + '" data-a="setmus" data-i="1">消す</div></div>' +
     '<div class="lbl">利き手</div>' +
     '<div class="btns"><div class="btn' + (lefty() ? "" : " pri") + '" data-a="sethand" data-i="right">右利き</div>' +
     '<div class="btn' + (lefty() ? " pri" : "") + '" data-a="sethand" data-i="left">左利き</div></div>' +
@@ -5379,6 +5612,7 @@ actions.bossFlee = () => {
 actions.bossFight = () => {
   closeUI();
   for (const mm of mons) if (MTYPE[mm.type].boss) { mm.angry = true; mm.talked = true; }
+  setMusic("boss");
   run.killer = "ダンジョンの主";
   SFX.alert(); flash = 1; shake = 12;
   showTalk([
@@ -5413,6 +5647,7 @@ function showPause() {
 }
 actions.resume = () => closeUI();
 actions.mute = () => { muted = !muted; S.opt.mute = muted; save(); showPause(); };
+actions.mus = () => { noMus = !noMus; S.opt.nomus = noMus; save(); musUp(); showPause(); };
 let itemTab = "tool";
 function showItems(tab) {
   itemTab = tab || itemTab;
@@ -5473,7 +5708,7 @@ actions.uSmk = () => { closeUI(); useSmoke(); };
 
 /* ---------- 一日の終わり ---------- */
 function showResult(kind, kept, lost, depth, floors, haul) {
-  scene = "result";
+  scene = "result"; setMusic("town");
   const total = haul === undefined ? kept.reduce((a, b) => a + sellPrice(b), 0) : haul;
   const est = estSum(kept);
   const gap = total - est;
@@ -5504,7 +5739,7 @@ function showResult(kind, kept, lost, depth, floors, haul) {
     "</div></div>");
 }
 function showDream(depth, floors, killer) {
-  scene = "result";
+  scene = "result"; setMusic("dream");
   const who = killer || "何か";
   const line = killer === "飢えと渇き" ? "地下 " + depth + " 階で、飢えと渇きで動けなくなった気がする"
     : "地下 " + depth + " 階で、" + who + "に殺された気がする";
@@ -5667,7 +5902,7 @@ const STAFF = [
 ];
 function startEnding() {
   scene = "ending"; endT = 0; endRoll = 0; endDone = false; endFast = false;
-  closeUI(); SFX.escape();
+  closeUI(); setMusic("end"); SFX.escape();
 }
 function drawEnding(dt) {
   endT += dt;
@@ -6100,6 +6335,7 @@ function frame(now) {
 
 /* ---------- 起動 ---------- */
 muted = !!(S.opt && S.opt.mute);
+noMus = !!(S.opt && S.opt.nomus);
 if (G) { if (!G.market || !Object.keys(G.market).length) rollMarket(); countMurderKept(); }
 resize();
 showTitle();
