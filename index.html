@@ -153,6 +153,12 @@
   .card.doubutsu:hover { box-shadow: 0 26px 60px rgba(120, 80, 20, 0.5); }
   .card.doubutsu h2 { color: #fff2df; }
   .card.doubutsu .en, .card.doubutsu .go { color: #ffb84a; }
+  /* chigai (ちがい) theming */
+  .card.chigai .tag { background: rgba(186, 200, 214, 0.14); color: #cfdae5; border: 1px solid rgba(186,200,214,0.3); }
+  .card.chigai:hover { box-shadow: 0 26px 60px rgba(35, 45, 60, 0.5); }
+  .card.chigai h2 { color: #eef3f8; }
+  .card.chigai .en, .card.chigai .go { color: #b6c6d6; }
+
   /* snake (へびとりんご) theming */
   .card.snake .tag { background: rgba(126, 200, 80, 0.16); color: #b8ec84; border: 1px solid rgba(126,200,80,0.32); }
   .card.snake:hover { box-shadow: 0 26px 60px rgba(40, 100, 30, 0.5); }
@@ -219,6 +225,18 @@
   </header>
 
   <div class="cards">
+    <a class="card chigai" href="chigai.html">
+      <div class="art"><canvas id="art-chigai"></canvas></div>
+      <div class="body">
+        <span class="tag">PUZZLE · COLOR</span>
+        <h2>ちがい</h2>
+        <div class="en">ONE SQUARE ― 1マスだけ、色が違う</div>
+        <div class="desc">同じ色のマスを敷きつめた中に、1マスだけほんの少し色の違うマスがある。それを見つけてタップするだけ。制限時間もスコアもミスの罰もなく、進むほどマスは増え、色の差は消えていく。最後は見えるか見えないかの境目まで。</div>
+        <div class="feat"><span>🔍 100レベル</span><span>⏱ 時間制限なし</span><span>🎨 色差はΔEで調整</span><span>📱 スマホ縦画面</span></div>
+        <div class="go"><span>探す</span><span class="arrow">→</span></div>
+      </div>
+    </a>
+
     <a class="card abyss" href="abyss.html">
       <div class="art"><canvas id="art-abyss"></canvas></div>
       <div class="body">
@@ -492,6 +510,13 @@
   const krLeaves = [];
   for (let i = 0; i < 14; i++) krLeaves.push({ x: Math.random(), y: rand(0.25, 1), a: rand(0, TAU), s: rand(0.5, 1) });
 
+  // chigai preview: a quiet grid with one square a hair off, and a ring settling on it
+  const CG = setup("art-chigai");
+  const cgN = 6;
+  let cgHue = 210, cgOdd = 0, cgT = 0;
+  function cgNew() { cgHue = Math.random() * 360; cgOdd = Math.floor(Math.random() * cgN * cgN); }
+  cgNew();
+
   // snake preview: a little snake crawling the grass, eating apples and growing
   const SN = setup("art-snake");
   const snC = 13, snR = 8, snStep = 0.26;
@@ -730,6 +755,48 @@
         // smile
         c.strokeStyle = shade; c.lineWidth = 2; c.beginPath(); c.arc(x, y + u*0.16, u*0.16, Math.PI*0.15, Math.PI*0.85); c.stroke();
       }
+    }
+
+    // ---- chigai card: one square a hair off, and a ring settling onto it ----
+    {
+      const { c, w, h } = CG;
+      c.clearRect(0, 0, w, h);
+      c.fillStyle = "#0a0f18"; c.fillRect(0, 0, w, h);
+
+      cgT += 0.016;
+      if (cgT > 5.6) { cgT = 0; cgNew(); }
+
+      const pad = 18, gap = 5;
+      const side = Math.min(w - pad * 2, h - pad * 2);
+      const cell = (side - gap * (cgN - 1)) / cgN;
+      const ox = (w - side) / 2, oy = (h - side) / 2;
+      const at = i => ({ x: ox + (i % cgN) * (cell + gap), y: oy + Math.floor(i / cgN) * (cell + gap) });
+
+      const found = cgT > 3.1;
+      const dim = found ? 1 - Math.min(1, (cgT - 3.1) / 0.45) * 0.62 : 1;
+
+      for (let i = 0; i < cgN * cgN; i++) {
+        const p = at(i);
+        const odd = i === cgOdd;
+        c.globalAlpha = odd && found ? 1 : dim;
+        c.fillStyle = `hsl(${cgHue}, 26%, ${odd ? 61 : 54}%)`;
+        c.fillRect(p.x, p.y, cell, cell);
+      }
+      c.globalAlpha = 1;
+
+      // 探す輪 ― ふらついたあと、違うマスに吸い寄せられる
+      const oc = { x: cgOdd % cgN, y: Math.floor(cgOdd / cgN) };
+      const e = 1 - Math.pow(1 - Math.min(1, cgT / 3.1), 3);
+      const mid = (cgN - 1) / 2;
+      const wx = mid + Math.cos(cgT * 1.7) * 1.9, wy = mid + Math.sin(cgT * 1.15) * 1.9;
+      const gx = wx + (oc.x - wx) * e, gy = wy + (oc.y - wy) * e;
+      const rx = ox + gx * (cell + gap), ry = oy + gy * (cell + gap);
+      const pulse = found ? 1 + Math.sin((cgT - 3.1) * 7) * 0.06 : 1;
+      const m = (cell * (pulse - 1)) / 2 + 3;
+
+      c.strokeStyle = found ? "rgba(255,255,255,0.92)" : "rgba(255,255,255,0.34)";
+      c.lineWidth = found ? 2 : 1.4;
+      c.strokeRect(rx - m, ry - m, cell + m * 2, cell + m * 2);
     }
 
     // ---- snake card: a snake crawling a checkered lawn toward an apple ----
