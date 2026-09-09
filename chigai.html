@@ -124,6 +124,24 @@
     text-align: center;
     min-width: 216px;
   }
+  .card { position: relative; }
+  .ask {
+    position: absolute; top: 4px; right: 4px;
+    appearance: none; -webkit-appearance: none;
+    background: none; border: 0;
+    width: 40px; height: 40px;          /* 見た目は小さく、押せる範囲は広く */
+    font: inherit; font-size: 12px; color: var(--faint);
+    pointer-events: auto;               /* パネル自体は素通しなので、ここだけ受ける */
+    display: flex; align-items: center; justify-content: center;
+  }
+  .ask::before {
+    content: "?";
+    width: 19px; height: 19px; border-radius: 50%;
+    border: 1px solid var(--line);
+    display: flex; align-items: center; justify-content: center;
+    font-weight: 700;
+  }
+
   .found { font-size: 15px; font-weight: 700; letter-spacing: 0.34em; text-indent: 0.34em; }
   .kind  { margin-top: 5px; font-size: 10.5px; letter-spacing: 0.3em; text-indent: 0.3em; color: var(--dim); }
 
@@ -131,17 +149,32 @@
   .sw { width: 34px; height: 34px; border-radius: 4px; border: 1px solid rgba(0,0,0,0.08); }
   .swatches span { font-size: 12px; color: var(--faint); }
 
-  /* 色差のまとめ ― ここが主役。生のRGBは下に控えめに置く */
+  /* 色差 ― ここが主役 */
   .metrics {
-    display: inline-grid; grid-template-columns: auto auto;
-    gap: 3px 14px; margin-bottom: 12px;
+    display: grid; grid-template-columns: auto auto;
+    width: fit-content; margin: 0 auto 13px;
+    gap: 3px 14px;
     font-size: 12.5px; line-height: 1.7;
   }
   .metrics span { color: var(--faint); letter-spacing: 0.06em; text-align: right; }
   .metrics b { color: var(--ink); font-weight: 700; text-align: left; }
 
-  .rgb { font-size: 11.5px; line-height: 1.75; color: var(--faint); }
-  .rgb div.changed { color: var(--dim); font-weight: 700; }
+  /* RGB ― 数字の隣にその原色を置く */
+  .rgb {
+    display: grid;
+    grid-template-columns: auto auto auto auto auto auto;
+    width: fit-content; margin: 0 auto;
+    align-items: center; gap: 6px 5px;
+    font-size: 12px; color: var(--faint);
+  }
+  .rgb .n  { letter-spacing: 0.06em; }
+  .rgb .v  { min-width: 3ch; text-align: right; font-variant-numeric: tabular-nums; }
+  .rgb .ar { color: var(--faint); padding: 0 2px; }
+  .rgb .chip {
+    width: 13px; height: 13px; border-radius: 2px;
+    border: 1px solid rgba(0,0,0,0.12);
+  }
+  .rgb .changed { color: var(--ink); font-weight: 700; }
 
   .hint { margin-top: 14px; font-size: 10px; letter-spacing: 0.18em; color: var(--faint); }
 
@@ -196,6 +229,9 @@
     width: 100%; max-width: 320px;
     text-align: center;
   }
+  .lblRow { display: flex; align-items: center; justify-content: center; gap: 2px; }
+  .lblRow .ask { position: static; width: 32px; height: 32px; }
+
   .sheet-card .lbl {
     display: block;
     font-size: 10px; letter-spacing: 0.3em; text-indent: 0.3em;
@@ -238,22 +274,27 @@
   }
   .sheet-card .close { margin-top: 14px; width: 100%; border-color: transparent; color: var(--faint); }
 
-  /* せつめいの本文 */
-  .help { text-align: left; }
-  .help h3 {
-    margin: 18px 0 6px;
-    font-size: 10px; font-weight: 700; letter-spacing: 0.26em;
+  /* 用語の説明(? から開く) */
+  .note { text-align: left; padding-top: 13px; }
+  .note h3 {
+    margin: 16px 0 5px;
+    font-size: 10px; font-weight: 700; letter-spacing: 0.24em;
     color: var(--faint);
   }
-  .help h3:first-of-type { margin-top: 14px; }
-  .help p { font-size: 12.5px; line-height: 1.95; color: var(--ink); }
-  .help p + p { margin-top: 6px; }
-  .help .q { color: var(--dim); }
-  .help .ex {
+  .note h3:first-child { margin-top: 0; }
+  .note p { font-size: 12.5px; line-height: 1.9; color: var(--ink); }
+  .note p + p { margin-top: 6px; }
+  .note .q { color: var(--dim); }
+  .note dl {
     margin-top: 8px; padding: 10px 12px;
     border: 1px solid var(--line); border-radius: 7px;
-    font-size: 11.5px; line-height: 1.85; color: var(--dim);
+    font-size: 11.5px; line-height: 1.9; color: var(--dim);
+    display: grid; grid-template-columns: auto 1fr; gap: 2px 10px;
   }
+  .note dt { color: var(--ink); font-weight: 700; letter-spacing: 0.06em; }
+  .note dd { margin: 0; }
+
+  #helpSeed { z-index: 40; }   /* seedのシートの上に重ねる */
 
   /* ---- 全100レベル踏破 ---- */
   #clear {
@@ -287,6 +328,7 @@
 
     <div id="panel">
       <div class="card">
+        <button class="ask" id="askColor" type="button" aria-label="この画面の見かた"></button>
         <div class="found">FOUND</div>
         <div class="kind" id="kind">COLOR</div>
         <div class="swatches">
@@ -294,7 +336,6 @@
         </div>
         <div class="metrics mono">
           <span>色差</span><b id="mDe">ΔE 0.0</b>
-          <span>RGB差</span><b id="mDiff">+0 / +0 / +0</b>
         </div>
         <div class="rgb mono" id="rgb"></div>
         <div class="hint" id="hint">TAP TO CONTINUE</div>
@@ -312,16 +353,16 @@
     </div>
   </main>
 
-  <footer>
-    <button id="helpBtn" type="button">せつめい</button>
-    <button id="reset" type="button">はじめから</button>
-  </footer>
+  <footer><button id="reset" type="button">はじめから</button></footer>
 </div>
 
 <!-- seedのシート ― 普段は閉じていて、ヘッダーのSEEDから開く -->
 <div id="sheet" class="overlay">
   <div class="sheet-card">
-    <span class="lbl">SEED</span>
+    <div class="lblRow">
+      <span class="lbl">SEED</span>
+      <button class="ask" id="askSeed" type="button" aria-label="SEEDとは"></button>
+    </div>
     <div class="mono" id="bigSeed">------</div>
     <div class="btns">
       <button id="copyBtn" type="button">COPY</button>
@@ -347,33 +388,40 @@
   </div>
 </div>
 
-<!-- せつめい ― 画面下の「せつめい」から開く -->
-<div id="help" class="overlay">
+<!-- 用語の説明 ― リザルトの ? から -->
+<div id="helpColor" class="overlay">
   <div class="sheet-card">
-    <span class="lbl">せつめい</span>
+    <span class="lbl">この画面の見かた</span>
+    <div class="note">
+      <h3>色差 ΔE</h3>
+      <p>2つの色が<b>どれくらい違って見えるか</b>の目安です。<b>1あたりが、並べてやっと分かるかどうかの境目</b>。数字が小さいほど見つけにくくなります。</p>
+      <p class="q">レベル1で17くらい、レベル100で1.2くらいまで小さくなります。</p>
 
-    <div class="help">
-      <h3>あそびかた</h3>
-      <p>同じ色のマスの中に、<b>1マスだけ、ほんの少し色の違うマス</b>があります。それを見つけて押してください。</p>
-      <p class="q">時間制限もスコアもありません。外しても何も起きないので、見つかるまで何度でも押せます。急ぐ必要はありません。</p>
+      <h3>R / G / B</h3>
+      <p>色は赤・緑・青の3つの数字でできています。違うマスは、そのうち<b>1つだけ</b>が動いています。</p>
+      <p>数字の隣の四角は、<b>その原色だけを取り出した色</b>です。元の色のままでは分かりにくい差も、原色だけにすると見えます。</p>
+      <p class="q">同じ数字でも緑はよく見え、赤は見えにくいので、見え方が揃うよう色差ΔEの側で難易度を決めています。</p>
+    </div>
+    <button id="helpColorClose" class="close" type="button">CLOSE</button>
+  </div>
+</div>
 
-      <h3>レベル</h3>
-      <p>全100レベル。進むほどマスが増え、色の差は小さくなります。</p>
-      <div class="ex mono">LEVEL 001&nbsp;&nbsp;3×3<br>LEVEL 020&nbsp;&nbsp;5×5<br>LEVEL 050&nbsp;&nbsp;7×7<br>LEVEL 100&nbsp;&nbsp;10×10</div>
-
-      <h3>正解のあとに出る数字</h3>
-      <p><b>色差 ΔE</b> は、その2色がどれくらい違って見えるかの目安です。<b>ΔE 1 あたりが、並べてやっと分かるかどうかの境目</b>。レベル1で17くらい、レベル100で1.2くらいまで小さくなります。</p>
-      <p><b>RGB差</b> は、赤・緑・青のどれをいくつ動かしたかです。動くのは毎回1つだけ。同じ数字でも緑はよく見え、赤は見えにくいので、見え方が揃うようΔEの側で難易度を決めています。</p>
-
-      <h3>SEED</h3>
-      <p>問題は6文字のseedから作られます。<b>同じseedなら、誰がどの端末で開いても同じ100問</b>です。</p>
-      <p class="q">上のSEEDを押すと、コピー・共有・seedを入れて始める・新しいseed・最初から、が選べます。URLに <span class="mono">?seed=8K4M2P</span> を付けても同じです。</p>
-
-      <h3>とちゅうから</h3>
+<!-- 用語の説明 ― seedの ? から -->
+<div id="helpSeed" class="overlay">
+  <div class="sheet-card">
+    <span class="lbl">SEEDとは</span>
+    <div class="note">
+      <p>問題を作るもとになる<b>6文字</b>です。<b>同じseedなら、誰がどの端末で開いても同じ100問</b>が同じ順番で出ます。</p>
+      <dl>
+        <dt>COPY</dt><dd>seedをコピーする</dd>
+        <dt>SHARE</dt><dd>seed付きのURLを渡す</dd>
+        <dt>PLAY BY SEED</dt><dd>もらったseedで始める</dd>
+        <dt>NEW SEED</dt><dd>新しい100問にする</dd>
+        <dt>RESTART</dt><dd>いまのseedを最初から</dd>
+      </dl>
       <p class="q">seedと現在のレベルは自動で保存されます。閉じても、次に開けば続きからです。</p>
     </div>
-
-    <button id="helpClose" class="close" type="button">CLOSE</button>
+    <button id="helpSeedClose" class="close" type="button">CLOSE</button>
   </div>
 </div>
 
@@ -612,9 +660,11 @@
       report: () => ({
         from: css(base), to: css(odd),
         de: deltaE(base, odd),                       // 体感の色差
-        diff: odd.map((v, i) => v - base[i]),        // RGBそれぞれの差(符号つき)
         lines: ["R", "G", "B"].map((name, i) => ({
-          name, from: base[i], to: odd[i], changed: i === ch
+          name, from: base[i], to: odd[i], changed: i === ch,
+          // その原色だけを取り出した色。数字の隣に置いて、差を目で見えるようにする
+          fromHue: css([0, 1, 2].map(k => k === i ? base[i] : 0)),
+          toHue:   css([0, 1, 2].map(k => k === i ? odd[i]  : 0))
         }))
       })
     };
@@ -637,7 +687,7 @@
   const elSwA = $("swA"), elSwB = $("swB"), elClear = $("clear"), elReset = $("reset");
   const elSeedTxt = $("seedTxt"), elSheet = $("sheet"), elBigSeed = $("bigSeed");
   const elSeedIn = $("seedIn"), elMsg = $("msg"), elClearSeed = $("clearSeed");
-  const elDe = $("mDe"), elDiff = $("mDiff"), elHelp = $("help");
+  const elDe = $("mDe");
 
   let seed = "", level = 1, puzzle = null, state = "play", timer = 0, msgTimer = 0;
 
@@ -738,13 +788,26 @@
       elSwA.style.background = r.from;
       elSwB.style.background = r.to;
       elDe.textContent = "ΔE " + r.de.toFixed(1);
-      elDiff.textContent = r.diff.map(v => (v >= 0 ? "+" : "") + v).join(" / ");
-      elRgb.replaceChildren(...r.lines.map(l => {
-        const d = document.createElement("div");
-        if (l.changed) d.className = "changed";
-        d.textContent = l.name + " " + l.from + " → " + l.to;
-        return d;
-      }));
+
+      // R □185 → □185 ― 数字の隣にその原色を置く
+      const cells = [];
+      for (const l of r.lines) {
+        const cls = l.changed ? " changed" : "";
+        const add = (tag, className, text) => {
+          const e = document.createElement(tag);
+          e.className = className;
+          if (text != null) e.textContent = text;
+          cells.push(e);
+          return e;
+        };
+        add("div", "n" + cls, l.name);
+        add("div", "chip").style.background = l.fromHue;
+        add("div", "v" + cls, l.from);
+        add("div", "ar", "→");
+        add("div", "chip").style.background = l.toHue;
+        add("div", "v" + cls, l.to);
+      }
+      elRgb.replaceChildren(...cells);
       elPanel.classList.add("show");
       state = "panel";
       timer = setTimeout(next, CONFIG.PANEL_MS);
@@ -837,9 +900,18 @@
   $("closeBtn").addEventListener("click", closeSheet);
   elSheet.addEventListener("click", e => { if (e.target === elSheet) closeSheet(); });
 
-  $("helpBtn").addEventListener("click", () => elHelp.classList.add("show"));
-  $("helpClose").addEventListener("click", () => elHelp.classList.remove("show"));
-  elHelp.addEventListener("click", e => { if (e.target === elHelp) elHelp.classList.remove("show"); });
+  function note(overlay, opener, closer) {
+    const el = $(overlay);
+    $(opener).addEventListener("click", e => {
+      e.stopPropagation();      // リザルトの ? では、次のレベルへ進めない
+      clearTimeout(timer);      // 読んでいる間、自動送りを止める
+      el.classList.add("show");
+    });
+    $(closer).addEventListener("click", () => el.classList.remove("show"));
+    el.addEventListener("click", e => { if (e.target === el) el.classList.remove("show"); });
+  }
+  note("helpColor", "askColor", "helpColorClose");
+  note("helpSeed", "askSeed", "helpSeedClose");
 
   $("copyBtn").addEventListener("click", async () => {
     say(await copyText(seed) ? "COPIED" : "コピーできませんでした");
