@@ -295,7 +295,8 @@
     -webkit-user-select: text; user-select: text;
   }
   .sheet-card input::placeholder { color: var(--faint); letter-spacing: 0.14em; }
-  .seg { display: flex; gap: 8px; margin-top: 9px; }
+  .seg { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 9px; }
+  .seg button { min-width: 40%; }   /* 種類が増えたら折り返す */
   .segLbl {
     display: block; margin-top: 16px;
     font-size: 10px; letter-spacing: 0.26em; text-indent: 0.26em; color: var(--dim);
@@ -330,13 +331,45 @@
 
   #helpSeed { z-index: 40; }   /* seedのシートの上に重ねる */
 
+  /* ---- 視覚特性のレーダーチャート ---- */
+  .traits { width: 100%; }
+  .radar {
+    display: block; width: 100%; max-width: 280px; height: auto;
+    margin: 4px auto 2px;
+    overflow: visible;
+  }
+  .radar .ring   { fill: none; stroke: var(--line); stroke-width: 1; }
+  .radar .outer  { stroke: var(--faint); }
+  .radar .spoke  { stroke: var(--line); stroke-width: 1; }
+  .radar .spoke.pending { stroke-dasharray: 2 3; }
+  .radar .area   { fill: rgba(51,51,47,0.13); stroke: var(--ink); stroke-width: 1.5; stroke-linejoin: round; }
+  .radar .vtx    { fill: var(--ink); }
+  .radar .axis   {
+    font-family: "Hiragino Kaku Gothic ProN", "Noto Sans JP", system-ui, sans-serif;
+    font-size: 11px; fill: var(--ink);
+  }
+  .radar .axis.pending { fill: var(--faint); }
+
+  .traitList {
+    display: grid; grid-template-columns: 1fr 1fr;
+    gap: 5px 16px; margin-top: 10px;
+    font-size: 11.5px;
+  }
+  .traitList .ti { display: flex; align-items: baseline; justify-content: space-between; gap: 8px; }
+  .traitList .ti span { color: var(--dim); }
+  .traitList .ti b { color: var(--ink); font-weight: 700; font-size: 11px; }
+  .traitList .ti.pending span,
+  .traitList .ti.pending b { color: var(--faint); font-weight: 400; }
+
   /* ---- 全100レベル踏破 ---- */
   #clear {
     position: absolute; inset: 0;
     display: none; flex-direction: column;
-    align-items: center; justify-content: center; gap: 18px;
+    align-items: center; justify-content: center; gap: 10px;
     background: var(--bg);
+    overflow-y: auto; -webkit-overflow-scrolling: touch;
   }
+  #clear .traits { max-width: 280px; margin: 4px 0; }
   #clear.show { display: flex; animation: fade 0.4s ease both; }
   #clear .t { font-size: 15px; font-weight: 700; letter-spacing: 0.34em; text-indent: 0.34em; }
   #clear .s { font-size: 11px; letter-spacing: 0.22em; color: var(--dim); }
@@ -378,6 +411,12 @@
       <div class="t">ALL CLEAR</div>
       <div class="s mono" id="clearN">100 LEVELS</div>
       <div class="s mono" id="clearSeed">SEED ------</div>
+
+      <div class="traits">
+        <svg id="radarClear" class="radar" viewBox="0 0 240 208" aria-hidden="true"></svg>
+        <div class="traitList" id="traitListClear"></div>
+      </div>
+
       <div class="btns">
         <button id="again" type="button">もういちど</button>
         <button id="againNew" type="button">あたらしいSEED</button>
@@ -385,7 +424,10 @@
     </div>
   </main>
 
-  <footer><button id="reset" type="button">はじめから</button></footer>
+  <footer>
+    <button id="traitBtn" type="button">視覚特性</button>
+    <button id="reset" type="button">はじめから</button>
+  </footer>
 </div>
 
 <!-- seedのシート ― 普段は閉じていて、ヘッダーのSEEDから開く -->
@@ -402,10 +444,7 @@
     </div>
 
     <span class="segLbl">もんだい</span>
-    <div class="seg" id="segKind">
-      <button type="button" data-kind="color">COLOR</button>
-      <button type="button" data-kind="move">MOVE</button>
-    </div>
+    <div class="seg" id="segKind"></div>
 
     <span class="segLbl">もんすう</span>
     <div class="seg" id="segMode">
@@ -429,6 +468,50 @@
 
     <div id="msg" class="mono"></div>
     <button id="closeBtn" class="close" type="button">CLOSE</button>
+  </div>
+</div>
+
+<!-- 視覚特性 ― 画面下の「視覚特性」から -->
+<div id="trait" class="overlay">
+  <div class="sheet-card">
+    <div class="lblRow">
+      <span class="lbl">視覚特性</span>
+      <button class="ask" id="askTrait" type="button" aria-label="視覚特性とは"></button>
+    </div>
+
+    <div class="traits">
+      <svg id="radar" class="radar" viewBox="0 0 240 208" aria-hidden="true"></svg>
+      <div class="traitList" id="traitList"></div>
+    </div>
+
+    <button id="traitClose" class="close" type="button">CLOSE</button>
+  </div>
+</div>
+
+<!-- 用語の説明 ― 視覚特性の ? から -->
+<div id="helpTrait" class="overlay">
+  <div class="sheet-card">
+    <span class="lbl">視覚特性とは</span>
+    <div class="note">
+      <p>このゲームは「並んだものの中から、<b>1つだけ違うもの</b>を見つける」だけでできています。その<b>違いの種類</b>が6つあります。</p>
+      <dl>
+        <dt>色彩</dt><dd>色がわずかに違う</dd>
+        <dt>形状</dt><dd>かたちがわずかに違う</dd>
+        <dt>模様</dt><dd>模様がわずかに違う</dd>
+        <dt>動体</dt><dd>動き方がわずかに違う</dd>
+        <dt>方向</dt><dd>向きがわずかに違う</dd>
+        <dt>奥行き</dt><dd>奥行きがわずかに違う</dd>
+      </dl>
+      <p>どの違いに強くて、どの違いに弱いのか。6つの<b>到達レベル</b>を並べたものが、あなたの視覚特性です。</p>
+
+      <h3>能力値の決まりかた</h3>
+      <p>その種類でいちばん先まで進んだレベルが能力値です。seedを変えても消えません。</p>
+      <p class="q">数えるのは100問モードだけです。10問モードは難易度を見るための道具なので、能力値には混ぜません。</p>
+
+      <h3>準備中</h3>
+      <p class="q">まだ用意できていない種類です。チャートでは未計測として中心に置いてあります。遊べるようになると、そのまま能力値が入ります。</p>
+    </div>
+    <button id="helpTraitClose" class="close" type="button">CLOSE</button>
   </div>
 </div>
 
@@ -823,7 +906,26 @@
   const GENERATORS = {
     1: { color: generateColorPuzzle, move: generateMovePuzzle },
   };
-  const KINDS = ["color", "move"];
+
+  /* ==========================================================
+     視覚特性 ― 6つの見抜く力
+     ----------------------------------------------------------
+     並び順がそのままレーダーチャートの軸の順になる。
+     GENERATORS に同じ id の生成器があるものが「実装済み」、
+     無いものは「準備中」として未計測に落ちる。
+     新しい問題を足すときは、生成器を GENERATORS に登録するだけでよい。
+     到達レベルは kind ごとに勝手に記録され、チャートに出る。
+     ========================================================== */
+  const TRAITS = [
+    { id: "color",   name: "色彩",   en: "COLOR" },
+    { id: "move",    name: "動体",   en: "MOVE" },
+    { id: "shape",   name: "形状",   en: "SHAPE" },
+    { id: "pattern", name: "模様",   en: "PATTERN" },
+    { id: "dir",     name: "方向",   en: "DIRECTION" },
+    { id: "depth",   name: "奥行き", en: "DEPTH" },
+  ];
+  const isReady = id => !!GENERATORS[PUZZLE_VERSION][id];
+  const KINDS = TRAITS.filter(t => isReady(t.id)).map(t => t.id);
 
   // 種類ごとに別の種を引くので、同じseedでもCOLORとMOVEは別の100問になる
   function makePuzzle(kind, seed, level) {
@@ -877,6 +979,30 @@
       st.slots[slotKey(kind, mode)] = { seed, level };
       localStorage.setItem(STORE_KEY, JSON.stringify(st));
     } catch (e) {}
+  }
+
+  /* 到達レベル ― 視覚特性の能力値。seedやモードをまたいで残る最高到達点。
+     100問モードで解いたレベルだけを数える(10問モードは難易度を見るための
+     道具なので、能力値には混ぜない)。 */
+  function recordBest(id, lv) {
+    try {
+      const st = readStore() || { v: PUZZLE_VERSION, slots: {} };
+      st.best = st.best || {};
+      if (!(st.best[id] >= lv)) st.best[id] = lv;
+      st.v = PUZZLE_VERSION;
+      localStorage.setItem(STORE_KEY, JSON.stringify(st));
+    } catch (e) {}
+  }
+
+  // 6つの軸を、名前・実装済みかどうか・到達レベルの形で並べて返す
+  function traitData() {
+    const st = readStore();
+    const best = (st && st.best) || {};
+    return TRAITS.map(t => {
+      const ready = isReady(t.id);
+      const lv = Math.max(0, Math.min(CONFIG.TOTAL_LEVELS, parseInt(best[t.id], 10) || 0));
+      return { ...t, ready, level: ready ? lv : 0 };
+    });
   }
 
   // その枠に、このseedの続きが残っていればレベルを返す
@@ -1008,9 +1134,13 @@
     clearTimeout(timer);
     elPanel.classList.remove("show");
 
+    // いま解いたレベルを到達レベルに反映する(100問モードのみ)
+    if (mode === "full") recordBest(kind, hardness());
+
     if (level >= total()) {
       save();
       elBoard.classList.add("hidden");
+      showTraits();
       elClear.classList.add("show");
       elReset.classList.remove("show");
       state = "clear";
@@ -1050,7 +1180,14 @@
   $("again").addEventListener("click", () => start({ level: 1 }));
   $("againNew").addEventListener("click", () => start({ seed: randomSeed(), level: 1 }));
 
-  // COLOR / MOVE、100問 / 10問
+  // COLOR / MOVE …… 遊べる種類ぶんだけボタンを並べる
+  $("segKind").replaceChildren(...KINDS.map(id => {
+    const t = TRAITS.find(x => x.id === id);
+    const b = document.createElement("button");
+    b.type = "button"; b.dataset.kind = id; b.textContent = t ? t.en : id.toUpperCase();
+    return b;
+  }));
+
   function syncSeg() {
     for (const b of $("segKind").children) b.classList.toggle("solid", b.dataset.kind === kind);
     for (const b of $("segMode").children) b.classList.toggle("solid", b.dataset.mode === mode);
@@ -1063,6 +1200,91 @@
     const b = e.target.closest("button"); if (!b) return;
     closeSheet(); switchTo(kind, b.dataset.mode);
   });
+
+  /* ==========================================================
+     レーダーチャート ― 外部ライブラリなしのインラインSVG
+     6軸ぶんの {name, ready, level} を渡すと描き直す。
+     準備中の軸は中心(未計測)に置き、破線の骨だけ出す。
+     ========================================================== */
+  const SVGNS = "http://www.w3.org/2000/svg";
+  const RADAR = {
+    cx: 120, cy: 102, r: 66, label: 22, rings: [0.25, 0.5, 0.75, 1],
+    // レベル1でも点として見えるよう、描くときだけ下駄をはかせる。
+    // 0(未計測)は中心のまま。一覧に出る数字は素の到達レベル。
+    floor: 0.08,
+  };
+  const radarScale = lv => lv > 0 ? RADAR.floor + (1 - RADAR.floor) * lv / CONFIG.TOTAL_LEVELS : 0;
+
+  function radarPoint(i, k) {
+    const a = -Math.PI / 2 + i * Math.PI * 2 / TRAITS.length;   // 上を先頭に
+    return [RADAR.cx + Math.cos(a) * RADAR.r * k, RADAR.cy + Math.sin(a) * RADAR.r * k];
+  }
+  const poly = pts => pts.map(p => p[0].toFixed(1) + "," + p[1].toFixed(1)).join(" ");
+
+  function drawRadar(svg, data) {
+    const el = (tag, attrs, text) => {
+      const e = document.createElementNS(SVGNS, tag);
+      for (const k in attrs) e.setAttribute(k, attrs[k]);
+      if (text != null) e.textContent = text;
+      return e;
+    };
+    const kids = [];
+
+    // 目盛りの六角形
+    for (const k of RADAR.rings) {
+      kids.push(el("polygon", {
+        points: poly(data.map((_, i) => radarPoint(i, k))),
+        class: "ring" + (k === 1 ? " outer" : "")
+      }));
+    }
+    // 中心から各頂点への骨。準備中は破線
+    data.forEach((t, i) => {
+      const [x, y] = radarPoint(i, 1);
+      kids.push(el("line", { x1: RADAR.cx, y1: RADAR.cy, x2: x.toFixed(1), y2: y.toFixed(1),
+                             class: "spoke" + (t.ready ? "" : " pending") }));
+    });
+
+    // 能力値の面。準備中の軸は中心に落ちるので、その方向だけへこむ
+    const vals = data.map((t, i) => radarPoint(i, t.ready ? radarScale(t.level) : 0));
+    kids.push(el("polygon", { points: poly(vals), class: "area" }));
+    data.forEach((t, i) => {
+      if (t.ready && t.level > 0) kids.push(el("circle", { cx: vals[i][0].toFixed(1), cy: vals[i][1].toFixed(1), r: 2.6, class: "vtx" }));
+    });
+
+    // 軸の名前
+    data.forEach((t, i) => {
+      const [x, y] = radarPoint(i, 1 + RADAR.label / RADAR.r);
+      const dx = x - RADAR.cx;
+      const label = el("text", {
+        x: x.toFixed(1), y: (y + 3.5).toFixed(1),
+        "text-anchor": Math.abs(dx) < 1 ? "middle" : (dx > 0 ? "start" : "end"),
+        class: "axis" + (t.ready ? "" : " pending")
+      }, t.name);
+      kids.push(label);
+    });
+
+    svg.replaceChildren(...kids);
+  }
+
+  // チャートの下に出す一覧。名前と能力値をそのまま読めるように
+  function fillTraitList(list, data) {
+    list.replaceChildren(...data.map(t => {
+      const row = document.createElement("div");
+      row.className = "ti" + (t.ready ? "" : " pending");
+      const n = document.createElement("span"); n.textContent = t.name;
+      const v = document.createElement("b");
+      v.className = "mono";
+      v.textContent = t.ready ? "LV " + String(t.level).padStart(3, "0") : "準備中";
+      row.append(n, v);
+      return row;
+    }));
+  }
+
+  function showTraits() {
+    const data = traitData();
+    drawRadar($("radar"), data);       fillTraitList($("traitList"), data);
+    drawRadar($("radarClear"), data);  fillTraitList($("traitListClear"), data);
+  }
 
   /* ========== seedのシート ========== */
   function say(text) {
@@ -1114,6 +1336,12 @@
     $(closer).addEventListener("click", () => el.classList.remove("show"));
     el.addEventListener("click", e => { if (e.target === el) el.classList.remove("show"); });
   }
+  // 視覚特性。開くたびに最新の到達レベルで描き直す
+  $("traitBtn").addEventListener("click", () => { showTraits(); $("trait").classList.add("show"); });
+  $("traitClose").addEventListener("click", () => $("trait").classList.remove("show"));
+  $("trait").addEventListener("click", e => { if (e.target === $("trait")) $("trait").classList.remove("show"); });
+  note("helpTrait", "askTrait", "helpTraitClose");
+
   // リザルトの ? は、いま出ている問題の種類に合わせて開く
   note("helpColor", "askColor", "helpColorClose", () => puzzle.kind === "MOVE" ? "helpMove" : "helpColor");
   note("helpMove", null, "helpMoveClose");
