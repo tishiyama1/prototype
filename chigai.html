@@ -55,16 +55,13 @@
   }
   header b { color: var(--ink); font-weight: 700; }
 
-  /* seedは控えめに。押すとseedのシートが開く */
-  #seedBtn {
-    appearance: none; -webkit-appearance: none;
-    background: none; border: 0;
-    font: inherit; font-size: 10px; letter-spacing: 0.24em; text-indent: 0.24em;
+  /* いま遊んでいるseedは、押せない小さな表示として置くだけ */
+  #seedLine {
+    margin-top: 6px;
+    font-size: 10px; letter-spacing: 0.24em; text-indent: 0.24em;
     color: var(--faint);
-    margin-top: 6px; padding: 5px 10px;
-    display: inline-flex; align-items: baseline; gap: 7px;
   }
-  #seedBtn b { color: var(--dim); font-weight: 700; border-bottom: 1px dotted var(--faint); padding-bottom: 1px; }
+  #seedLine b { color: var(--dim); font-weight: 700; }
 
   /* ---- 中央：グリッド ---- */
   #stage {
@@ -218,15 +215,100 @@
     height: 30px;
     display: flex; align-items: center; justify-content: center;
   }
+  /* ゲーム画面のボタンはこれだけ */
   footer button {
     appearance: none; -webkit-appearance: none;
     background: none; border: 0;
-    font: inherit; font-size: 11px; letter-spacing: 0.16em;
+    font: inherit; font-size: 11px; letter-spacing: 0.2em;
     color: var(--faint);
-    padding: 8px 14px;
+    padding: 8px 18px;
   }
-  #reset { visibility: hidden; }
-  #reset.show { visibility: visible; }
+
+  /* ---- TOP ---- */
+  #top {
+    position: fixed; inset: 0; z-index: 25;
+    display: none;
+    overflow-y: auto; -webkit-overflow-scrolling: touch;
+    background: var(--bg);
+  }
+  #top.show { display: block; animation: fade 0.25s ease both; }
+  .top-inner {
+    max-width: 320px; margin: 0 auto;
+    padding:
+      calc(env(safe-area-inset-top) + 34px)
+      calc(env(safe-area-inset-right) + 22px)
+      calc(env(safe-area-inset-bottom) + 34px)
+      calc(env(safe-area-inset-left) + 22px);
+  }
+
+  .top-head { text-align: center; margin-bottom: 22px; }
+  .top-head h1 { font-size: 26px; font-weight: 700; letter-spacing: 0.3em; text-indent: 0.3em; }
+  .top-head .en { margin-top: 7px; font-size: 10px; letter-spacing: 0.34em; text-indent: 0.34em; color: var(--faint); }
+  .top-head p { margin-top: 14px; font-size: 12px; line-height: 1.9; color: var(--dim); }
+
+  /* 視覚特性への導線 */
+  .top-card {
+    appearance: none; -webkit-appearance: none;
+    display: block; width: 100%;
+    background: none; border: 1px solid var(--line); border-radius: 12px;
+    padding: 14px 12px 12px;
+    font: inherit; color: inherit; text-align: center;
+  }
+  .top-card .cardLbl {
+    display: block;
+    font-size: 10px; letter-spacing: 0.3em; text-indent: 0.3em; color: var(--dim);
+  }
+  .top-card .radar { max-width: 220px; margin: 6px auto 2px; }
+  .top-card .cardGo {
+    display: block; margin-top: 6px;
+    font-size: 10px; letter-spacing: 0.2em; color: var(--faint);
+  }
+
+  #top .segLbl { margin-top: 20px; }
+  #top .btns { display: flex; gap: 8px; margin-top: 8px; }
+  #top .btns[hidden] { display: none; }   /* display指定があると hidden 属性が効かない */
+  #top .btns.start { margin-top: 22px; }
+  #top button, #top input {
+    appearance: none; -webkit-appearance: none;
+    font: inherit;
+    border: 1px solid var(--line); border-radius: 7px;
+    background: none; color: var(--ink);
+    padding: 12px 10px; min-height: 44px;
+  }
+  #top .seg button, #top .btns button {
+    flex: 1;
+    font-size: 11px; letter-spacing: 0.18em; color: var(--dim);
+  }
+  #top button.solid { background: var(--ink); border-color: var(--ink); color: var(--bg); letter-spacing: 0.2em; }
+  #top button:disabled { color: var(--faint); border-style: dashed; }
+  #top .top-card { padding: 14px 12px 12px; min-height: 0; }
+
+  #top .lblRow { margin-top: 4px; }
+  /* ? はボタンの装飾を打ち消して、丸だけにする(絶対配置もやめる) */
+  #top .ask {
+    position: static; flex: 0 0 auto;
+    width: 34px; height: 34px;
+    padding: 0; min-height: 0; border: 0; background: none;
+  }
+  #top .lbl {
+    display: block;
+    font-size: 10px; letter-spacing: 0.3em; text-indent: 0.3em; color: var(--dim);
+  }
+  #top #bigSeed {
+    margin: 8px 0 12px;
+    font-size: 28px; font-weight: 700; letter-spacing: 0.16em; text-indent: 0.16em;
+    text-align: center; color: var(--ink);
+    -webkit-user-select: text; user-select: text;
+  }
+  #top input {
+    flex: 1; min-width: 0;
+    font-size: 16px;              /* 16px未満だとiOSで入力時にズームする */
+    letter-spacing: 0.14em; text-align: center; text-transform: uppercase;
+    -webkit-user-select: text; user-select: text;
+  }
+  #top input::placeholder { color: var(--faint); }
+  #top .sep { margin: 26px 0 18px; }
+  #top #msg { text-align: center; }
 
   /* ---- せつめい と seed のシート(普段は閉じている) ---- */
   .overlay {
@@ -387,7 +469,7 @@
 <div id="app">
   <header>
     <div><b class="mono" id="lv">LEVEL 001</b> <span class="mono" id="total">/ 100</span></div>
-    <button id="seedBtn" type="button">SEED <b class="mono" id="seedTxt">------</b></button>
+    <div id="seedLine">SEED <b class="mono" id="seedTxt">------</b></div>
   </header>
 
   <main id="stage">
@@ -419,29 +501,30 @@
 
       <div class="btns">
         <button id="again" type="button">もういちど</button>
-        <button id="againNew" type="button">あたらしいSEED</button>
+        <button id="clearTop" type="button">TOP</button>
       </div>
     </div>
   </main>
 
-  <footer>
-    <button id="traitBtn" type="button">視覚特性</button>
-    <button id="reset" type="button">はじめから</button>
-  </footer>
+  <footer><button id="toTop" type="button">TOP</button></footer>
 </div>
 
-<!-- seedのシート ― 普段は閉じていて、ヘッダーのSEEDから開く -->
-<div id="sheet" class="overlay">
-  <div class="sheet-card">
-    <div class="lblRow">
-      <span class="lbl">SEED</span>
-      <button class="ask" id="askSeed" type="button" aria-label="SEEDとは"></button>
+<!-- ================= TOP ― ここから全部に行ける ================= -->
+<div id="top">
+  <div class="top-inner">
+
+    <div class="top-head">
+      <h1>ちがい</h1>
+      <div class="en mono">ONE SQUARE</div>
+      <p>並んだものの中に、1つだけ違うものがある。<br>それを見つけて押すだけ。</p>
     </div>
-    <div class="mono" id="bigSeed">------</div>
-    <div class="btns">
-      <button id="copyBtn" type="button">COPY</button>
-      <button id="shareBtn" type="button">SHARE</button>
-    </div>
+
+    <!-- 視覚特性への導線 ― 押すと一覧つきのチャートが開く -->
+    <button id="topTrait" class="top-card" type="button">
+      <span class="cardLbl">視覚特性</span>
+      <svg id="radarTop" class="radar" viewBox="0 0 240 208" aria-hidden="true"></svg>
+      <span class="cardGo">くわしく見る</span>
+    </button>
 
     <span class="segLbl">もんだい</span>
     <div class="seg" id="segKind"></div>
@@ -452,26 +535,39 @@
       <button type="button" data-mode="test">10問</button>
     </div>
 
+    <div class="btns start">
+      <button id="playBtn" class="solid" type="button">はじめる</button>
+    </div>
+    <div class="btns" id="restartRow" hidden>
+      <button id="restartBtn" type="button">最初から</button>
+    </div>
+
     <div class="sep"></div>
 
-    <label class="lbl" for="seedIn">PLAY BY SEED</label>
-    <div class="btns" style="margin-top:10px">
+    <div class="lblRow">
+      <span class="lbl">SEED</span>
+      <button class="ask" id="askSeed" type="button" aria-label="SEEDとは"></button>
+    </div>
+    <div class="mono" id="bigSeed">------</div>
+    <div class="btns">
+      <button id="copyBtn" type="button">COPY</button>
+      <button id="shareBtn" type="button">SHARE</button>
+    </div>
+    <div class="btns">
       <input id="seedIn" class="mono" type="text" maxlength="12" placeholder="8K4M2P"
              autocapitalize="characters" autocomplete="off" autocorrect="off" spellcheck="false"
              enterkeyhint="go" aria-label="SEED">
-      <button id="startBtn" class="solid" type="button" style="flex:0 0 84px">START</button>
+      <button id="startBtn" type="button" style="flex:0 0 84px">START</button>
     </div>
     <div class="btns">
       <button id="newBtn" type="button">NEW SEED</button>
-      <button id="restartBtn" type="button">RESTART</button>
     </div>
 
     <div id="msg" class="mono"></div>
-    <button id="closeBtn" class="close" type="button">CLOSE</button>
   </div>
 </div>
 
-<!-- 視覚特性 ― 画面下の「視覚特性」から -->
+<!-- 視覚特性 ― TOPのチャートから -->
 <div id="trait" class="overlay">
   <div class="sheet-card">
     <div class="lblRow">
@@ -937,10 +1033,11 @@
   const $ = id => document.getElementById(id);
   const elLv = $("lv"), elTotal = $("total"), elBoard = $("board"), elStage = $("stage");
   const elPanel = $("panel"), elKind = $("kind"), elRgb = $("rgb");
-  const elSwA = $("swA"), elSwB = $("swB"), elClear = $("clear"), elReset = $("reset");
-  const elSeedTxt = $("seedTxt"), elSheet = $("sheet"), elBigSeed = $("bigSeed");
+  const elSwA = $("swA"), elSwB = $("swB"), elClear = $("clear");
+  const elSeedTxt = $("seedTxt"), elBigSeed = $("bigSeed");
   const elSeedIn = $("seedIn"), elMsg = $("msg"), elClearSeed = $("clearSeed");
   const elMetrics = $("metrics"), elClearN = $("clearN");
+  const elTop = $("top"), elPlay = $("playBtn"), elRestartRow = $("restartRow");
 
   /* モード ― 100問(full)と10問(test)。
      test は TEST_LEVELS で難易度を間引いて拾うだけで、問題そのものは同じ。
@@ -1038,7 +1135,7 @@
     elClearSeed.textContent = "SEED " + seed;
     elTotal.textContent = "/ " + total();
     elClearN.textContent = total() + " LEVELS";
-    syncSeg();
+    refreshTop();
     save(); syncUrl();
 
     elPanel.classList.remove("show");
@@ -1052,6 +1149,26 @@
     const st = readStore();
     start({ kind: k, mode: m, seed, level: savedLevel(st, k, m, seed) });
   }
+
+  /* ---- TOP ― 遊びに入るところ・seed・視覚特性が全部ここにある ---- */
+  function refreshTop() {
+    elBigSeed.textContent = seed;
+    for (const b of $("segKind").children) b.classList.toggle("solid", b.dataset.kind === kind);
+    for (const b of $("segMode").children) b.classList.toggle("solid", b.dataset.mode === mode);
+    // 続きがあるかどうかでボタンの出かたを変える
+    const cont = level > 1;
+    elPlay.textContent = cont ? "つづきから　LEVEL " + String(level).padStart(3, "0") : "はじめる";
+    elRestartRow.hidden = !cont;
+    showTraits();
+  }
+
+  function openTop() {
+    refreshTop();
+    elSeedIn.value = "";
+    elMsg.textContent = "";
+    elTop.classList.add("show");
+  }
+  function closeTop() { elTop.classList.remove("show"); elSeedIn.blur(); fitBoard(); }
 
   // 盤面は「中央エリアの短い方」に合わせる。スマホ縦なら幅いっぱい
   function fitBoard() {
@@ -1080,7 +1197,6 @@
     }
     elBoard.replaceChildren(frag);
     fitBoard();
-    elReset.classList.toggle("show", level > 1);
     state = "play";
   }
 
@@ -1142,7 +1258,6 @@
       elBoard.classList.add("hidden");
       showTraits();
       elClear.classList.add("show");
-      elReset.classList.remove("show");
       state = "clear";
       return;
     }
@@ -1176,29 +1291,34 @@
   // パネルはどこを触っても次へ
   elStage.addEventListener("click", () => { if (state === "panel") next(); });
 
-  elReset.addEventListener("click", () => start({ level: 1 }));
+  $("toTop").addEventListener("click", openTop);
+  $("clearTop").addEventListener("click", () => { elClear.classList.remove("show"); openTop(); });
   $("again").addEventListener("click", () => start({ level: 1 }));
-  $("againNew").addEventListener("click", () => start({ seed: randomSeed(), level: 1 }));
+  elPlay.addEventListener("click", closeTop);
+  $("restartBtn").addEventListener("click", () => { start({ level: 1 }); closeTop(); });
 
-  // COLOR / MOVE …… 遊べる種類ぶんだけボタンを並べる
-  $("segKind").replaceChildren(...KINDS.map(id => {
-    const t = TRAITS.find(x => x.id === id);
+  /* もんだい ― 6つの特性をぜんぶ並べる。生成器のあるものだけ押せて、
+     準備中は押せないまま「準備中」と出す。生成器を1つ足せばここも増える。 */
+  $("segKind").replaceChildren(...TRAITS.map(t => {
     const b = document.createElement("button");
-    b.type = "button"; b.dataset.kind = id; b.textContent = t ? t.en : id.toUpperCase();
+    b.type = "button"; b.dataset.kind = t.id;
+    if (isReady(t.id)) {
+      b.textContent = t.name + " " + t.en;
+    } else {
+      b.textContent = t.name + " 準備中";
+      b.disabled = true;
+    }
     return b;
   }));
 
-  function syncSeg() {
-    for (const b of $("segKind").children) b.classList.toggle("solid", b.dataset.kind === kind);
-    for (const b of $("segMode").children) b.classList.toggle("solid", b.dataset.mode === mode);
-  }
+  // 選ぶとその場で切り替える。TOPは開いたまま
   $("segKind").addEventListener("click", e => {
-    const b = e.target.closest("button"); if (!b) return;
-    closeSheet(); switchTo(b.dataset.kind, mode);
+    const b = e.target.closest("button"); if (!b || b.disabled) return;
+    switchTo(b.dataset.kind, mode);
   });
   $("segMode").addEventListener("click", e => {
     const b = e.target.closest("button"); if (!b) return;
-    closeSheet(); switchTo(kind, b.dataset.mode);
+    switchTo(kind, b.dataset.mode);
   });
 
   /* ==========================================================
@@ -1282,24 +1402,17 @@
 
   function showTraits() {
     const data = traitData();
+    drawRadar($("radarTop"), data);
     drawRadar($("radar"), data);       fillTraitList($("traitList"), data);
     drawRadar($("radarClear"), data);  fillTraitList($("traitListClear"), data);
   }
 
-  /* ========== seedのシート ========== */
+  /* ========== seed ― TOPの下半分 ========== */
   function say(text) {
     elMsg.textContent = text;
     clearTimeout(msgTimer);
     msgTimer = setTimeout(() => { elMsg.textContent = ""; }, 1800);
   }
-
-  function openSheet() {
-    elBigSeed.textContent = seed;
-    elSeedIn.value = "";
-    elMsg.textContent = "";
-    elSheet.classList.add("show");
-  }
-  function closeSheet() { elSheet.classList.remove("show"); elSeedIn.blur(); }
 
   // Clipboard APIが使えない場合でもゲームは壊さない
   async function copyText(text) {
@@ -1322,10 +1435,6 @@
     } catch (e) { return false; }
   }
 
-  $("seedBtn").addEventListener("click", openSheet);
-  $("closeBtn").addEventListener("click", closeSheet);
-  elSheet.addEventListener("click", e => { if (e.target === elSheet) closeSheet(); });
-
   function note(overlay, opener, closer, pick) {
     const el = $(overlay);
     if (opener) $(opener).addEventListener("click", e => {
@@ -1336,8 +1445,8 @@
     $(closer).addEventListener("click", () => el.classList.remove("show"));
     el.addEventListener("click", e => { if (e.target === el) el.classList.remove("show"); });
   }
-  // 視覚特性。開くたびに最新の到達レベルで描き直す
-  $("traitBtn").addEventListener("click", () => { showTraits(); $("trait").classList.add("show"); });
+  // 視覚特性。TOPのチャートを押すと、一覧つきで開く
+  $("topTrait").addEventListener("click", () => { showTraits(); $("trait").classList.add("show"); });
   $("traitClose").addEventListener("click", () => $("trait").classList.remove("show"));
   $("trait").addEventListener("click", e => { if (e.target === $("trait")) $("trait").classList.remove("show"); });
   note("helpTrait", "askTrait", "helpTraitClose");
@@ -1363,14 +1472,14 @@
   function startFromInput() {
     const sd = normalizeSeed(elSeedIn.value);
     if (!sd) { say("SEEDを入力してください"); return; }
-    closeSheet();
     start({ seed: sd, level: 1 });
+    elSeedIn.value = ""; elSeedIn.blur();
+    say("SEED " + sd);
   }
   $("startBtn").addEventListener("click", startFromInput);
   elSeedIn.addEventListener("keydown", e => { if (e.key === "Enter") startFromInput(); });
 
-  $("newBtn").addEventListener("click", () => { closeSheet(); start({ seed: randomSeed(), level: 1 }); });
-  $("restartBtn").addEventListener("click", () => { closeSheet(); start({ level: 1 }); });
+  $("newBtn").addEventListener("click", () => { start({ seed: randomSeed(), level: 1 }); say("NEW SEED"); });
 
   addEventListener("resize", fitBoard);
   addEventListener("orientationchange", () => setTimeout(fitBoard, 120));
@@ -1402,6 +1511,7 @@
     const sd = urlSeed || (slot && normalizeSeed(slot.seed)) || randomSeed();
 
     start({ kind: k, mode: m, seed: sd, level: savedLevel(st, k, m, sd) });
+    openTop();     // 遊びはじめる前に、まずTOP
   }
 })();
 </script>
