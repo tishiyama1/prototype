@@ -90,6 +90,29 @@
   }
   .cell.press { opacity: 0.72; transition: none; }   /* 当たり外れに関わらず同じ反応 */
 
+  /* ---- MOVE ― マスは器になり、中の図形が左右に往復する ---- */
+  #board.move .cell {
+    background: none !important;
+    display: flex; align-items: center; justify-content: center;
+    overflow: hidden;
+  }
+  .dot {
+    width: 40%; height: 40%;
+    border-radius: 3px;
+    animation: slideX var(--t, 2s) ease-in-out infinite;
+    will-change: transform;
+  }
+  /* --a は図形の幅に対する割合。盤面の大きさが変わっても比率は保たれる */
+  @keyframes slideX {
+    0%, 100% { transform: translateX(calc(var(--a, 40%) * -1)); }
+    50%      { transform: translateX(var(--a, 40%)); }
+  }
+  .sw.track {
+    display: flex; align-items: center; justify-content: center;
+    overflow: hidden;
+    border-color: var(--line);
+  }
+
   .cell.answer {
     animation: ring 0.62s ease-out both;
     z-index: 2;
@@ -230,7 +253,12 @@
     text-align: center;
   }
   .lblRow { display: flex; align-items: center; justify-content: center; gap: 2px; }
-  .lblRow .ask { position: static; width: 32px; height: 32px; }
+  /* シート内のボタン装飾を打ち消して、? は丸だけにする */
+  .sheet-card .ask {
+    position: static; flex: 0 0 auto;
+    width: 34px; height: 34px;
+    padding: 0; min-height: 0; border: 0; background: none;
+  }
 
   .sheet-card .lbl {
     display: block;
@@ -267,6 +295,12 @@
     -webkit-user-select: text; user-select: text;
   }
   .sheet-card input::placeholder { color: var(--faint); letter-spacing: 0.14em; }
+  .seg { display: flex; gap: 8px; margin-top: 9px; }
+  .segLbl {
+    display: block; margin-top: 16px;
+    font-size: 10px; letter-spacing: 0.26em; text-indent: 0.26em; color: var(--dim);
+  }
+
   .sep { height: 1px; background: var(--line); margin: 20px 0 16px; }
   #msg {
     height: 14px; margin-top: 12px;
@@ -334,9 +368,7 @@
         <div class="swatches">
           <div class="sw" id="swA"></div><span>→</span><div class="sw" id="swB"></div>
         </div>
-        <div class="metrics mono">
-          <span>色差</span><b id="mDe">ΔE 0.0</b>
-        </div>
+        <div class="metrics mono" id="metrics"></div>
         <div class="rgb mono" id="rgb"></div>
         <div class="hint" id="hint">TAP TO CONTINUE</div>
       </div>
@@ -344,7 +376,7 @@
 
     <div id="clear">
       <div class="t">ALL CLEAR</div>
-      <div class="s mono">100 LEVELS</div>
+      <div class="s mono" id="clearN">100 LEVELS</div>
       <div class="s mono" id="clearSeed">SEED ------</div>
       <div class="btns">
         <button id="again" type="button">もういちど</button>
@@ -367,6 +399,18 @@
     <div class="btns">
       <button id="copyBtn" type="button">COPY</button>
       <button id="shareBtn" type="button">SHARE</button>
+    </div>
+
+    <span class="segLbl">もんだい</span>
+    <div class="seg" id="segKind">
+      <button type="button" data-kind="color">COLOR</button>
+      <button type="button" data-kind="move">MOVE</button>
+    </div>
+
+    <span class="segLbl">もんすう</span>
+    <div class="seg" id="segMode">
+      <button type="button" data-mode="full">100問</button>
+      <button type="button" data-mode="test">10問</button>
     </div>
 
     <div class="sep"></div>
@@ -406,6 +450,24 @@
   </div>
 </div>
 
+<!-- 用語の説明 ― MOVEのリザルトの ? から -->
+<div id="helpMove" class="overlay">
+  <div class="sheet-card">
+    <span class="lbl">この画面の見かた</span>
+    <div class="note">
+      <h3>MOVE</h3>
+      <p>図形はすべて<b>同じ調子で左右に往復</b>しています。1つだけ、<b>動く幅</b>か<b>速さ</b>のどちらかが違います。</p>
+      <p class="q">上の見本は、左がふつうの動き、右が違う動きです。</p>
+
+      <h3>移動幅 / 周期</h3>
+      <p><b>移動幅</b>はマスの何％ぶん動くか、<b>周期</b>は往復1回にかかる秒数です。違うのは毎回どちらか1つだけ。</p>
+      <p><b>その差</b>は、ふつうの動きに対する倍率です。<b>1.00倍に近いほど見分けにくく</b>なります。</p>
+      <p class="q">レベル1で1.55倍(または0.65倍)くらい、レベル100で1.05倍くらいまで近づきます。</p>
+    </div>
+    <button id="helpMoveClose" class="close" type="button">CLOSE</button>
+  </div>
+</div>
+
 <!-- 用語の説明 ― seedの ? から -->
 <div id="helpSeed" class="overlay">
   <div class="sheet-card">
@@ -418,6 +480,10 @@
         <dt>PLAY BY SEED</dt><dd>もらったseedで始める</dd>
         <dt>NEW SEED</dt><dd>新しい100問にする</dd>
         <dt>RESTART</dt><dd>いまのseedを最初から</dd>
+      </dl>
+      <dl>
+        <dt>COLOR / MOVE</dt><dd>色で見分ける／動きで見分ける</dd>
+        <dt>100問 / 10問</dt><dd>10問はテスト用。やさしいところから難しいところまで10問で拾う。進みぐあいは100問と別に覚えている</dd>
       </dl>
       <p class="q">seedと現在のレベルは自動で保存されます。閉じても、次に開けば続きからです。</p>
     </div>
@@ -453,6 +519,20 @@
     CH_MIN: 45, CH_MAX: 210,   // 各チャンネルの下限/上限(端に寄ると色差が潰れる)
     BG: [246, 246, 244],       // 背景色
     MIN_BG_CONTRAST: 1.55,     // 背景とのコントラスト比の下限
+
+    /* ---- MOVE(動きで見分ける問題) ----
+       図形が左右に往復する。1つだけ「移動幅」か「速さ」が違う。 */
+    MOVE_GRID_CURVE: [[1, 3], [20, 4], [50, 5], [75, 6], [100, 6]],
+    // 基準に対する差の割合。0.55なら1.55倍(または1/1.55倍)違う
+    MOVE_DIFF_CURVE: [[1, 0.55], [20, 0.34], [50, 0.18], [75, 0.10], [100, 0.05]],
+    MOVE_AMP: 0.18,          // 移動幅(マスの一辺に対する割合)
+    MOVE_DOT: 0.40,          // 図形の大きさ(同上)
+    MOVE_PERIOD: [1.6, 2.6], // 往復1周期の秒数
+
+    /* ---- 10問モード(テスト用) ----
+       難易度のカーブ全体を10問で拾えるよう、100問から間引いて並べる。
+       通常モードの進行とは別に保存され、互いに影響しない。 */
+    TEST_LEVELS: [1, 12, 23, 34, 45, 56, 67, 78, 89, 100],
 
     // マスの間隔(一辺のマス数に応じて)
     GAP: level => Math.max(2, Math.round(9 - level)),
@@ -540,14 +620,15 @@
   const lerp  = (a, b, t) => a + (b - a) * t;
 
   // [[level, value], ...] の折れ線をレベルで引く
-  function curveAt(curve, level) {
+  function curveAtF(curve, level) {
     if (level <= curve[0][0]) return curve[0][1];
     for (let i = 1; i < curve.length; i++) {
       const [l1, v1] = curve[i - 1], [l2, v2] = curve[i];
-      if (level <= l2) return Math.round(lerp(v1, v2, (level - l1) / (l2 - l1)));
+      if (level <= l2) return lerp(v1, v2, (level - l1) / (l2 - l1));
     }
     return curve[curve.length - 1][1];
   }
+  const curveAt = (curve, level) => Math.round(curveAtF(curve, level));
 
   function hslToRgb(h, s, l) {
     const c = (1 - Math.abs(2 * l - 1)) * s;
@@ -609,17 +690,21 @@
   /* ==========================================================
      問題の生成
      ----------------------------------------------------------
-     生成関数は generateColorPuzzle(level) の1本だけ独立させてある。
-     将来 generateShapePuzzle / generatePatternPuzzle /
-     generatePositionPuzzle / generateMotionPuzzle を足すときは、
-     同じ形のオブジェクトを返して GENERATORS に登録すればよい。
+     生成関数はレベルと乱数だけを受け取り、同じ形のオブジェクトを返す。
+     いまは色(COLOR)と動き(MOVE)の2つ。形・模様・位置を足すときも、
+     同じ形を返して GENERATORS に登録すればよい。
 
        {
-         kind:    "COLOR",                 // パネルに出す種別
-         size:    5,                       // 一辺のマス数
-         answer:  12,                      // 違うマスのindex
-         colorAt: i => "rgb(…)",           // 各マスの見た目
-         report:  () => ({ from, to, lines })  // 何が違ったのかの説明
+         kind:     "COLOR",                // パネルに出す種別
+         size:     5,                      // 一辺のマス数
+         answer:   12,                     // 違うマスのindex
+         board:    "" | "move",            // 盤面に付けるクラス
+         decorate: (cell, i) => {},        // 各マスの見た目を作る
+         report:   () => ({                // 何が違ったのかの説明
+           sample:  (a, b) => {},          //   見本2つ(左=ふつう 右=ちがう)
+           metrics: [[ラベル, 値], …],     //   主役の数字
+           rows:    [ … ] | null           //   COLORのRGB行(なければ null)
+         })
        }
      ========================================================== */
 
@@ -655,12 +740,16 @@
 
     return {
       kind: "COLOR",
-      size, answer,
-      colorAt: i => css(i === answer ? odd : base),
+      size, answer, board: "",
+      decorate: (cell, i) => { cell.style.background = css(i === answer ? odd : base); },
       report: () => ({
-        from: css(base), to: css(odd),
-        de: deltaE(base, odd),                       // 体感の色差
-        lines: ["R", "G", "B"].map((name, i) => ({
+        sample: (a, b) => {
+          a.replaceChildren(); b.replaceChildren();
+          a.className = "sw"; b.className = "sw";
+          a.style.background = css(base); b.style.background = css(odd);
+        },
+        metrics: [["色差", "ΔE " + deltaE(base, odd).toFixed(1)]],
+        rows: ["R", "G", "B"].map((name, i) => ({
           name, from: base[i], to: odd[i], changed: i === ch,
           // その原色だけを取り出した色。数字の隣に置いて、差を目で見えるようにする
           fromHue: css([0, 1, 2].map(k => k === i ? base[i] : 0)),
@@ -670,14 +759,76 @@
     };
   }
 
+  /* ---- MOVE ― 1つだけ動き方が違う ----
+     図形はすべて同じ位相で左右に往復する。違う1つは「移動幅」か「速さ」の
+     どちらかだけがずれている。レベルが上がるほどその差が小さくなる。
+     方向を足すときは param に "dir" を増やせばよい。 */
+  function generateMovePuzzle(level, rng) {
+    const size  = curveAt(CONFIG.MOVE_GRID_CURVE, level);
+    const ratio0 = curveAtF(CONFIG.MOVE_DIFF_CURVE, level);   // 差の割合
+    const tint  = css(pickBaseColor(rng));
+
+    const baseAmp    = CONFIG.MOVE_AMP;
+    const basePeriod = lerp(CONFIG.MOVE_PERIOD[0], CONFIG.MOVE_PERIOD[1], rng());
+
+    const param = rng() < 0.5 ? "amp" : "period";             // どのパラメータを変えるか
+    const up    = rng() < 0.5;                                // 大きく/小さく
+    const ratio = up ? 1 + ratio0 : 1 / (1 + ratio0);
+
+    const oddAmp    = param === "amp"    ? baseAmp * ratio    : baseAmp;
+    const oddPeriod = param === "period" ? basePeriod * ratio : basePeriod;
+
+    const answer = Math.floor(rng() * size * size);
+
+    // 移動幅はマスに対する割合。図形の幅を基準にした translateX の % に直す
+    const shift = amp => (amp / CONFIG.MOVE_DOT * 100).toFixed(1) + "%";
+
+    function dot(amp, period) {
+      const e = document.createElement("i");
+      e.className = "dot";
+      e.style.background = tint;
+      e.style.setProperty("--a", shift(amp));
+      e.style.setProperty("--t", period.toFixed(3) + "s");
+      return e;
+    }
+
+    return {
+      kind: "MOVE",
+      size, answer, board: "move",
+      decorate: (cell, i) => {
+        cell.appendChild(i === answer ? dot(oddAmp, oddPeriod) : dot(baseAmp, basePeriod));
+      },
+      report: () => {
+        const r = param === "amp" ? oddAmp / baseAmp : oddPeriod / basePeriod;
+        const metrics = param === "amp"
+          ? [["移動幅", Math.round(baseAmp * 100) + " → " + Math.round(oddAmp * 100) + " %"],
+             ["その差", r.toFixed(2) + " 倍"]]
+          : [["周期", basePeriod.toFixed(1) + " → " + oddPeriod.toFixed(1) + " 秒"],
+             ["その差", r.toFixed(2) + " 倍"]];
+        return {
+          sample: (a, b) => {
+            a.className = "sw track"; b.className = "sw track";
+            a.style.background = "none"; b.style.background = "none";
+            a.replaceChildren(dot(baseAmp, basePeriod));
+            b.replaceChildren(dot(oddAmp, oddPeriod));
+          },
+          metrics,
+          rows: null
+        };
+      }
+    };
+  }
+
   // 版ごとの生成器。将来 v2 を足しても、v1 はそのまま残す
   const GENERATORS = {
-    1: { color: generateColorPuzzle },
+    1: { color: generateColorPuzzle, move: generateMovePuzzle },
   };
+  const KINDS = ["color", "move"];
 
-  function makePuzzle(seed, level) {
-    const gen = GENERATORS[PUZZLE_VERSION].color;
-    return gen(level, createSeededRandom(deriveSeed(seed, level, "color")));
+  // 種類ごとに別の種を引くので、同じseedでもCOLORとMOVEは別の100問になる
+  function makePuzzle(kind, seed, level) {
+    const gen = GENERATORS[PUZZLE_VERSION][kind];
+    return gen(level, createSeededRandom(deriveSeed(seed, level, kind)));
   }
 
   /* ========== 画面 ========== */
@@ -687,54 +838,93 @@
   const elSwA = $("swA"), elSwB = $("swB"), elClear = $("clear"), elReset = $("reset");
   const elSeedTxt = $("seedTxt"), elSheet = $("sheet"), elBigSeed = $("bigSeed");
   const elSeedIn = $("seedIn"), elMsg = $("msg"), elClearSeed = $("clearSeed");
-  const elDe = $("mDe");
+  const elMetrics = $("metrics"), elClearN = $("clearN");
 
+  /* モード ― 100問(full)と10問(test)。
+     test は TEST_LEVELS で難易度を間引いて拾うだけで、問題そのものは同じ。
+     seed 8K4M2P の10問モードの3問目 = 同じseedの100問モードの23問目。 */
+  const MODES = {
+    full: { total: CONFIG.TOTAL_LEVELS, levelAt: n => n },
+    test: { total: CONFIG.TEST_LEVELS.length, levelAt: n => CONFIG.TEST_LEVELS[n - 1] },
+  };
+
+  let kind = "color", mode = "full";
   let seed = "", level = 1, puzzle = null, state = "play", timer = 0, msgTimer = 0;
 
-  elTotal.textContent = "/ " + CONFIG.TOTAL_LEVELS;
+  const total = () => MODES[mode].total;
+  const hardness = () => MODES[mode].levelAt(level);    // 難易度を決めるほうのレベル
 
-  /* ---- 保存 ― seedと現在レベルの2つだけ ---- */
+  /* ---- 保存 ----
+     種類×モードごとに別の枠(slot)で覚える。10問モードを触っても
+     100問モードの続きは動かない。 */
+  const slotKey = (k, m) => k + ":" + m;
+
+  function readStore() {
+    try {
+      const o = JSON.parse(localStorage.getItem(STORE_KEY) || "null");
+      if (!o || o.v !== PUZZLE_VERSION) return null;
+      if (o.slots) return o;
+      // seed導入時の形 { v, seed, level } → color:full の枠へ移す
+      const sd = normalizeSeed(o.seed);
+      return sd ? { v: o.v, kind: "color", mode: "full", slots: { "color:full": { seed: sd, level: o.level } } } : null;
+    } catch (e) { return null; }
+  }
+
   function save() {
     try {
-      localStorage.setItem(STORE_KEY, JSON.stringify({ v: PUZZLE_VERSION, seed, level }));
+      const st = readStore() || { v: PUZZLE_VERSION, slots: {} };
+      st.v = PUZZLE_VERSION; st.kind = kind; st.mode = mode;
+      st.slots[slotKey(kind, mode)] = { seed, level };
+      localStorage.setItem(STORE_KEY, JSON.stringify(st));
     } catch (e) {}
   }
-  function load() {
-    try {
-      const raw = localStorage.getItem(STORE_KEY);
-      if (raw) {
-        const o = JSON.parse(raw);
-        const sd = normalizeSeed(o && o.seed);
-        const lv = parseInt(o && o.level, 10);
-        if (sd && o.v === PUZZLE_VERSION && lv >= 1 && lv <= CONFIG.TOTAL_LEVELS) return { seed: sd, level: lv };
-      }
-      // seed導入前の保存が残っていれば、レベルだけ引き継ぐ
-      const oldLv = parseInt(localStorage.getItem(OLD_STORE_KEY), 10);
-      localStorage.removeItem(OLD_STORE_KEY);
-      if (oldLv >= 1 && oldLv <= CONFIG.TOTAL_LEVELS) return { seed: null, level: oldLv };
-    } catch (e) {}
-    return null;
+
+  // その枠に、このseedの続きが残っていればレベルを返す
+  function savedLevel(st, k, m, sd) {
+    const slot = st && st.slots && st.slots[slotKey(k, m)];
+    const lv = slot && parseInt(slot.level, 10);
+    if (slot && slot.seed === sd && lv >= 1 && lv <= MODES[m].total) return lv;
+    return 1;
   }
 
   /* ---- URL ― ?seed=XXXXXX で同じ100問を開ける ---- */
   const baseUrl = () => location.href.split("#")[0].split("?")[0];
-  const shareUrl = () => baseUrl() + "?seed=" + seed;
+  function shareUrl() {
+    let u = baseUrl() + "?seed=" + seed;
+    if (kind !== "color") u += "&kind=" + kind;   // 既定のときは付けない
+    if (mode !== "full")  u += "&mode=" + mode;
+    return u;
+  }
   function syncUrl() {
     try { history.replaceState(null, "", shareUrl()); } catch (e) {}   // file:// では失敗するので握りつぶす
   }
 
-  function startWith(newSeed, newLevel) {
+  // 遊びはじめる。種類・モード・seed・レベルはここでまとめて切り替える
+  function start(next) {
     clearTimeout(timer);
-    seed = newSeed;
-    level = newLevel || 1;
+    if (next.kind) kind = next.kind;
+    if (next.mode) mode = next.mode;
+    if (next.seed) seed = next.seed;
+    level = next.level || 1;
+
     elSeedTxt.textContent = seed;
     elBigSeed.textContent = seed;
     elClearSeed.textContent = "SEED " + seed;
+    elTotal.textContent = "/ " + total();
+    elClearN.textContent = total() + " LEVELS";
+    syncSeg();
     save(); syncUrl();
+
     elPanel.classList.remove("show");
     elClear.classList.remove("show");
     render();
     elBoard.classList.remove("hidden");
+  }
+
+  // 種類やモードを切り替える。その枠に同じseedの続きがあれば、そこから
+  function switchTo(k, m) {
+    const st = readStore();
+    start({ kind: k, mode: m, seed, level: savedLevel(st, k, m, seed) });
   }
 
   // 盤面は「中央エリアの短い方」に合わせる。スマホ縦なら幅いっぱい
@@ -746,19 +936,20 @@
   }
 
   function render() {
-    puzzle = makePuzzle(seed, level);
+    puzzle = makePuzzle(kind, seed, hardness());
     elLv.textContent = "LEVEL " + String(level).padStart(3, "0");
     elBoard.style.setProperty("--gap", CONFIG.GAP(puzzle.size) + "px");
     elBoard.style.gridTemplateColumns = "repeat(" + puzzle.size + ", 1fr)";
     elBoard.style.gridTemplateRows = "repeat(" + puzzle.size + ", 1fr)";
     elBoard.classList.remove("solved");
+    elBoard.classList.toggle("move", puzzle.board === "move");
 
     const frag = document.createDocumentFragment();
     for (let i = 0; i < puzzle.size * puzzle.size; i++) {
       const d = document.createElement("div");
       d.className = "cell";
       d.dataset.i = i;
-      d.style.background = puzzle.colorAt(i);
+      puzzle.decorate(d, i);
       frag.appendChild(d);
     }
     elBoard.replaceChildren(frag);
@@ -785,27 +976,26 @@
     timer = setTimeout(() => {
       const r = puzzle.report();
       elKind.textContent = puzzle.kind;
-      elSwA.style.background = r.from;
-      elSwB.style.background = r.to;
-      elDe.textContent = "ΔE " + r.de.toFixed(1);
+      r.sample(elSwA, elSwB);
 
-      // R □185 → □185 ― 数字の隣にその原色を置く
+      const make = (tag, className, text) => {
+        const e = document.createElement(tag);
+        e.className = className;
+        if (text != null) e.textContent = text;
+        return e;
+      };
+
+      elMetrics.replaceChildren(...r.metrics.flatMap(
+        ([label, value]) => [make("span", "", label), make("b", "", value)]
+      ));
+
+      // COLORのみ: R □185 → □185 ― 数字の隣にその原色を置く
       const cells = [];
-      for (const l of r.lines) {
+      for (const l of (r.rows || [])) {
         const cls = l.changed ? " changed" : "";
-        const add = (tag, className, text) => {
-          const e = document.createElement(tag);
-          e.className = className;
-          if (text != null) e.textContent = text;
-          cells.push(e);
-          return e;
-        };
-        add("div", "n" + cls, l.name);
-        add("div", "chip").style.background = l.fromHue;
-        add("div", "v" + cls, l.from);
-        add("div", "ar", "→");
-        add("div", "chip").style.background = l.toHue;
-        add("div", "v" + cls, l.to);
+        const chip = hue => { const e = make("div", "chip"); e.style.background = hue; return e; };
+        cells.push(make("div", "n" + cls, l.name), chip(l.fromHue), make("div", "v" + cls, l.from),
+                   make("div", "ar", "→"), chip(l.toHue), make("div", "v" + cls, l.to));
       }
       elRgb.replaceChildren(...cells);
       elPanel.classList.add("show");
@@ -818,7 +1008,7 @@
     clearTimeout(timer);
     elPanel.classList.remove("show");
 
-    if (level >= CONFIG.TOTAL_LEVELS) {
+    if (level >= total()) {
       save();
       elBoard.classList.add("hidden");
       elClear.classList.add("show");
@@ -856,9 +1046,23 @@
   // パネルはどこを触っても次へ
   elStage.addEventListener("click", () => { if (state === "panel") next(); });
 
-  elReset.addEventListener("click", () => startWith(seed, 1));
-  $("again").addEventListener("click", () => startWith(seed, 1));
-  $("againNew").addEventListener("click", () => startWith(randomSeed(), 1));
+  elReset.addEventListener("click", () => start({ level: 1 }));
+  $("again").addEventListener("click", () => start({ level: 1 }));
+  $("againNew").addEventListener("click", () => start({ seed: randomSeed(), level: 1 }));
+
+  // COLOR / MOVE、100問 / 10問
+  function syncSeg() {
+    for (const b of $("segKind").children) b.classList.toggle("solid", b.dataset.kind === kind);
+    for (const b of $("segMode").children) b.classList.toggle("solid", b.dataset.mode === mode);
+  }
+  $("segKind").addEventListener("click", e => {
+    const b = e.target.closest("button"); if (!b) return;
+    closeSheet(); switchTo(b.dataset.kind, mode);
+  });
+  $("segMode").addEventListener("click", e => {
+    const b = e.target.closest("button"); if (!b) return;
+    closeSheet(); switchTo(kind, b.dataset.mode);
+  });
 
   /* ========== seedのシート ========== */
   function say(text) {
@@ -900,17 +1104,19 @@
   $("closeBtn").addEventListener("click", closeSheet);
   elSheet.addEventListener("click", e => { if (e.target === elSheet) closeSheet(); });
 
-  function note(overlay, opener, closer) {
+  function note(overlay, opener, closer, pick) {
     const el = $(overlay);
-    $(opener).addEventListener("click", e => {
+    if (opener) $(opener).addEventListener("click", e => {
       e.stopPropagation();      // リザルトの ? では、次のレベルへ進めない
       clearTimeout(timer);      // 読んでいる間、自動送りを止める
-      el.classList.add("show");
+      $(pick ? pick() : overlay).classList.add("show");
     });
     $(closer).addEventListener("click", () => el.classList.remove("show"));
     el.addEventListener("click", e => { if (e.target === el) el.classList.remove("show"); });
   }
-  note("helpColor", "askColor", "helpColorClose");
+  // リザルトの ? は、いま出ている問題の種類に合わせて開く
+  note("helpColor", "askColor", "helpColorClose", () => puzzle.kind === "MOVE" ? "helpMove" : "helpColor");
+  note("helpMove", null, "helpMoveClose");
   note("helpSeed", "askSeed", "helpSeedClose");
 
   $("copyBtn").addEventListener("click", async () => {
@@ -930,13 +1136,13 @@
     const sd = normalizeSeed(elSeedIn.value);
     if (!sd) { say("SEEDを入力してください"); return; }
     closeSheet();
-    startWith(sd, 1);
+    start({ seed: sd, level: 1 });
   }
   $("startBtn").addEventListener("click", startFromInput);
   elSeedIn.addEventListener("keydown", e => { if (e.key === "Enter") startFromInput(); });
 
-  $("newBtn").addEventListener("click", () => { closeSheet(); startWith(randomSeed(), 1); });
-  $("restartBtn").addEventListener("click", () => { closeSheet(); startWith(seed, 1); });
+  $("newBtn").addEventListener("click", () => { closeSheet(); start({ seed: randomSeed(), level: 1 }); });
+  $("restartBtn").addEventListener("click", () => { closeSheet(); start({ level: 1 }); });
 
   addEventListener("resize", fitBoard);
   addEventListener("orientationchange", () => setTimeout(fitBoard, 120));
@@ -948,12 +1154,26 @@
      ?seed= があればそれ。続きの保存が同じseedなら、その続きから。
      どちらも無ければ新しいseedを1つ作る。 */
   {
-    let urlSeed = null;
-    try { urlSeed = normalizeSeed(new URLSearchParams(location.search).get("seed")); } catch (e) {}
-    const saved = load();
-    if (urlSeed) startWith(urlSeed, saved && saved.seed === urlSeed ? saved.level : 1);
-    else if (saved && saved.seed) startWith(saved.seed, saved.level);
-    else startWith(randomSeed(), saved ? saved.level : 1);
+    let q = null;
+    try { q = new URLSearchParams(location.search); } catch (e) {}
+    const pick = (name, allowed, fallback) => {
+      const v = q && String(q.get(name) || "").toLowerCase();
+      return allowed.includes(v) ? v : fallback;
+    };
+
+    const st = readStore();
+    const urlSeed = q ? normalizeSeed(q.get("seed")) : null;
+
+    /* URLにseedがあるとき ― 誰かから渡されたリンク ― は、kind と mode が
+       書いていなければ既定(COLOR / 100問)とみなす。渡した側の画面をそのまま
+       開くため。seedが無いただの再訪なら、前に遊んでいた続きに戻す。 */
+    const k = pick("kind", KINDS, urlSeed ? "color" : ((st && KINDS.includes(st.kind)) ? st.kind : "color"));
+    const m = pick("mode", Object.keys(MODES), urlSeed ? "full" : ((st && MODES[st.mode]) ? st.mode : "full"));
+
+    const slot = st && st.slots && st.slots[slotKey(k, m)];
+    const sd = urlSeed || (slot && normalizeSeed(slot.seed)) || randomSeed();
+
+    start({ kind: k, mode: m, seed: sd, level: savedLevel(st, k, m, sd) });
   }
 })();
 </script>
