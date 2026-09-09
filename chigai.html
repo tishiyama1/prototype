@@ -131,10 +131,30 @@
   .sw { width: 34px; height: 34px; border-radius: 4px; border: 1px solid rgba(0,0,0,0.08); }
   .swatches span { font-size: 12px; color: var(--faint); }
 
-  .rgb { font-size: 13px; line-height: 1.85; color: var(--faint); }
-  .rgb div.changed { color: var(--ink); font-weight: 700; }
+  /* 色差のまとめ ― ここが主役。生のRGBは下に控えめに置く */
+  .metrics {
+    display: inline-grid; grid-template-columns: auto auto;
+    gap: 3px 14px; margin-bottom: 12px;
+    font-size: 12.5px; line-height: 1.7;
+  }
+  .metrics span { color: var(--faint); letter-spacing: 0.06em; text-align: right; }
+  .metrics b { color: var(--ink); font-weight: 700; text-align: left; }
+
+  .rgb { font-size: 11.5px; line-height: 1.75; color: var(--faint); }
+  .rgb div.changed { color: var(--dim); font-weight: 700; }
 
   .hint { margin-top: 14px; font-size: 10px; letter-spacing: 0.18em; color: var(--faint); }
+
+  /* 横画面など、高さの足りない画面ではリザルトを詰める */
+  @media (max-height: 520px) {
+    .card { padding: 14px 20px 12px; }
+    .found { font-size: 13px; }
+    .swatches { margin: 10px auto 9px; }
+    .sw { width: 26px; height: 26px; }
+    .metrics { font-size: 11.5px; margin-bottom: 9px; }
+    .rgb { font-size: 10.5px; }
+    .hint { margin-top: 10px; }
+  }
 
   /* ---- 下部：普段は空。進行のリセットだけ控えめに ---- */
   footer {
@@ -142,18 +162,18 @@
     height: 30px;
     display: flex; align-items: center; justify-content: center;
   }
-  #reset {
+  footer button {
     appearance: none; -webkit-appearance: none;
     background: none; border: 0;
     font: inherit; font-size: 11px; letter-spacing: 0.16em;
     color: var(--faint);
     padding: 8px 14px;
-    visibility: hidden;
   }
+  #reset { visibility: hidden; }
   #reset.show { visibility: visible; }
 
-  /* ---- seedのシート(普段は閉じている) ---- */
-  #sheet {
+  /* ---- せつめい と seed のシート(普段は閉じている) ---- */
+  .overlay {
     position: fixed; inset: 0; z-index: 30;
     display: none;
     align-items: flex-start; justify-content: center;   /* 中央寄せは card の margin:auto で。
@@ -164,7 +184,7 @@
     overflow-y: auto;                 /* 横画面でも収まらない分はスクロールできる */
     -webkit-overflow-scrolling: touch;
   }
-  #sheet.show { display: flex; animation: fade 0.18s ease both; }
+  .overlay.show { display: flex; animation: fade 0.18s ease both; }
 
   .sheet-card {
     margin: auto;
@@ -216,7 +236,24 @@
     height: 14px; margin-top: 12px;
     font-size: 10px; letter-spacing: 0.2em; color: var(--dim);
   }
-  #closeBtn { margin-top: 14px; width: 100%; border-color: transparent; color: var(--faint); }
+  .sheet-card .close { margin-top: 14px; width: 100%; border-color: transparent; color: var(--faint); }
+
+  /* せつめいの本文 */
+  .help { text-align: left; }
+  .help h3 {
+    margin: 18px 0 6px;
+    font-size: 10px; font-weight: 700; letter-spacing: 0.26em;
+    color: var(--faint);
+  }
+  .help h3:first-of-type { margin-top: 14px; }
+  .help p { font-size: 12.5px; line-height: 1.95; color: var(--ink); }
+  .help p + p { margin-top: 6px; }
+  .help .q { color: var(--dim); }
+  .help .ex {
+    margin-top: 8px; padding: 10px 12px;
+    border: 1px solid var(--line); border-radius: 7px;
+    font-size: 11.5px; line-height: 1.85; color: var(--dim);
+  }
 
   /* ---- 全100レベル踏破 ---- */
   #clear {
@@ -255,6 +292,10 @@
         <div class="swatches">
           <div class="sw" id="swA"></div><span>→</span><div class="sw" id="swB"></div>
         </div>
+        <div class="metrics mono">
+          <span>色差</span><b id="mDe">ΔE 0.0</b>
+          <span>RGB差</span><b id="mDiff">+0 / +0 / +0</b>
+        </div>
         <div class="rgb mono" id="rgb"></div>
         <div class="hint" id="hint">TAP TO CONTINUE</div>
       </div>
@@ -271,11 +312,14 @@
     </div>
   </main>
 
-  <footer><button id="reset">はじめから</button></footer>
+  <footer>
+    <button id="helpBtn" type="button">せつめい</button>
+    <button id="reset" type="button">はじめから</button>
+  </footer>
 </div>
 
 <!-- seedのシート ― 普段は閉じていて、ヘッダーのSEEDから開く -->
-<div id="sheet">
+<div id="sheet" class="overlay">
   <div class="sheet-card">
     <span class="lbl">SEED</span>
     <div class="mono" id="bigSeed">------</div>
@@ -299,7 +343,37 @@
     </div>
 
     <div id="msg" class="mono"></div>
-    <button id="closeBtn" type="button">CLOSE</button>
+    <button id="closeBtn" class="close" type="button">CLOSE</button>
+  </div>
+</div>
+
+<!-- せつめい ― 画面下の「せつめい」から開く -->
+<div id="help" class="overlay">
+  <div class="sheet-card">
+    <span class="lbl">せつめい</span>
+
+    <div class="help">
+      <h3>あそびかた</h3>
+      <p>同じ色のマスの中に、<b>1マスだけ、ほんの少し色の違うマス</b>があります。それを見つけて押してください。</p>
+      <p class="q">時間制限もスコアもありません。外しても何も起きないので、見つかるまで何度でも押せます。急ぐ必要はありません。</p>
+
+      <h3>レベル</h3>
+      <p>全100レベル。進むほどマスが増え、色の差は小さくなります。</p>
+      <div class="ex mono">LEVEL 001&nbsp;&nbsp;3×3<br>LEVEL 020&nbsp;&nbsp;5×5<br>LEVEL 050&nbsp;&nbsp;7×7<br>LEVEL 100&nbsp;&nbsp;10×10</div>
+
+      <h3>正解のあとに出る数字</h3>
+      <p><b>色差 ΔE</b> は、その2色がどれくらい違って見えるかの目安です。<b>ΔE 1 あたりが、並べてやっと分かるかどうかの境目</b>。レベル1で17くらい、レベル100で1.2くらいまで小さくなります。</p>
+      <p><b>RGB差</b> は、赤・緑・青のどれをいくつ動かしたかです。動くのは毎回1つだけ。同じ数字でも緑はよく見え、赤は見えにくいので、見え方が揃うようΔEの側で難易度を決めています。</p>
+
+      <h3>SEED</h3>
+      <p>問題は6文字のseedから作られます。<b>同じseedなら、誰がどの端末で開いても同じ100問</b>です。</p>
+      <p class="q">上のSEEDを押すと、コピー・共有・seedを入れて始める・新しいseed・最初から、が選べます。URLに <span class="mono">?seed=8K4M2P</span> を付けても同じです。</p>
+
+      <h3>とちゅうから</h3>
+      <p class="q">seedと現在のレベルは自動で保存されます。閉じても、次に開けば続きからです。</p>
+    </div>
+
+    <button id="helpClose" class="close" type="button">CLOSE</button>
   </div>
 </div>
 
@@ -338,7 +412,7 @@
 
     PRESS_MS: 90,          // タップ反応
     REVEAL_MS: 620,        // 正解マスを強調している時間
-    PANEL_MS: 1700,        // FOUND表示の時間(タップで即スキップ)
+    PANEL_MS: 2200,        // FOUND表示の時間(タップで即スキップ)
     FADE_MS: 170,          // レベル切り替えのフェード
   };
 
@@ -537,6 +611,8 @@
       colorAt: i => css(i === answer ? odd : base),
       report: () => ({
         from: css(base), to: css(odd),
+        de: deltaE(base, odd),                       // 体感の色差
+        diff: odd.map((v, i) => v - base[i]),        // RGBそれぞれの差(符号つき)
         lines: ["R", "G", "B"].map((name, i) => ({
           name, from: base[i], to: odd[i], changed: i === ch
         }))
@@ -561,6 +637,7 @@
   const elSwA = $("swA"), elSwB = $("swB"), elClear = $("clear"), elReset = $("reset");
   const elSeedTxt = $("seedTxt"), elSheet = $("sheet"), elBigSeed = $("bigSeed");
   const elSeedIn = $("seedIn"), elMsg = $("msg"), elClearSeed = $("clearSeed");
+  const elDe = $("mDe"), elDiff = $("mDiff"), elHelp = $("help");
 
   let seed = "", level = 1, puzzle = null, state = "play", timer = 0, msgTimer = 0;
 
@@ -660,6 +737,8 @@
       elKind.textContent = puzzle.kind;
       elSwA.style.background = r.from;
       elSwB.style.background = r.to;
+      elDe.textContent = "ΔE " + r.de.toFixed(1);
+      elDiff.textContent = r.diff.map(v => (v >= 0 ? "+" : "") + v).join(" / ");
       elRgb.replaceChildren(...r.lines.map(l => {
         const d = document.createElement("div");
         if (l.changed) d.className = "changed";
@@ -757,6 +836,10 @@
   $("seedBtn").addEventListener("click", openSheet);
   $("closeBtn").addEventListener("click", closeSheet);
   elSheet.addEventListener("click", e => { if (e.target === elSheet) closeSheet(); });
+
+  $("helpBtn").addEventListener("click", () => elHelp.classList.add("show"));
+  $("helpClose").addEventListener("click", () => elHelp.classList.remove("show"));
+  elHelp.addEventListener("click", e => { if (e.target === elHelp) elHelp.classList.remove("show"); });
 
   $("copyBtn").addEventListener("click", async () => {
     say(await copyText(seed) ? "COPIED" : "コピーできませんでした");
