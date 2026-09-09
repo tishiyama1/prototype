@@ -1,0 +1,519 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+<meta name="theme-color" content="#f6f6f4">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<title>ちがい ― ONE SQUARE</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  :root {
+    --bg:    #f6f6f4;   /* 背景。マスの色はこれと十分なコントラストを取る */
+    --ink:   #33332f;
+    --dim:   #9a9a94;
+    --faint: #c9c9c3;
+    --line:  #e4e4de;
+  }
+
+  html {
+    height: 100%;
+    touch-action: manipulation;              /* ダブルタップ拡大を抑える(ピンチは残す) */
+    -webkit-text-size-adjust: 100%;
+  }
+  body {
+    height: 100%;
+    background: var(--bg);
+    color: var(--ink);
+    font-family: "Hiragino Kaku Gothic ProN", "Noto Sans JP", "Yu Gothic", system-ui, sans-serif;
+    -webkit-tap-highlight-color: transparent;
+    -webkit-user-select: none; user-select: none;
+    overscroll-behavior: none;
+    overflow: hidden;
+  }
+  .mono { font-family: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, monospace; }
+
+  #app {
+    display: flex; flex-direction: column;
+    height: 100vh;
+    height: 100dvh;
+    padding:
+      calc(env(safe-area-inset-top) + 14px)
+      calc(env(safe-area-inset-right) + 14px)
+      calc(env(safe-area-inset-bottom) + 10px)
+      calc(env(safe-area-inset-left) + 14px);
+  }
+
+  /* ---- 上部：レベル表示だけ ---- */
+  header {
+    flex: 0 0 auto;
+    text-align: center;
+    font-size: 12px; letter-spacing: 0.28em; text-indent: 0.28em;
+    color: var(--dim);
+    padding: 6px 0 14px;
+  }
+  header b { color: var(--ink); font-weight: 700; }
+
+  /* ---- 中央：グリッド ---- */
+  #stage {
+    flex: 1 1 auto;
+    position: relative;
+    display: flex; align-items: center; justify-content: center;
+    min-height: 0;
+  }
+  #board {
+    display: grid;
+    gap: var(--gap, 4px);
+    transition: opacity 0.16s linear;
+  }
+  #board.hidden { opacity: 0; }
+  #board.solved .cell { opacity: 0.34; }
+  #board.solved .cell.answer { opacity: 1; }
+
+  .cell {
+    width: 100%; height: 100%;
+    border-radius: 3px;
+    touch-action: manipulation;
+    transition: opacity 0.22s ease;
+  }
+  .cell.press { opacity: 0.72; transition: none; }   /* 当たり外れに関わらず同じ反応 */
+
+  .cell.answer {
+    animation: ring 0.62s ease-out both;
+    z-index: 2;
+  }
+  @keyframes ring {
+    0%   { box-shadow: 0 0 0 0 rgba(51,51,47,0.55); }
+    60%  { box-shadow: 0 0 0 6px rgba(51,51,47,0.20); }
+    100% { box-shadow: 0 0 0 3px rgba(51,51,47,0.85); }
+  }
+
+  /* ---- 正解パネル ---- */
+  #panel {
+    position: absolute; inset: 0;
+    display: none;
+    align-items: center; justify-content: center;
+    pointer-events: none;
+  }
+  #panel.show { display: flex; animation: fade 0.22s ease both; }
+  @keyframes fade { from { opacity: 0; } to { opacity: 1; } }
+
+  .card {
+    background: var(--bg);
+    border: 1px solid var(--line);
+    border-radius: 10px;
+    box-shadow: 0 8px 30px rgba(0,0,0,0.07);
+    padding: 22px 26px 20px;
+    text-align: center;
+    min-width: 216px;
+  }
+  .found { font-size: 15px; font-weight: 700; letter-spacing: 0.34em; text-indent: 0.34em; }
+  .kind  { margin-top: 5px; font-size: 10.5px; letter-spacing: 0.3em; text-indent: 0.3em; color: var(--dim); }
+
+  .swatches { margin: 16px auto 14px; display: flex; align-items: center; justify-content: center; gap: 10px; }
+  .sw { width: 34px; height: 34px; border-radius: 4px; border: 1px solid rgba(0,0,0,0.08); }
+  .swatches span { font-size: 12px; color: var(--faint); }
+
+  .rgb { font-size: 13px; line-height: 1.85; color: var(--faint); }
+  .rgb div.changed { color: var(--ink); font-weight: 700; }
+
+  .hint { margin-top: 14px; font-size: 10px; letter-spacing: 0.18em; color: var(--faint); }
+
+  /* ---- 下部：普段は空。進行のリセットだけ控えめに ---- */
+  footer {
+    flex: 0 0 auto;
+    height: 30px;
+    display: flex; align-items: center; justify-content: center;
+  }
+  #reset {
+    appearance: none; -webkit-appearance: none;
+    background: none; border: 0;
+    font: inherit; font-size: 11px; letter-spacing: 0.16em;
+    color: var(--faint);
+    padding: 8px 14px;
+    visibility: hidden;
+  }
+  #reset.show { visibility: visible; }
+
+  /* ---- 全100レベル踏破 ---- */
+  #clear {
+    position: absolute; inset: 0;
+    display: none; flex-direction: column;
+    align-items: center; justify-content: center; gap: 18px;
+    background: var(--bg);
+  }
+  #clear.show { display: flex; animation: fade 0.4s ease both; }
+  #clear .t { font-size: 15px; font-weight: 700; letter-spacing: 0.34em; text-indent: 0.34em; }
+  #clear .s { font-size: 11px; letter-spacing: 0.22em; color: var(--dim); }
+  #again {
+    appearance: none; -webkit-appearance: none;
+    margin-top: 6px; padding: 11px 22px;
+    background: none; border: 1px solid var(--line); border-radius: 6px;
+    font: inherit; font-size: 12px; letter-spacing: 0.2em; color: var(--ink);
+  }
+</style>
+</head>
+<body>
+
+<div id="app">
+  <header><b class="mono" id="lv">LEVEL 001</b> <span class="mono" id="total">/ 100</span></header>
+
+  <main id="stage">
+    <div id="board"></div>
+
+    <div id="panel">
+      <div class="card">
+        <div class="found">FOUND</div>
+        <div class="kind" id="kind">COLOR</div>
+        <div class="swatches">
+          <div class="sw" id="swA"></div><span>→</span><div class="sw" id="swB"></div>
+        </div>
+        <div class="rgb mono" id="rgb"></div>
+        <div class="hint" id="hint">TAP TO CONTINUE</div>
+      </div>
+    </div>
+
+    <div id="clear">
+      <div class="t">ALL CLEAR</div>
+      <div class="s mono">100 LEVELS</div>
+      <button id="again">もういちど</button>
+    </div>
+  </main>
+
+  <footer><button id="reset">はじめから</button></footer>
+</div>
+
+<script>
+"use strict";
+(() => {
+
+  /* ==========================================================
+     調整用の定数 ― 実機で触りながらここだけ動かせば済むようにする
+     ========================================================== */
+  const CONFIG = {
+    TOTAL_LEVELS: 100,
+
+    // [レベル, 一辺のマス数] ― 間は線形補間
+    GRID_CURVE:  [[1, 3], [10, 4], [20, 5], [35, 6], [50, 7], [65, 8], [80, 9], [100, 10]],
+
+    // [レベル, 色差(RGBのいずれか1chをこの値だけ動かす)] ― 間は線形補間
+    DELTA_CURVE: [[1, 30], [20, 15], [50, 5], [75, 3], [100, 2]],
+
+    // 上の数値は「グレー128を基準にしたときのRGBの差」。
+    // 同じ数値でも動かすチャンネルとベースカラーによって見え方がかなり変わるので、
+    // true のときは体感の色差(CIE Lab のΔE)が同じになるよう実際の差を作りなおす。
+    // false にすると DELTA_CURVE の数値をそのまま使う(素の挙動を見たいとき用)。
+    PERCEPTUAL: true,
+
+    // ベースカラーの生成範囲
+    SAT:   [0.16, 0.55],   // 彩度
+    LIGHT: [0.40, 0.62],   // 明度
+    CH_MIN: 45, CH_MAX: 210,   // 各チャンネルの下限/上限(端に寄ると色差が潰れる)
+    BG: [246, 246, 244],       // 背景色
+    MIN_BG_CONTRAST: 1.55,     // 背景とのコントラスト比の下限
+
+    // マスの間隔(一辺のマス数に応じて)
+    GAP: level => Math.max(2, Math.round(9 - level)),
+    BOARD_MAX: 560,        // 盤面の最大辺(px)。タブレットで巨大化させない
+
+    PRESS_MS: 90,          // タップ反応
+    REVEAL_MS: 620,        // 正解マスを強調している時間
+    PANEL_MS: 1700,        // FOUND表示の時間(タップで即スキップ)
+    FADE_MS: 170,          // レベル切り替えのフェード
+  };
+
+  const STORE_KEY = "chigai.level";
+
+  /* ========== レベルごとに再現可能な乱数 ========== */
+  function mulberry32(a) {
+    return function () {
+      a = a + 0x6D2B79F5 | 0;
+      let t = Math.imul(a ^ a >>> 15, 1 | a);
+      t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t;
+      return ((t ^ t >>> 14) >>> 0) / 4294967296;
+    };
+  }
+  function seedOf(level, salt) {
+    let h = 2166136261 ^ level;
+    for (let i = 0; i < salt.length; i++) { h ^= salt.charCodeAt(i); h = Math.imul(h, 16777619); }
+    return h >>> 0;
+  }
+
+  /* ========== 補助 ========== */
+  const clamp = (v, lo, hi) => v < lo ? lo : v > hi ? hi : v;
+  const lerp  = (a, b, t) => a + (b - a) * t;
+
+  // [[level, value], ...] の折れ線をレベルで引く
+  function curveAt(curve, level) {
+    if (level <= curve[0][0]) return curve[0][1];
+    for (let i = 1; i < curve.length; i++) {
+      const [l1, v1] = curve[i - 1], [l2, v2] = curve[i];
+      if (level <= l2) return Math.round(lerp(v1, v2, (level - l1) / (l2 - l1)));
+    }
+    return curve[curve.length - 1][1];
+  }
+
+  function hslToRgb(h, s, l) {
+    const c = (1 - Math.abs(2 * l - 1)) * s;
+    const x = c * (1 - Math.abs((h / 60) % 2 - 1));
+    const m = l - c / 2;
+    const t = h < 60 ? [c, x, 0] : h < 120 ? [x, c, 0] : h < 180 ? [0, c, x]
+            : h < 240 ? [0, x, c] : h < 300 ? [x, 0, c] : [c, 0, x];
+    return t.map(v => Math.round((v + m) * 255));
+  }
+  const srgb = v => { v /= 255; return v <= 0.03928 ? v / 12.92 : Math.pow((v + 0.055) / 1.055, 2.4); };
+  const lum  = ([r, g, b]) => 0.2126 * srgb(r) + 0.7152 * srgb(g) + 0.0722 * srgb(b);
+  function contrast(a, b) {
+    const la = lum(a), lb = lum(b);
+    return (Math.max(la, lb) + 0.05) / (Math.min(la, lb) + 0.05);
+  }
+  const css = ([r, g, b]) => "rgb(" + r + "," + g + "," + b + ")";
+
+  /* ---- 体感の色差(CIE Lab / ΔE76) ----
+     RGBを1動かしたときの見えやすさはチャンネルごとに大きく違う(緑がいちばん目立つ)。
+     ΔEを揃えておくと、どの色が出ても同じレベルなら同じくらいの難しさになる。 */
+  function toLab([r, g, b]) {
+    const R = srgb(r), G = srgb(g), B = srgb(b);
+    let x = (R * 0.4124 + G * 0.3576 + B * 0.1805) / 0.95047;
+    let y = (R * 0.2126 + G * 0.7152 + B * 0.0722);
+    let z = (R * 0.0193 + G * 0.1192 + B * 0.9505) / 1.08883;
+    const k = t => t > 0.008856 ? Math.cbrt(t) : 7.787 * t + 16 / 116;
+    x = k(x); y = k(y); z = k(z);
+    return [116 * y - 16, 500 * (x - y), 200 * (y - z)];
+  }
+  function deltaE(a, b) {
+    const p = toLab(a), q = toLab(b);
+    return Math.hypot(p[0] - q[0], p[1] - q[1], p[2] - q[2]);
+  }
+
+  // DELTA_CURVE の数値(グレー128基準)を、目標とするΔEに読みかえる
+  const targetCache = new Map();
+  function targetDeltaE(step) {
+    if (targetCache.has(step)) return targetCache.get(step);
+    let sum = 0;
+    for (let ch = 0; ch < 3; ch++) {
+      const o = [128, 128, 128]; o[ch] += step;
+      sum += deltaE([128, 128, 128], o);
+    }
+    const t = sum / 3;
+    targetCache.set(step, t);
+    return t;
+  }
+
+  // base の ch を dir 方向に動かして、目標ΔEに届く最小の差を返す
+  function stepForTarget(base, ch, dir, target) {
+    const room = dir > 0 ? 255 - base[ch] : base[ch];
+    for (let s = 1; s <= room; s++) {
+      const o = base.slice(); o[ch] = base[ch] + dir * s;
+      if (deltaE(base, o) >= target) return s;
+    }
+    return room;   // 端に当たったらそこまで(実際には起きないはずの保険)
+  }
+
+  /* ==========================================================
+     問題の生成
+     ----------------------------------------------------------
+     生成関数は generateColorPuzzle(level) の1本だけ独立させてある。
+     将来 generateShapePuzzle / generatePatternPuzzle /
+     generatePositionPuzzle / generateMotionPuzzle を足すときは、
+     同じ形のオブジェクトを返して GENERATORS に登録すればよい。
+
+       {
+         kind:    "COLOR",                 // パネルに出す種別
+         size:    5,                       // 一辺のマス数
+         answer:  12,                      // 違うマスのindex
+         colorAt: i => "rgb(…)",           // 各マスの見た目
+         report:  () => ({ from, to, lines })  // 何が違ったのかの説明
+       }
+     ========================================================== */
+
+  function pickBaseColor(rng) {
+    for (let i = 0; i < 300; i++) {
+      const h = rng() * 360;
+      const s = lerp(CONFIG.SAT[0], CONFIG.SAT[1], rng());
+      const l = lerp(CONFIG.LIGHT[0], CONFIG.LIGHT[1], rng());
+      const c = hslToRgb(h, s, l).map(v => clamp(v, CONFIG.CH_MIN, CONFIG.CH_MAX));
+      if (contrast(c, CONFIG.BG) >= CONFIG.MIN_BG_CONTRAST) return c;
+    }
+    return [128, 128, 128];
+  }
+
+  function generateColorPuzzle(level) {
+    const rng   = mulberry32(seedOf(level, "color"));
+    const size  = curveAt(CONFIG.GRID_CURVE, level);
+    const base  = pickBaseColor(rng);
+
+    // RGBのうち1chだけ動かす。範囲外に出るときは向きを反転する
+    const ch   = Math.floor(rng() * 3);
+    const step = curveAt(CONFIG.DELTA_CURVE, level);
+    let dir = rng() < 0.5 ? -1 : 1;
+    if (base[ch] + dir * step > 255 || base[ch] + dir * step < 0) dir = -dir;
+
+    const delta = CONFIG.PERCEPTUAL
+      ? stepForTarget(base, ch, dir, targetDeltaE(step))
+      : step;
+
+    const odd = base.slice();
+    odd[ch] = clamp(base[ch] + dir * delta, 0, 255);
+
+    const answer = Math.floor(rng() * size * size);
+
+    return {
+      kind: "COLOR",
+      size, answer,
+      colorAt: i => css(i === answer ? odd : base),
+      report: () => ({
+        from: css(base), to: css(odd),
+        lines: ["R", "G", "B"].map((name, i) => ({
+          name, from: base[i], to: odd[i], changed: i === ch
+        }))
+      })
+    };
+  }
+
+  const GENERATORS = { color: generateColorPuzzle };
+  const makePuzzle = level => GENERATORS.color(level);
+
+  /* ========== 画面 ========== */
+  const $ = id => document.getElementById(id);
+  const elLv = $("lv"), elTotal = $("total"), elBoard = $("board"), elStage = $("stage");
+  const elPanel = $("panel"), elKind = $("kind"), elRgb = $("rgb");
+  const elSwA = $("swA"), elSwB = $("swB"), elClear = $("clear"), elReset = $("reset");
+
+  let level = 1, puzzle = null, state = "play", timer = 0;
+
+  elTotal.textContent = "/ " + CONFIG.TOTAL_LEVELS;
+
+  function loadLevel() {
+    const n = parseInt(localStorage.getItem(STORE_KEY) || "1", 10);
+    return Number.isFinite(n) && n >= 1 && n <= CONFIG.TOTAL_LEVELS ? n : 1;
+  }
+  function saveLevel(n) { try { localStorage.setItem(STORE_KEY, String(n)); } catch (e) {} }
+
+  // 盤面は「中央エリアの短い方」に合わせる。スマホ縦なら幅いっぱい
+  function fitBoard() {
+    const w = elStage.clientWidth, h = elStage.clientHeight;
+    const side = Math.max(120, Math.min(w, h, CONFIG.BOARD_MAX));
+    elBoard.style.width = side + "px";
+    elBoard.style.height = side + "px";
+  }
+
+  function render() {
+    puzzle = makePuzzle(level);
+    elLv.textContent = "LEVEL " + String(level).padStart(3, "0");
+    elBoard.style.setProperty("--gap", CONFIG.GAP(puzzle.size) + "px");
+    elBoard.style.gridTemplateColumns = "repeat(" + puzzle.size + ", 1fr)";
+    elBoard.style.gridTemplateRows = "repeat(" + puzzle.size + ", 1fr)";
+    elBoard.classList.remove("solved");
+
+    const frag = document.createDocumentFragment();
+    for (let i = 0; i < puzzle.size * puzzle.size; i++) {
+      const d = document.createElement("div");
+      d.className = "cell";
+      d.dataset.i = i;
+      d.style.background = puzzle.colorAt(i);
+      frag.appendChild(d);
+    }
+    elBoard.replaceChildren(frag);
+    fitBoard();
+    elReset.classList.toggle("show", level > 1);
+    state = "play";
+  }
+
+  function press(cell) {
+    cell.classList.add("press");
+    setTimeout(() => cell.classList.remove("press"), CONFIG.PRESS_MS);
+  }
+
+  function solve(cell) {
+    state = "reveal";
+    elBoard.classList.add("solved");
+    cell.classList.add("answer");
+
+    timer = setTimeout(() => {
+      const r = puzzle.report();
+      elKind.textContent = puzzle.kind;
+      elSwA.style.background = r.from;
+      elSwB.style.background = r.to;
+      elRgb.replaceChildren(...r.lines.map(l => {
+        const d = document.createElement("div");
+        if (l.changed) d.className = "changed";
+        d.textContent = l.name + " " + l.from + " → " + l.to;
+        return d;
+      }));
+      elPanel.classList.add("show");
+      state = "panel";
+      timer = setTimeout(next, CONFIG.PANEL_MS);
+    }, CONFIG.REVEAL_MS);
+  }
+
+  function next() {
+    clearTimeout(timer);
+    elPanel.classList.remove("show");
+
+    if (level >= CONFIG.TOTAL_LEVELS) {
+      saveLevel(CONFIG.TOTAL_LEVELS);
+      elBoard.classList.add("hidden");
+      elClear.classList.add("show");
+      elReset.classList.remove("show");
+      state = "clear";
+      return;
+    }
+
+    level++;
+    saveLevel(level);
+    elBoard.classList.add("hidden");
+    state = "wait";
+    timer = setTimeout(() => {
+      render();
+      elBoard.classList.remove("hidden");
+    }, CONFIG.FADE_MS);
+  }
+
+  /* ========== 入力 ========== */
+  elBoard.addEventListener("pointerdown", e => {
+    const cell = e.target.closest(".cell");
+    if (!cell || state !== "play") return;
+    press(cell);
+  });
+
+  elBoard.addEventListener("click", e => {
+    const cell = e.target.closest(".cell");
+    if (!cell) return;
+    if (state === "panel") { next(); return; }
+    if (state !== "play") return;
+    // 外れても何も起きない ― ペナルティも回数制限もない
+    if (Number(cell.dataset.i) === puzzle.answer) solve(cell);
+  });
+
+  // パネルはどこを触っても次へ
+  elStage.addEventListener("click", () => { if (state === "panel") next(); });
+
+  elReset.addEventListener("click", () => {
+    clearTimeout(timer);
+    level = 1; saveLevel(1);
+    elPanel.classList.remove("show");
+    render();
+    elBoard.classList.remove("hidden");
+  });
+
+  $("again").addEventListener("click", () => {
+    level = 1; saveLevel(1);
+    elClear.classList.remove("show");
+    render();
+    elBoard.classList.remove("hidden");
+  });
+
+  addEventListener("resize", fitBoard);
+  addEventListener("orientationchange", () => setTimeout(fitBoard, 120));
+  // iOS Safari のダブルタップ/ピンチ拡大をできるだけ抑える
+  document.addEventListener("dblclick", e => e.preventDefault(), { passive: false });
+  document.addEventListener("gesturestart", e => e.preventDefault(), { passive: false });
+
+  level = loadLevel();
+  render();
+})();
+</script>
+</body>
+</html>
