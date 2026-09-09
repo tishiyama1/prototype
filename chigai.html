@@ -51,9 +51,20 @@
     text-align: center;
     font-size: 12px; letter-spacing: 0.28em; text-indent: 0.28em;
     color: var(--dim);
-    padding: 6px 0 14px;
+    padding: 6px 0 12px;
   }
   header b { color: var(--ink); font-weight: 700; }
+
+  /* seedは控えめに。押すとseedのシートが開く */
+  #seedBtn {
+    appearance: none; -webkit-appearance: none;
+    background: none; border: 0;
+    font: inherit; font-size: 10px; letter-spacing: 0.24em; text-indent: 0.24em;
+    color: var(--faint);
+    margin-top: 6px; padding: 5px 10px;
+    display: inline-flex; align-items: baseline; gap: 7px;
+  }
+  #seedBtn b { color: var(--dim); font-weight: 700; border-bottom: 1px dotted var(--faint); padding-bottom: 1px; }
 
   /* ---- 中央：グリッド ---- */
   #stage {
@@ -90,12 +101,17 @@
   }
 
   /* ---- 正解パネル ---- */
+  /* 正解マスは z-index を持ち上げているので、パネルはさらに上に重ねる。
+     さらに、正解マスと重ならない側(上半分なら下、下半分なら上)へ寄せる。 */
   #panel {
     position: absolute; inset: 0;
     display: none;
     align-items: center; justify-content: center;
     pointer-events: none;
+    z-index: 5;
   }
+  #panel.top    { align-items: flex-start; }
+  #panel.bottom { align-items: flex-end; }
   #panel.show { display: flex; animation: fade 0.22s ease both; }
   @keyframes fade { from { opacity: 0; } to { opacity: 1; } }
 
@@ -136,6 +152,72 @@
   }
   #reset.show { visibility: visible; }
 
+  /* ---- seedのシート(普段は閉じている) ---- */
+  #sheet {
+    position: fixed; inset: 0; z-index: 30;
+    display: none;
+    align-items: flex-start; justify-content: center;   /* 中央寄せは card の margin:auto で。
+                                                           align-items:center だと、はみ出したとき上端に戻せない */
+    padding: 20px;
+    background: rgba(246,246,244,0.82);
+    -webkit-backdrop-filter: blur(2px); backdrop-filter: blur(2px);
+    overflow-y: auto;                 /* 横画面でも収まらない分はスクロールできる */
+    -webkit-overflow-scrolling: touch;
+  }
+  #sheet.show { display: flex; animation: fade 0.18s ease both; }
+
+  .sheet-card {
+    margin: auto;
+    background: var(--bg);
+    border: 1px solid var(--line);
+    border-radius: 12px;
+    box-shadow: 0 10px 40px rgba(0,0,0,0.10);
+    padding: 24px 22px 18px;
+    width: 100%; max-width: 320px;
+    text-align: center;
+  }
+  .sheet-card .lbl {
+    display: block;
+    font-size: 10px; letter-spacing: 0.3em; text-indent: 0.3em;
+    color: var(--dim);
+  }
+  #bigSeed {
+    margin: 10px 0 16px;
+    font-size: 30px; font-weight: 700; letter-spacing: 0.16em; text-indent: 0.16em;
+    color: var(--ink);
+    -webkit-user-select: text; user-select: text;
+  }
+  .btns { display: flex; gap: 8px; }
+  .btns + .btns { margin-top: 8px; }
+  .sheet-card button, .sheet-card input {
+    appearance: none; -webkit-appearance: none;
+    font: inherit;
+    border: 1px solid var(--line); border-radius: 7px;
+    background: none; color: var(--ink);
+    padding: 12px 10px;
+    min-height: 44px;
+  }
+  .sheet-card button {
+    flex: 1;
+    font-size: 11px; letter-spacing: 0.18em;
+    color: var(--dim);
+  }
+  .sheet-card button.solid { background: var(--ink); border-color: var(--ink); color: var(--bg); }
+  .sheet-card input {
+    flex: 1; min-width: 0;
+    font-size: 16px;              /* 16px未満だとiOSで入力時にズームする */
+    letter-spacing: 0.14em; text-align: center;
+    text-transform: uppercase;
+    -webkit-user-select: text; user-select: text;
+  }
+  .sheet-card input::placeholder { color: var(--faint); letter-spacing: 0.14em; }
+  .sep { height: 1px; background: var(--line); margin: 20px 0 16px; }
+  #msg {
+    height: 14px; margin-top: 12px;
+    font-size: 10px; letter-spacing: 0.2em; color: var(--dim);
+  }
+  #closeBtn { margin-top: 14px; width: 100%; border-color: transparent; color: var(--faint); }
+
   /* ---- 全100レベル踏破 ---- */
   #clear {
     position: absolute; inset: 0;
@@ -146,18 +228,22 @@
   #clear.show { display: flex; animation: fade 0.4s ease both; }
   #clear .t { font-size: 15px; font-weight: 700; letter-spacing: 0.34em; text-indent: 0.34em; }
   #clear .s { font-size: 11px; letter-spacing: 0.22em; color: var(--dim); }
-  #again {
+  #clear .btns { width: 100%; max-width: 260px; margin-top: 6px; }
+  #clear button {
     appearance: none; -webkit-appearance: none;
-    margin-top: 6px; padding: 11px 22px;
+    flex: 1; padding: 12px 14px; min-height: 44px;
     background: none; border: 1px solid var(--line); border-radius: 6px;
-    font: inherit; font-size: 12px; letter-spacing: 0.2em; color: var(--ink);
+    font: inherit; font-size: 11px; letter-spacing: 0.16em; color: var(--ink);
   }
 </style>
 </head>
 <body>
 
 <div id="app">
-  <header><b class="mono" id="lv">LEVEL 001</b> <span class="mono" id="total">/ 100</span></header>
+  <header>
+    <div><b class="mono" id="lv">LEVEL 001</b> <span class="mono" id="total">/ 100</span></div>
+    <button id="seedBtn" type="button">SEED <b class="mono" id="seedTxt">------</b></button>
+  </header>
 
   <main id="stage">
     <div id="board"></div>
@@ -177,11 +263,44 @@
     <div id="clear">
       <div class="t">ALL CLEAR</div>
       <div class="s mono">100 LEVELS</div>
-      <button id="again">もういちど</button>
+      <div class="s mono" id="clearSeed">SEED ------</div>
+      <div class="btns">
+        <button id="again" type="button">もういちど</button>
+        <button id="againNew" type="button">あたらしいSEED</button>
+      </div>
     </div>
   </main>
 
   <footer><button id="reset">はじめから</button></footer>
+</div>
+
+<!-- seedのシート ― 普段は閉じていて、ヘッダーのSEEDから開く -->
+<div id="sheet">
+  <div class="sheet-card">
+    <span class="lbl">SEED</span>
+    <div class="mono" id="bigSeed">------</div>
+    <div class="btns">
+      <button id="copyBtn" type="button">COPY</button>
+      <button id="shareBtn" type="button">SHARE</button>
+    </div>
+
+    <div class="sep"></div>
+
+    <label class="lbl" for="seedIn">PLAY BY SEED</label>
+    <div class="btns" style="margin-top:10px">
+      <input id="seedIn" class="mono" type="text" maxlength="12" placeholder="8K4M2P"
+             autocapitalize="characters" autocomplete="off" autocorrect="off" spellcheck="false"
+             enterkeyhint="go" aria-label="SEED">
+      <button id="startBtn" class="solid" type="button" style="flex:0 0 84px">START</button>
+    </div>
+    <div class="btns">
+      <button id="newBtn" type="button">NEW SEED</button>
+      <button id="restartBtn" type="button">RESTART</button>
+    </div>
+
+    <div id="msg" class="mono"></div>
+    <button id="closeBtn" type="button">CLOSE</button>
+  </div>
 </div>
 
 <script>
@@ -223,10 +342,31 @@
     FADE_MS: 170,          // レベル切り替えのフェード
   };
 
-  const STORE_KEY = "chigai.level";
+  /* 問題生成のバージョン。将来アルゴリズムを変えるときはここを上げ、
+     GENERATORS に新しい版を足す。seedの導出にも混ぜてあるので、
+     版が違えば同じseedでも別の100問になり、v1の生成器を残しておけば
+     v1のseedはいつでも同じ100問を再現できる。 */
+  const PUZZLE_VERSION = 1;
 
-  /* ========== レベルごとに再現可能な乱数 ========== */
-  function mulberry32(a) {
+  // 見まちがえやすい I O 0 1 を外した32文字。表示は常に大文字
+  const SEED_ALPHABET = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
+  const SEED_LEN = 6;
+
+  const STORE_KEY = "chigai.progress";
+  const OLD_STORE_KEY = "chigai.level";   // seed導入前の保存
+
+  /* ==========================================================
+     seed ― 同じ文字列からは、いつでも同じ100問
+     ----------------------------------------------------------
+     問題生成に Math.random() は使わない。すべて createSeededRandom
+     から出る値で決める。レベルごとの種は
+       deriveSeed(masterSeed, level) = hash(seed : 版 : レベル)
+     で作るので、LEVEL 50だけを単体で再現することもできる。
+     ========================================================== */
+
+  // 32bitのseedから決まった順に値を返す(mulberry32)
+  function createSeededRandom(seed) {
+    let a = seed >>> 0;
     return function () {
       a = a + 0x6D2B79F5 | 0;
       let t = Math.imul(a ^ a >>> 15, 1 | a);
@@ -234,10 +374,43 @@
       return ((t ^ t >>> 14) >>> 0) / 4294967296;
     };
   }
-  function seedOf(level, salt) {
-    let h = 2166136261 ^ level;
-    for (let i = 0; i < salt.length; i++) { h ^= salt.charCodeAt(i); h = Math.imul(h, 16777619); }
+
+  // 文字列 → 32bit (FNV-1a)
+  function hashString(str) {
+    let h = 2166136261;
+    for (let i = 0; i < str.length; i++) { h ^= str.charCodeAt(i); h = Math.imul(h, 16777619); }
     return h >>> 0;
+  }
+
+  // master seed + レベル → そのレベル専用の種
+  function deriveSeed(masterSeed, level, salt) {
+    return hashString(masterSeed + ":" + PUZZLE_VERSION + ":" + level + ":" + salt);
+  }
+
+  // 新しいseedを1つ作る(問題生成には使わないので通常の乱数でよい)
+  function randomSeed() {
+    const n = new Uint32Array(SEED_LEN);
+    if (self.crypto && self.crypto.getRandomValues) self.crypto.getRandomValues(n);
+    else for (let i = 0; i < SEED_LEN; i++) n[i] = Math.floor(Math.random() * 0xffffffff);
+    let out = "";
+    for (let i = 0; i < SEED_LEN; i++) out += SEED_ALPHABET[n[i] % SEED_ALPHABET.length];
+    return out;
+  }
+
+  /* 入力を正規化する。小文字・空白・ハイフンは吸収し、
+     6文字ちょうどで使える文字だけなら そのまま採用。
+     それ以外(長さ違い・使えない文字)は、ハッシュから正規のseedに畳む
+     ― どんな入力でも必ず何かのseedになるので、入力が弾かれて詰まることがない。 */
+  function normalizeSeed(raw) {
+    const up = String(raw == null ? "" : raw).toUpperCase().replace(/[\s\-_]/g, "");
+    if (!up) return null;
+    if (up.length === SEED_LEN && [...up].every(c => SEED_ALPHABET.includes(c))) return up;
+    let h = hashString(up), out = "";
+    for (let i = 0; i < SEED_LEN; i++) {
+      out += SEED_ALPHABET[h % SEED_ALPHABET.length];
+      h = Math.imul(h ^ h >>> 13, 2654435761) >>> 0;
+    }
+    return out;
   }
 
   /* ========== 補助 ========== */
@@ -339,8 +512,7 @@
     return [128, 128, 128];
   }
 
-  function generateColorPuzzle(level) {
-    const rng   = mulberry32(seedOf(level, "color"));
+  function generateColorPuzzle(level, rng) {
     const size  = curveAt(CONFIG.GRID_CURVE, level);
     const base  = pickBaseColor(rng);
 
@@ -372,24 +544,71 @@
     };
   }
 
-  const GENERATORS = { color: generateColorPuzzle };
-  const makePuzzle = level => GENERATORS.color(level);
+  // 版ごとの生成器。将来 v2 を足しても、v1 はそのまま残す
+  const GENERATORS = {
+    1: { color: generateColorPuzzle },
+  };
+
+  function makePuzzle(seed, level) {
+    const gen = GENERATORS[PUZZLE_VERSION].color;
+    return gen(level, createSeededRandom(deriveSeed(seed, level, "color")));
+  }
 
   /* ========== 画面 ========== */
   const $ = id => document.getElementById(id);
   const elLv = $("lv"), elTotal = $("total"), elBoard = $("board"), elStage = $("stage");
   const elPanel = $("panel"), elKind = $("kind"), elRgb = $("rgb");
   const elSwA = $("swA"), elSwB = $("swB"), elClear = $("clear"), elReset = $("reset");
+  const elSeedTxt = $("seedTxt"), elSheet = $("sheet"), elBigSeed = $("bigSeed");
+  const elSeedIn = $("seedIn"), elMsg = $("msg"), elClearSeed = $("clearSeed");
 
-  let level = 1, puzzle = null, state = "play", timer = 0;
+  let seed = "", level = 1, puzzle = null, state = "play", timer = 0, msgTimer = 0;
 
   elTotal.textContent = "/ " + CONFIG.TOTAL_LEVELS;
 
-  function loadLevel() {
-    const n = parseInt(localStorage.getItem(STORE_KEY) || "1", 10);
-    return Number.isFinite(n) && n >= 1 && n <= CONFIG.TOTAL_LEVELS ? n : 1;
+  /* ---- 保存 ― seedと現在レベルの2つだけ ---- */
+  function save() {
+    try {
+      localStorage.setItem(STORE_KEY, JSON.stringify({ v: PUZZLE_VERSION, seed, level }));
+    } catch (e) {}
   }
-  function saveLevel(n) { try { localStorage.setItem(STORE_KEY, String(n)); } catch (e) {} }
+  function load() {
+    try {
+      const raw = localStorage.getItem(STORE_KEY);
+      if (raw) {
+        const o = JSON.parse(raw);
+        const sd = normalizeSeed(o && o.seed);
+        const lv = parseInt(o && o.level, 10);
+        if (sd && o.v === PUZZLE_VERSION && lv >= 1 && lv <= CONFIG.TOTAL_LEVELS) return { seed: sd, level: lv };
+      }
+      // seed導入前の保存が残っていれば、レベルだけ引き継ぐ
+      const oldLv = parseInt(localStorage.getItem(OLD_STORE_KEY), 10);
+      localStorage.removeItem(OLD_STORE_KEY);
+      if (oldLv >= 1 && oldLv <= CONFIG.TOTAL_LEVELS) return { seed: null, level: oldLv };
+    } catch (e) {}
+    return null;
+  }
+
+  /* ---- URL ― ?seed=XXXXXX で同じ100問を開ける ---- */
+  const baseUrl = () => location.href.split("#")[0].split("?")[0];
+  const shareUrl = () => baseUrl() + "?seed=" + seed;
+  function syncUrl() {
+    try { history.replaceState(null, "", shareUrl()); } catch (e) {}   // file:// では失敗するので握りつぶす
+  }
+
+  function startWith(newSeed, newLevel) {
+    clearTimeout(timer);
+    seed = newSeed;
+    level = newLevel || 1;
+    elSeedTxt.textContent = seed;
+    elBigSeed.textContent = seed;
+    elClearSeed.textContent = "SEED " + seed;
+    save(); syncUrl();
+    elPanel.classList.remove("show");
+    elClear.classList.remove("show");
+    render();
+    elBoard.classList.remove("hidden");
+  }
 
   // 盤面は「中央エリアの短い方」に合わせる。スマホ縦なら幅いっぱい
   function fitBoard() {
@@ -400,7 +619,7 @@
   }
 
   function render() {
-    puzzle = makePuzzle(level);
+    puzzle = makePuzzle(seed, level);
     elLv.textContent = "LEVEL " + String(level).padStart(3, "0");
     elBoard.style.setProperty("--gap", CONFIG.GAP(puzzle.size) + "px");
     elBoard.style.gridTemplateColumns = "repeat(" + puzzle.size + ", 1fr)";
@@ -431,6 +650,11 @@
     elBoard.classList.add("solved");
     cell.classList.add("answer");
 
+    // 正解マスを隠さないよう、パネルは反対側へ寄せる
+    const row = Math.floor(puzzle.answer / puzzle.size);
+    elPanel.classList.remove("top", "bottom");
+    elPanel.classList.add(row < puzzle.size / 2 ? "bottom" : "top");
+
     timer = setTimeout(() => {
       const r = puzzle.report();
       elKind.textContent = puzzle.kind;
@@ -453,7 +677,7 @@
     elPanel.classList.remove("show");
 
     if (level >= CONFIG.TOTAL_LEVELS) {
-      saveLevel(CONFIG.TOTAL_LEVELS);
+      save();
       elBoard.classList.add("hidden");
       elClear.classList.add("show");
       elReset.classList.remove("show");
@@ -462,7 +686,7 @@
     }
 
     level++;
-    saveLevel(level);
+    save();
     elBoard.classList.add("hidden");
     state = "wait";
     timer = setTimeout(() => {
@@ -490,20 +714,74 @@
   // パネルはどこを触っても次へ
   elStage.addEventListener("click", () => { if (state === "panel") next(); });
 
-  elReset.addEventListener("click", () => {
-    clearTimeout(timer);
-    level = 1; saveLevel(1);
-    elPanel.classList.remove("show");
-    render();
-    elBoard.classList.remove("hidden");
+  elReset.addEventListener("click", () => startWith(seed, 1));
+  $("again").addEventListener("click", () => startWith(seed, 1));
+  $("againNew").addEventListener("click", () => startWith(randomSeed(), 1));
+
+  /* ========== seedのシート ========== */
+  function say(text) {
+    elMsg.textContent = text;
+    clearTimeout(msgTimer);
+    msgTimer = setTimeout(() => { elMsg.textContent = ""; }, 1800);
+  }
+
+  function openSheet() {
+    elBigSeed.textContent = seed;
+    elSeedIn.value = "";
+    elMsg.textContent = "";
+    elSheet.classList.add("show");
+  }
+  function closeSheet() { elSheet.classList.remove("show"); elSeedIn.blur(); }
+
+  // Clipboard APIが使えない場合でもゲームは壊さない
+  async function copyText(text) {
+    try {
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        await navigator.clipboard.writeText(text);
+        return true;
+      }
+    } catch (e) {}
+    try {
+      const ta = document.createElement("textarea");
+      ta.value = text;
+      ta.setAttribute("readonly", "");
+      ta.style.cssText = "position:fixed;top:0;left:0;opacity:0";
+      document.body.appendChild(ta);
+      ta.select(); ta.setSelectionRange(0, text.length);
+      const ok = document.execCommand("copy");
+      document.body.removeChild(ta);
+      return ok;
+    } catch (e) { return false; }
+  }
+
+  $("seedBtn").addEventListener("click", openSheet);
+  $("closeBtn").addEventListener("click", closeSheet);
+  elSheet.addEventListener("click", e => { if (e.target === elSheet) closeSheet(); });
+
+  $("copyBtn").addEventListener("click", async () => {
+    say(await copyText(seed) ? "COPIED" : "コピーできませんでした");
   });
 
-  $("again").addEventListener("click", () => {
-    level = 1; saveLevel(1);
-    elClear.classList.remove("show");
-    render();
-    elBoard.classList.remove("hidden");
+  $("shareBtn").addEventListener("click", async () => {
+    const url = shareUrl();
+    if (navigator.share) {
+      try { await navigator.share({ title: "ちがい ― SEED " + seed, url }); return; }
+      catch (e) { if (e && e.name === "AbortError") return; }   // 共有をやめただけ
+    }
+    say(await copyText(url) ? "URL COPIED" : "コピーできませんでした");
   });
+
+  function startFromInput() {
+    const sd = normalizeSeed(elSeedIn.value);
+    if (!sd) { say("SEEDを入力してください"); return; }
+    closeSheet();
+    startWith(sd, 1);
+  }
+  $("startBtn").addEventListener("click", startFromInput);
+  elSeedIn.addEventListener("keydown", e => { if (e.key === "Enter") startFromInput(); });
+
+  $("newBtn").addEventListener("click", () => { closeSheet(); startWith(randomSeed(), 1); });
+  $("restartBtn").addEventListener("click", () => { closeSheet(); startWith(seed, 1); });
 
   addEventListener("resize", fitBoard);
   addEventListener("orientationchange", () => setTimeout(fitBoard, 120));
@@ -511,8 +789,17 @@
   document.addEventListener("dblclick", e => e.preventDefault(), { passive: false });
   document.addEventListener("gesturestart", e => e.preventDefault(), { passive: false });
 
-  level = loadLevel();
-  render();
+  /* ========== 開始 ==========
+     ?seed= があればそれ。続きの保存が同じseedなら、その続きから。
+     どちらも無ければ新しいseedを1つ作る。 */
+  {
+    let urlSeed = null;
+    try { urlSeed = normalizeSeed(new URLSearchParams(location.search).get("seed")); } catch (e) {}
+    const saved = load();
+    if (urlSeed) startWith(urlSeed, saved && saved.seed === urlSeed ? saved.level : 1);
+    else if (saved && saved.seed) startWith(saved.seed, saved.level);
+    else startWith(randomSeed(), saved ? saved.level : 1);
+  }
 })();
 </script>
 </body>
