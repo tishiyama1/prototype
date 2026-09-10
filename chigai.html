@@ -90,12 +90,14 @@
   }
   .cell.press { opacity: 0.72; transition: none; }   /* 当たり外れに関わらず同じ反応 */
 
-  /* ---- MOVE ― マスは器になり、中の図形が左右に往復する ---- */
-  #board.move .cell {
+  /* ---- MOVE / SHAPE ― マスは器になり、中の図形を見る ---- */
+  #board.move .cell, #board.shape .cell {
     background: none !important;
     display: flex; align-items: center; justify-content: center;
     overflow: hidden;
   }
+  .fig { width: 66%; height: 66%; display: block; overflow: visible; }
+  .sw .fig { width: 82%; height: 82%; }
   .dot {
     width: 40%; height: 40%;
     border-radius: 3px;
@@ -773,6 +775,23 @@
     // 1プレイで使えるスルーの回数。使い切ったあとの不正解でおしまい
     PASSES: 3,
 
+    /* ---- SHAPE(形で見分ける問題) ----
+       1マスだけ形が違う。何で差をつけるかはレベルの段(STAGES)で決まり、
+       その中でさらに差が小さくなる(DIFF_CURVE)。AMPを触ると全体の効き方が変わる。 */
+    SHAPE_GRID_CURVE: [[1, 3], [20, 4], [50, 5], [75, 6], [100, 6]],
+    SHAPE_STAGES: [
+      { from: 1,  how: "type"   },   // まったく別のかたち   ○ → △
+      { from: 25, how: "sides"  },   // 頂点の数が1つ違う     五角形 → 六角形
+      { from: 45, how: "aspect" },   // たて横の比            ○ → 楕円 / □ → 長方形
+      { from: 65, how: "round"  },   // 角の丸み
+      { from: 82, how: "rot"    },   // かたむき
+    ],
+    // 段の中での差の大きさ(0〜1)。1が最大
+    SHAPE_DIFF_CURVE: [[1, 1], [25, 0.8], [45, 0.55], [65, 0.36], [82, 0.24], [100, 0.08]],
+    // 差の付けかたごとの最大値
+    SHAPE_AMP: { aspect: 0.42, round: 0.55, rot: 40 },
+    SHAPE_SIZE: 0.66,        // 図形の大きさ(マスの一辺に対する割合)
+
     /* ---- 10問モード(テスト用) ----
        難易度のカーブ全体を10問で拾えるよう、100問から間引いて並べる。
        通常モードの進行とは別に保存され、互いに影響しない。 */
@@ -908,6 +927,7 @@
     return (Math.max(la, lb) + 0.05) / (Math.min(la, lb) + 0.05);
   }
   const css = ([r, g, b]) => "rgb(" + r + "," + g + "," + b + ")";
+  const SVGNS = "http://www.w3.org/2000/svg";
 
   /* ---- 体感の色差(CIE Lab / ΔE76) ----
      RGBを1動かしたときの見えやすさはチャンネルごとに大きく違う(緑がいちばん目立つ)。
@@ -1082,9 +1102,162 @@
     };
   }
 
+  /* ---- SHAPE ― 1つだけ形が違う ----
+     形はすべて「頂点の並び + 角の丸み」で表しているので、
+     別のかたち / 頂点の数 / たて横の比 / 角の丸み / かたむき を
+     ひとつだけ変えれば、そのまま難易度の段になる。 */
+
+  // 形の指定: { form, n, rx, ry, rot, round, inner, arm }
+  const FORMS = {
+    circle: { form: "ellipse", rx: 1,   ry: 1 },
+    tri:    { form: "poly", n: 3, rot: 0,  round: 0.06, rx: 1.06, ry: 1.06 },
+    square: { form: "poly", n: 4, rot: 45, round: 0.06, rx: 0.98, ry: 0.98 },
+    star:   { form: "star", n: 5, inner: 0.46, rot: 0, round: 0.03 },
+    cross:  { form: "cross", arm: 0.34, rot: 0, round: 0.04 },
+  };
+  const FORM_NAME = { circle: "まる", tri: "さんかく", square: "しかく", star: "ほし", cross: "じゅうじ" };
+  const polyName = n => ({ 3: "さんかく", 4: "しかく" }[n] || n + "角形");
+
+  function shapePoints(sp) {
+    const rx = sp.rx == null ? 1 : sp.rx, ry = sp.ry == null ? 1 : sp.ry;
+    const rot = (sp.rot || 0) * Math.PI / 180;
+    const at = (ang, k) => [Math.cos(ang) * rx * k, Math.sin(ang) * ry * k];
+    const a0 = -Math.PI / 2 + rot;
+
+    if (sp.form === "star") {
+      const pts = [];
+      for (let i = 0; i < sp.n * 2; i++) pts.push(at(a0 + i * Math.PI / sp.n, i % 2 ? sp.inner : 1));
+      return pts;
+    }
+    if (sp.form === "cross") {
+      const w = sp.arm;
+      const raw = [[-w,-1],[w,-1],[w,-w],[1,-w],[1,w],[w,w],[w,1],[-w,1],[-w,w],[-1,w],[-1,-w],[-w,-w]];
+      const c = Math.cos(rot), s2 = Math.sin(rot);
+      return raw.map(([x, y]) => [(x * c - y * s2) * rx, (x * s2 + y * c) * ry]);
+    }
+    const pts = [];
+    for (let i = 0; i < sp.n; i++) pts.push(at(a0 + i * 2 * Math.PI / sp.n, 1));
+    return pts;
+  }
+
+  // 角を丸めた閉じたパスにする
+  function shapePath(sp) {
+    if (sp.form === "ellipse") {
+      const rx = sp.rx, ry = sp.ry;
+      return "M" + (-rx) + ",0A" + rx + "," + ry + " 0 1 0 " + rx + ",0A" + rx + "," + ry + " 0 1 0 " + (-rx) + ",0Z";
+    }
+    const pts = shapePoints(sp);
+    const r = sp.round || 0;
+    const f = v => v.toFixed(3);
+    if (r <= 0.001) return "M" + pts.map(p => f(p[0]) + "," + f(p[1])).join("L") + "Z";
+
+    const n = pts.length, out = [];
+    for (let i = 0; i < n; i++) {
+      const p = pts[i], a = pts[(i - 1 + n) % n], b = pts[(i + 1) % n];
+      const cut = q => {
+        const dx = q[0] - p[0], dy = q[1] - p[1], len = Math.hypot(dx, dy) || 1;
+        const t = Math.min(r, len / 2) / len;
+        return [p[0] + dx * t, p[1] + dy * t];
+      };
+      const st = cut(a), en = cut(b);
+      out.push((i ? "L" : "M") + f(st[0]) + "," + f(st[1]));
+      out.push("Q" + f(p[0]) + "," + f(p[1]) + " " + f(en[0]) + "," + f(en[1]));
+    }
+    return out.join("") + "Z";
+  }
+
+  function shapeEl(sp, fill) {
+    const svg = document.createElementNS(SVGNS, "svg");
+    svg.setAttribute("viewBox", "-1.12 -1.12 2.24 2.24");
+    svg.setAttribute("class", "fig");
+    const path = document.createElementNS(SVGNS, "path");
+    path.setAttribute("d", shapePath(sp));
+    path.setAttribute("fill", fill);
+    svg.appendChild(path);
+    return svg;
+  }
+
+  function generateShapePuzzle(level, rng) {
+    const size = curveAt(CONFIG.SHAPE_GRID_CURVE, level);
+    const p    = curveAtF(CONFIG.SHAPE_DIFF_CURVE, level);    // 差の大きさ 0〜1
+    const tint = css(pickBaseColor(rng));
+    const AMP  = CONFIG.SHAPE_AMP;
+
+    // この段では何で差をつけるか
+    let how = CONFIG.SHAPE_STAGES[0].how;
+    for (const st of CONFIG.SHAPE_STAGES) if (level >= st.from) how = st.how;
+
+    const pick = arr => arr[Math.floor(rng() * arr.length)];
+    const poly = (n, extra) => Object.assign({ form: "poly", n, rot: 0, round: 0, rx: 1, ry: 1 }, extra);
+    const dir  = () => rng() < 0.5 ? -1 : 1;
+
+    let base, odd, note;
+
+    if (how === "type") {
+      const keys = Object.keys(FORMS);
+      const k1 = pick(keys);
+      const k2 = pick(keys.filter(k => k !== k1));
+      base = Object.assign({}, FORMS[k1]);
+      odd  = Object.assign({}, FORMS[k2]);
+      note = () => [["かたち", FORM_NAME[k1] + " → " + FORM_NAME[k2]]];
+
+    } else if (how === "sides") {
+      // 差が小さい段ほど頂点の多い形にする(6角と7角のほうが見分けにくい)
+      const n = Math.max(3, Math.min(7, Math.round(lerp(7, 4, p))));
+      const d = (n <= 3 ? 1 : n >= 7 ? -1 : dir());
+      base = poly(n, { round: 0.04 });
+      odd  = poly(n + d, { round: 0.04 });
+      note = () => [["頂点の数", n + " → " + (n + d)], ["かたち", polyName(n) + " → " + polyName(n + d)]];
+
+    } else if (how === "aspect") {
+      const useEllipse = rng() < 0.4;
+      const n = 3 + Math.floor(rng() * 4);            // 3〜6角形
+      base = useEllipse ? Object.assign({}, FORMS.circle) : poly(n, { rot: n === 4 ? 45 : 0, round: 0.05 });
+      const ratio = 1 + AMP.aspect * p * dir();
+      odd = Object.assign({}, base, { ry: (base.ry == null ? 1 : base.ry) * ratio });
+      note = () => [["たて横の比", "1.00 → " + ratio.toFixed(2)],
+                    ["その差", Math.round(Math.abs(ratio - 1) * 100) + " %"]];
+
+    } else if (how === "round") {
+      const n = 3 + Math.floor(rng() * 4);
+      const r0 = 0;
+      const r1 = AMP.round * p;
+      base = poly(n, { rot: n === 4 ? 45 : 0, round: r0 });
+      odd  = poly(n, { rot: n === 4 ? 45 : 0, round: r1 });
+      note = () => [["角の丸み", Math.round(r0 * 100) + " → " + Math.round(r1 * 100) + " %"]];
+
+    } else {   // rot
+      const n = 3 + Math.floor(rng() * 4);
+      const half = 180 / n;                            // これ以上まわすと元の形に重なる
+      const r0 = rng() * 360;
+      const d  = Math.min(AMP.rot * p, half * 0.9) * dir();
+      base = poly(n, { rot: r0, round: 0.05 });
+      odd  = poly(n, { rot: r0 + d, round: 0.05 });
+      note = () => [["かたむき", Math.abs(d).toFixed(1) + "° ずれている"]];
+    }
+
+    const answer = Math.floor(rng() * size * size);
+
+    return {
+      kind: "SHAPE",
+      size, answer, board: "shape",
+      decorate: (cell, i) => { cell.appendChild(shapeEl(i === answer ? odd : base, tint)); },
+      report: () => ({
+        sample: (a, b) => {
+          a.className = "sw track"; b.className = "sw track";
+          a.style.background = "none"; b.style.background = "none";
+          a.replaceChildren(shapeEl(base, tint));
+          b.replaceChildren(shapeEl(odd, tint));
+        },
+        metrics: note(),
+        rows: null
+      })
+    };
+  }
+
   // 版ごとの生成器。将来 v2 を足しても、v1 はそのまま残す
   const GENERATORS = {
-    1: { color: generateColorPuzzle, move: generateMovePuzzle },
+    1: { color: generateColorPuzzle, move: generateMovePuzzle, shape: generateShapePuzzle },
   };
 
   /* ==========================================================
@@ -1545,7 +1718,6 @@
      6軸ぶんの {name, ready, level} を渡すと描き直す。
      準備中の軸は中心(未計測)に置き、破線の骨だけ出す。
      ========================================================== */
-  const SVGNS = "http://www.w3.org/2000/svg";
   const RADAR = {
     cx: 120, cy: 102, r: 66, label: 22, rings: [0.25, 0.5, 0.75, 1],
     // レベル1でも点として見えるよう、描くときだけ下駄をはかせる。
