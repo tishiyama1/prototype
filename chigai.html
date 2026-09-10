@@ -351,6 +351,7 @@
     -webkit-user-select: text; user-select: text;
   }
 
+  .hintLine { margin-top: 10px; font-size: 10px; line-height: 1.7; color: var(--faint); text-align: center; }
   .sep { height: 1px; background: var(--line); margin: 20px 0 16px; }
   #msg {
     height: 14px; margin-top: 12px;
@@ -389,7 +390,9 @@
     }
     #trait .radar { max-width: 150px; margin: 0; }
     #trait .traitList { grid-template-columns: 1fr; margin-top: 0; gap: 2px; }
-    .note dl { grid-template-columns: auto 1fr auto 1fr; }   /* 用語も2列に */
+    .note dl { grid-template-columns: auto 1fr auto 1fr; padding: 7px 10px; line-height: 1.6; margin-top: 6px; }
+    .note { padding-top: 8px; }
+    .note p { line-height: 1.7; }
   }
 
   /* さらに小さい画面(SE以前)ではもう一段詰める */
@@ -529,8 +532,9 @@
     <span class="lbl" id="countLbl">色彩</span>
     <div class="seg" id="countResume" hidden>
       <button type="button" data-fresh="0">つづきから</button>
-      <button type="button" data-fresh="1">最初から</button>
+      <button type="button" data-fresh="1">あたらしく</button>
     </div>
+    <div class="hintLine" id="countHint" hidden>あたらしいSEEDではじまります</div>
     <div class="stack" id="countModes">
       <button type="button" data-mode="full">100問<em></em></button>
       <button type="button" data-mode="test">10問<em></em></button>
@@ -548,14 +552,12 @@
     </div>
     <div class="mono bigSeed" id="bigSeed">------</div>
     <div class="btns">
-      <input id="seedIn" class="mono" type="text" maxlength="12" placeholder="8K4M2P"
+      <input id="seedIn" class="mono" type="text" maxlength="14" placeholder="C-8K4M2P"
              autocapitalize="characters" autocomplete="off" autocorrect="off" spellcheck="false"
              enterkeyhint="go" aria-label="SEED">
-      <button id="setBtn" class="solid" type="button" style="flex:0 0 92px">きめる</button>
+      <button id="setBtn" class="solid" type="button" style="flex:0 0 92px">はじめる</button>
     </div>
-    <div class="btns">
-      <button id="newBtn" type="button">NEW SEED</button>
-    </div>
+    <div class="hintLine">もらったSEEDを入れると、その100問がはじまります</div>
     <div id="msg" class="mono"></div>
     <button id="seedClose" class="close" type="button">CLOSE</button>
   </div>
@@ -653,13 +655,13 @@
   <div class="sheet-card">
     <span class="lbl">SEEDとは</span>
     <div class="note">
-      <p>問題を作るもとになる<b>6文字</b>です。<b>同じseedなら、誰がどの端末で開いても同じ100問</b>が同じ順番で出ます。</p>
+      <p>問題のもとになる合言葉です。<b>同じSEEDなら、誰がどの端末で開いても同じ100問</b>が同じ順番で出ます。友達に渡して、どちらが先に進めるか競えます。</p>
       <dl>
-        <dt>きめる</dt><dd>もらったseedを入れて使う</dd>
-        <dt>NEW SEED</dt><dd>新しい100問にする</dd>
-        <dt>COPY / SHARE</dt><dd>渡すときはプレイ中の画面上のSEEDから</dd>
+        <dt>C-8K4M2P</dt><dd>頭の1文字が問題の種類（C=色彩　M=動体）</dd>
+        <dt>入れる</dt><dd>もらったSEEDを入れると、その100問がすぐはじまる</dd>
+        <dt>渡す</dt><dd>プレイ中の画面の上のSEEDから COPY / SHARE</dd>
       </dl>
-      <p class="q">seedと現在のレベルは自動で保存されます。閉じても、次に開けば続きからです。</p>
+      <p class="q">SEEDは遊びはじめるときに作られ、レベルとあわせて自動で保存されます。</p>
     </div>
     <button id="helpSeedClose" class="close" type="button">CLOSE</button>
   </div>
@@ -771,6 +773,25 @@
     let out = "";
     for (let i = 0; i < SEED_LEN; i++) out += SEED_ALPHABET[n[i] % SEED_ALPHABET.length];
     return out;
+  }
+
+  /* 人に見せるseedは「C-8K4M2P」の形。頭の1文字が問題の種類を表すので、
+     受け取った人はそれを入れるだけで正しい種類ではじめられる。
+     中身(6文字)はこれまでどおりで、問題の作りかたは変えていない。 */
+  const codeOf = k => (TRAITS.find(t => t.id === k) || { code: "?" }).code;
+  const seedCode = (k, sd) => sd ? codeOf(k) + "-" + sd : "------";
+
+  /* 入力を読む。「C-8K4M2P」「c8k4m2p」なら種類つき、
+     「8K4M2P」なら中身だけ(種類は呼んだ側で決める)。 */
+  function parseSeedInput(raw) {
+    const up = String(raw == null ? "" : raw).toUpperCase().trim();
+    const m = up.match(/^([A-Z])[\s\-_]*([A-Z0-9]{6})$/);
+    if (m) {
+      const t = TRAITS.find(x => x.code === m[1]);
+      if (t && [...m[2]].every(c => SEED_ALPHABET.includes(c))) return { kind: t.id, seed: m[2] };
+    }
+    const sd = normalizeSeed(up);
+    return sd ? { kind: null, seed: sd } : null;
   }
 
   /* 入力を正規化する。小文字・空白・ハイフンは吸収し、
@@ -1008,12 +1029,12 @@
      到達レベルは kind ごとに勝手に記録され、チャートに出る。
      ========================================================== */
   const TRAITS = [
-    { id: "color",   name: "色彩",   en: "COLOR" },
-    { id: "move",    name: "動体",   en: "MOVE" },
-    { id: "shape",   name: "形状",   en: "SHAPE" },
-    { id: "pattern", name: "模様",   en: "PATTERN" },
-    { id: "dir",     name: "方向",   en: "DIRECTION" },
-    { id: "depth",   name: "奥行き", en: "DEPTH" },
+    { id: "color",   code: "C", name: "色彩",   en: "COLOR" },
+    { id: "move",    code: "M", name: "動体",   en: "MOVE" },
+    { id: "shape",   code: "S", name: "形状",   en: "SHAPE" },
+    { id: "pattern", code: "P", name: "模様",   en: "PATTERN" },
+    { id: "dir",     code: "D", name: "方向",   en: "DIRECTION" },
+    { id: "depth",   code: "Z", name: "奥行き", en: "DEPTH" },
   ];
   const isReady = id => !!GENERATORS[PUZZLE_VERSION][id];
   const KINDS = TRAITS.filter(t => isReady(t.id)).map(t => t.id);
@@ -1097,20 +1118,22 @@
     });
   }
 
-  // その枠に、このseedの続きが残っていればレベルを返す
-  function savedLevel(st, k, m, sd) {
+  // その枠に残っている続き。{seed, level} か null
+  function savedRun(st, k, m) {
     const slot = st && st.slots && st.slots[slotKey(k, m)];
-    const lv = slot && parseInt(slot.level, 10);
-    if (slot && slot.seed === sd && lv >= 1 && lv <= MODES[m].total) return lv;
-    return 1;
+    if (!slot) return null;
+    const sd = normalizeSeed(slot.seed);
+    const lv = parseInt(slot.level, 10);
+    if (!sd || !(lv >= 1 && lv <= MODES[m].total)) return null;
+    return { seed: sd, level: lv };
   }
 
   /* ---- URL ― ?seed=XXXXXX で同じ100問を開ける ---- */
   const baseUrl = () => location.href.split("#")[0].split("?")[0];
   function shareUrl() {
-    let u = baseUrl() + "?seed=" + seed;
-    if (kind !== "color") u += "&kind=" + kind;   // 既定のときは付けない
-    if (mode !== "full")  u += "&mode=" + mode;
+    // seedの頭文字が種類を持っているので、kindは付けなくていい
+    let u = baseUrl() + "?seed=" + seedCode(kind, seed);
+    if (mode !== "full") u += "&mode=" + mode;
     return u;
   }
   function syncUrl() {
@@ -1125,9 +1148,10 @@
     if (next.seed) seed = next.seed;
     level = next.level || 1;
 
-    elSeedTxt.textContent = seed;
-    elBigSeed.textContent = seed;
-    elClearSeed.textContent = "SEED " + seed;
+    const code = seedCode(kind, seed);
+    elSeedTxt.textContent = code;
+    elBigSeed.textContent = code;
+    elClearSeed.textContent = "SEED " + code;
     elTotal.textContent = "/ " + total();
     elClearN.textContent = total() + " LEVELS";
     refreshTop();
@@ -1139,19 +1163,15 @@
     elBoard.classList.remove("hidden");
   }
 
-  // 種類やモードを切り替える。その枠に同じseedの続きがあれば、そこから
-  function switchTo(k, m) {
-    const st = readStore();
-    start({ kind: k, mode: m, seed, level: savedLevel(st, k, m, seed) });
-  }
 
   /* ---- TOP ― ボタンだけ。ここから もんだい / 視覚特性 / SEED へ ---- */
   const pad3 = n => String(n).padStart(3, "0");
 
   function refreshTop() {
-    elBigSeed.textContent = seed;
-    $("popSeed").textContent = seed;
-    $("topSeedTxt").textContent = seed;
+    const code = seedCode(kind, seed);
+    elBigSeed.textContent = code;
+    $("popSeed").textContent = code;
+    $("topSeedTxt").textContent = code;
     showTraits();
   }
 
@@ -1306,13 +1326,16 @@
 
   function renderCount() {
     const st = readStore();
-    const lvOf = m => savedLevel(st, countKind, m, seed);
+    const runOf = m => savedRun(st, countKind, m);
     for (const b of $("countModes").children) {
-      const lv = lvOf(b.dataset.mode);
-      b.querySelector("em").textContent = (!countFresh && lv > 1) ? "つづき　LEVEL " + pad3(lv) : "";
+      const run = runOf(b.dataset.mode);
+      b.querySelector("em").textContent = (!countFresh && run)
+        ? "つづき　" + seedCode(countKind, run.seed) + (run.level > 1 ? "　LEVEL " + pad3(run.level) : "") : "";
     }
-    const cont = ["full", "test"].some(m => lvOf(m) > 1);
+    // 続きがあるなら「最初から」を選べる ― そちらは新しいSEEDになる
+    const cont = ["full", "test"].some(m => !!runOf(m));
     $("countResume").hidden = !cont;
+    $("countHint").hidden = !(cont && countFresh);
     if (!cont) countFresh = false;
     for (const b of $("countResume").children) b.classList.toggle("solid", (b.dataset.fresh === "1") === countFresh);
   }
@@ -1332,9 +1355,11 @@
   $("countModes").addEventListener("click", e => {
     const b = e.target.closest("button"); if (!b) return;
     const m = b.dataset.mode;
-    const lv = countFresh ? 1 : savedLevel(readStore(), countKind, m, seed);
+    const run = countFresh ? null : savedRun(readStore(), countKind, m);
     $("countPop").classList.remove("show");
-    start({ kind: countKind, mode: m, seed, level: lv });
+    // 続きがあればそのseedで、無ければ ここで 新しいseedを作ってはじめる
+    if (run) start({ kind: countKind, mode: m, seed: run.seed, level: run.level });
+    else      start({ kind: countKind, mode: m, seed: randomSeed(), level: 1 });
     closeTop();
   });
   $("countClose").addEventListener("click", () => $("countPop").classList.remove("show"));
@@ -1477,7 +1502,7 @@
   /* プレイ中のヘッダーのSEED ― 渡すのはこちら(COPY / SHARE) */
   $("seedLine").addEventListener("click", () => {
     clearTimeout(timer);                       // 読んでいる間、次へ進めない
-    $("popSeed").textContent = seed;
+    $("popSeed").textContent = seedCode(kind, seed);
     elMsg2.textContent = "";
     $("seedPop").classList.add("show");
   });
@@ -1485,7 +1510,7 @@
   $("seedPop").addEventListener("click", e => { if (e.target === $("seedPop")) $("seedPop").classList.remove("show"); });
 
   $("copyBtn").addEventListener("click", async () => {
-    say(elMsg2, await copyText(seed) ? "COPIED" : "コピーできませんでした");
+    say(elMsg2, await copyText(seedCode(kind, seed)) ? "COPIED" : "コピーできませんでした");
   });
 
   $("shareBtn").addEventListener("click", async () => {
@@ -1499,28 +1524,25 @@
 
   /* TOPのSEED ― 入れるのはこちら */
   $("topSeed").addEventListener("click", () => {
-    elBigSeed.textContent = seed;
+    elBigSeed.textContent = seedCode(kind, seed);
     elSeedIn.value = ""; elMsg.textContent = "";
     $("seedScreen").classList.add("show");
   });
   $("seedClose").addEventListener("click", () => { $("seedScreen").classList.remove("show"); elSeedIn.blur(); });
   $("seedScreen").addEventListener("click", e => { if (e.target === $("seedScreen")) { $("seedScreen").classList.remove("show"); elSeedIn.blur(); } });
 
-  // seedを変えるだけ。遊びはじめるのはTOPのもんだいから
-  function useSeed(sd, note) {
-    start({ seed: sd, level: 1 });
-    elBigSeed.textContent = sd;
+  /* もらったseedを入れると、そのまま100問がはじまる。
+     頭文字があればその種類で、無ければいま選ばれている種類で。 */
+  function startFromInput() {
+    const got = parseSeedInput(elSeedIn.value);
+    if (!got) { say(elMsg, "SEEDを入力してください"); return; }
     elSeedIn.value = ""; elSeedIn.blur();
-    say(elMsg, note);
+    $("seedScreen").classList.remove("show");
+    start({ kind: got.kind || kind, mode: "full", seed: got.seed, level: 1 });
+    closeTop();
   }
-  function setFromInput() {
-    const sd = normalizeSeed(elSeedIn.value);
-    if (!sd) { say(elMsg, "SEEDを入力してください"); return; }
-    useSeed(sd, "SEED " + sd);
-  }
-  $("setBtn").addEventListener("click", setFromInput);
-  elSeedIn.addEventListener("keydown", e => { if (e.key === "Enter") setFromInput(); });
-  $("newBtn").addEventListener("click", () => { const sd = randomSeed(); useSeed(sd, "SEED " + sd); });
+  $("setBtn").addEventListener("click", startFromInput);
+  elSeedIn.addEventListener("keydown", e => { if (e.key === "Enter") startFromInput(); });
 
   addEventListener("resize", fitBoard);
   addEventListener("orientationchange", () => setTimeout(fitBoard, 120));
@@ -1529,30 +1551,34 @@
   document.addEventListener("gesturestart", e => e.preventDefault(), { passive: false });
 
   /* ========== 開始 ==========
-     ?seed= があればそれ。続きの保存が同じseedなら、その続きから。
-     どちらも無ければ新しいseedを1つ作る。 */
+     ?seed= 付きで開いたとき ― 誰かから渡されたリンク ― は、TOPを出さずに
+     そのまま遊べるようにする。それ以外はまずTOP。 */
   {
     let q = null;
     try { q = new URLSearchParams(location.search); } catch (e) {}
-    const pick = (name, allowed, fallback) => {
+    const pick = (name, allowed) => {
       const v = q && String(q.get(name) || "").toLowerCase();
-      return allowed.includes(v) ? v : fallback;
+      return allowed.includes(v) ? v : null;
     };
 
     const st = readStore();
-    const urlSeed = q ? normalizeSeed(q.get("seed")) : null;
+    const got = q ? parseSeedInput(q.get("seed")) : null;
 
-    /* URLにseedがあるとき ― 誰かから渡されたリンク ― は、kind と mode が
-       書いていなければ既定(COLOR / 100問)とみなす。渡した側の画面をそのまま
-       開くため。seedが無いただの再訪なら、前に遊んでいた続きに戻す。 */
-    const k = pick("kind", KINDS, urlSeed ? "color" : ((st && KINDS.includes(st.kind)) ? st.kind : "color"));
-    const m = pick("mode", Object.keys(MODES), urlSeed ? "full" : ((st && MODES[st.mode]) ? st.mode : "full"));
-
-    const slot = st && st.slots && st.slots[slotKey(k, m)];
-    const sd = urlSeed || (slot && normalizeSeed(slot.seed)) || randomSeed();
-
-    start({ kind: k, mode: m, seed: sd, level: savedLevel(st, k, m, sd) });
-    openTop();     // 遊びはじめる前に、まずTOP
+    if (got) {
+      // seedの頭文字が種類を持つ。古い ?kind= も一応みる
+      const k = got.kind || pick("kind", KINDS) || "color";
+      const m = pick("mode", Object.keys(MODES)) || "full";
+      const run = savedRun(st, k, m);
+      start({ kind: k, mode: m, seed: got.seed,
+              level: (run && run.seed === got.seed) ? run.level : 1 });
+    } else {
+      const k = (st && KINDS.includes(st.kind)) ? st.kind : "color";
+      const m = (st && MODES[st.mode]) ? st.mode : "full";
+      const run = savedRun(st, k, m);
+      if (run) start({ kind: k, mode: m, seed: run.seed, level: run.level });
+      else { kind = k; mode = m; seed = ""; elTotal.textContent = "/ " + total(); }
+      openTop();
+    }
   }
 })();
 </script>
