@@ -97,6 +97,10 @@
     overflow: hidden;
   }
   .fig { width: 66%; height: 66%; display: block; overflow: visible; }
+  #patDefsHost { position: absolute; width: 0; height: 0; overflow: hidden; }
+  /* 模様 ― タイルの外形はどのマスも同じ。中身だけが違う */
+  #board.pattern .cell { background: none !important; }
+  .pat { width: 100%; height: 100%; display: block; }
   .sw .fig { width: 82%; height: 82%; }
   .dot {
     width: 40%; height: 40%;
@@ -563,6 +567,8 @@
   </header>
 
   <main id="stage">
+    <!-- 模様の定義置き場。レベルごとに2つぶんだけ書き換える -->
+    <svg id="patDefsHost" width="0" height="0" aria-hidden="true"><defs id="patDefs"></defs></svg>
     <div id="board"></div>
 
     <div id="panel">
@@ -833,6 +839,25 @@
     // 差の付けかたごとの最大値
     SHAPE_AMP: { aspect: 0.42, round: 0.55, rot: 40 },
     SHAPE_SIZE: 0.66,        // 図形の大きさ(マスの一辺に対する割合)
+
+    /* ---- PATTERN(模様で見分ける問題) ----
+       タイルの外形・大きさ・色はすべて同じ。中の模様だけが違う。
+       模様は「種類 + 間隔 + 太さ + かたむき + こさ」で表しているので、
+       どれをひとつ変えるかがそのまま難易度の段になる。 */
+    PATTERN_GRID_CURVE: [[1, 3], [20, 4], [50, 5], [80, 5], [100, 6]],
+    PATTERN_STAGES: [
+      { from: 1,  how: "type"   },   // 別の模様      無地 → 縞 / 縦縞 → ドット
+      { from: 16, how: "near"   },   // 似た模様      縦縞 → 横縞 / 格子 → チェック
+      { from: 34, how: "period" },   // 間隔          線やドットの間隔
+      { from: 56, how: "weight" },   // 太さ・大きさ
+      { from: 76, how: "angle"  },   // かたむき
+      { from: 90, how: "ink"    },   // こさ
+    ],
+    PATTERN_DIFF_CURVE: [[1, 1], [16, 0.85], [34, 0.6], [56, 0.42], [76, 0.3], [90, 0.2], [100, 0.06]],
+    // 差の付けかたごとの最大値
+    PATTERN_AMP: { period: 0.45, weight: 0.6, angle: 24, ink: 0.45 },
+    PATTERN_INK: 0.85,       // 模様のこさ(基準)
+    PATTERN_BG: 0.80,        // 地の色 ― 模様の色をこの割合だけ白に寄せる
 
     /* ---- 10問モード(テスト用) ----
        難易度のカーブ全体を10問で拾えるよう、100問から間引いて並べる。
@@ -1302,9 +1327,172 @@
     };
   }
 
+  /* ---- PATTERN ― 1つだけ模様が違う ----
+     外形・大きさ・色はどのマスも同じ。中の模様だけが違う。
+     模様は { type, period, weight, angle, amp, ink } のひと組で表していて、
+     SVGの <pattern> を1レベルにつき2つ(ふつう用と違う用)だけ作って敷く。
+     種類を足すときは PAT_TILE に1つ書けばよい。 */
+
+  const PAT_BASE = {
+    plain:  { period: 20, weight: 0,   angle: 0,  amp: 0 },
+    stripe: { period: 18, weight: 6,   angle: 0,  amp: 0 },
+    dots:   { period: 20, weight: 5,   angle: 0,  amp: 0 },
+    grid:   { period: 20, weight: 3.2, angle: 0,  amp: 0 },
+    check:  { period: 22, weight: 0,   angle: 0,  amp: 0 },
+    wave:   { period: 20, weight: 3,   angle: 0,  amp: 5 },
+  };
+
+  // 模様1枚ぶんの中身。すべて period × period のタイルに収める
+  const PAT_TILE = {
+    plain:  () => "",
+    stripe: sp => `<rect x="0" y="0" width="${sp.weight.toFixed(2)}" height="${sp.period.toFixed(2)}"/>`,
+    dots:   sp => `<circle cx="${(sp.period / 2).toFixed(2)}" cy="${(sp.period / 2).toFixed(2)}" r="${sp.weight.toFixed(2)}"/>`,
+    grid:   sp => `<rect x="0" y="0" width="${sp.weight.toFixed(2)}" height="${sp.period.toFixed(2)}"/>` +
+                  `<rect x="0" y="0" width="${sp.period.toFixed(2)}" height="${sp.weight.toFixed(2)}"/>`,
+    check:  sp => { const h = sp.period / 2;
+                    return `<rect x="0" y="0" width="${h.toFixed(2)}" height="${h.toFixed(2)}"/>` +
+                           `<rect x="${h.toFixed(2)}" y="${h.toFixed(2)}" width="${h.toFixed(2)}" height="${h.toFixed(2)}"/>`; },
+    wave:   sp => { const w = sp.period, h = sp.period, a = sp.amp;
+                    return `<path fill="none" stroke="currentColor" stroke-width="${sp.weight.toFixed(2)}" ` +
+                           `d="M0,${(h / 2).toFixed(2)} q${(w / 4).toFixed(2)},${(-a).toFixed(2)} ${(w / 2).toFixed(2)},0 ` +
+                           `t${(w / 2).toFixed(2)},0"/>`; },
+  };
+
+  const PAT_NAME = sp => {
+    if (sp.type !== "stripe") return { plain: "無地", dots: "ドット", grid: "格子", check: "チェック", wave: "波線" }[sp.type];
+    const a = ((sp.angle % 180) + 180) % 180;
+    return a < 22 || a > 158 ? "縦縞" : (a > 68 && a < 112 ? "横縞" : "斜め縞");
+  };
+
+  // <pattern> を1つ書き出す
+  function patMarkup(sp, id, ink) {
+    const body = PAT_TILE[sp.type](sp);
+    if (!body) return "";
+    return `<pattern id="${id}" width="${sp.period.toFixed(2)}" height="${sp.period.toFixed(2)}" ` +
+           `patternUnits="userSpaceOnUse" patternTransform="rotate(${sp.angle.toFixed(2)} 50 50)" ` +
+           `fill="${ink}" color="${ink}" fill-opacity="${sp.ink.toFixed(3)}" stroke-opacity="${sp.ink.toFixed(3)}">${body}</pattern>`;
+  }
+
+  function patTile(id, bg) {
+    const svg = document.createElementNS(SVGNS, "svg");
+    svg.setAttribute("viewBox", "0 0 100 100");
+    svg.setAttribute("preserveAspectRatio", "none");
+    svg.setAttribute("class", "pat");
+    svg.innerHTML = `<rect width="100" height="100" rx="4" fill="${bg}"/>` +
+                    `<rect width="100" height="100" rx="4" fill="url(#${id})"/>`;
+    return svg;
+  }
+
+  function generatePatternPuzzle(level, rng) {
+    const size = curveAt(CONFIG.PATTERN_GRID_CURVE, level);
+    const p    = curveAtF(CONFIG.PATTERN_DIFF_CURVE, level);
+    const AMP  = CONFIG.PATTERN_AMP;
+
+    // 色はどのマスも同じ。地の色は模様の色を白に寄せたもの
+    const inkRgb = pickBaseColor(rng);
+    const ink = css(inkRgb);
+    const bg  = css(inkRgb.map(v => Math.round(v + (255 - v) * CONFIG.PATTERN_BG)));
+
+    let how = CONFIG.PATTERN_STAGES[0].how;
+    for (const st of CONFIG.PATTERN_STAGES) if (level >= st.from) how = st.how;
+
+    const pick = arr => arr[Math.floor(rng() * arr.length)];
+    const dir  = () => rng() < 0.5 ? -1 : 1;
+    const mk = (type, over) => Object.assign({ type, ink: CONFIG.PATTERN_INK }, PAT_BASE[type], over);
+
+    // 似た模様の組。ここに足せば「似た模様」の段が増える
+    const NEAR = [
+      () => [mk("stripe", { angle: 0 }),  mk("stripe", { angle: 90 })],   // 縦縞 → 横縞
+      () => [mk("stripe", { angle: 45 }), mk("stripe", { angle: 135 })],  // 斜め縞どうし
+      () => [mk("grid"),  mk("check")],
+      () => [mk("dots"),  mk("grid")],
+      () => [mk("wave", { angle: 0 }), mk("stripe", { angle: 90 })],      // 波線 → 横縞
+      () => [mk("check"), mk("dots")],
+    ];
+
+    let base, odd, note;
+
+    if (how === "type") {
+      const keys = ["plain", "stripe", "dots", "grid", "check", "wave"];
+      const k1 = pick(keys), k2 = pick(keys.filter(k => k !== k1));
+      const ang = () => pick([0, 45, 90, 135]);
+      base = mk(k1, { angle: ang() });
+      odd  = mk(k2, { angle: ang() });
+      note = () => [["もよう", PAT_NAME(base) + " → " + PAT_NAME(odd)]];
+
+    } else if (how === "near") {
+      const pair = pick(NEAR)();
+      const flip = rng() < 0.5;
+      base = flip ? pair[1] : pair[0];
+      odd  = flip ? pair[0] : pair[1];
+      note = () => [["もよう", PAT_NAME(base) + " → " + PAT_NAME(odd)]];
+
+    } else {
+      // ここから先は同じ模様どうし。ひとつのパラメータだけをずらす
+      const type = pick(how === "ink" ? ["stripe", "dots", "grid", "check", "wave"]
+                                      : ["stripe", "dots", "grid", "check", "wave"]);
+      const angle0 = pick([0, 45, 90, 135]);
+      base = mk(type, { angle: angle0 });
+
+      if (how === "period") {
+        const ratio = 1 + AMP.period * p * dir();
+        odd = Object.assign({}, base, { period: base.period * ratio });
+        if (type === "wave") odd.amp = base.amp;             // 波は高さを変えない
+        note = () => [["もよう", PAT_NAME(base)],
+                      [type === "dots" ? "ドットの間隔" : "間隔",
+                       base.period.toFixed(0) + " → " + odd.period.toFixed(0)]];
+
+      } else if (how === "weight") {
+        const t2 = type === "check" ? "dots" : type;         // チェックは太さを持たない
+        base = mk(t2, { angle: angle0 });
+        const ratio = 1 + AMP.weight * p * dir();
+        odd = Object.assign({}, base, { weight: base.weight * ratio });
+        note = () => [["もよう", PAT_NAME(base)],
+                      [t2 === "dots" ? "ドットの大きさ" : "線の太さ",
+                       base.weight.toFixed(1) + " → " + odd.weight.toFixed(1)]];
+
+      } else if (how === "angle") {
+        const sym = (type === "grid" || type === "check") ? 90 : 180;
+        const d = Math.min(AMP.angle * p, sym * 0.45) * dir();
+        odd = Object.assign({}, base, { angle: base.angle + d });
+        note = () => [["もよう", PAT_NAME(base)],
+                      ["かたむき", Math.abs(d).toFixed(1) + "° ずれている"]];
+
+      } else {   // ink
+        const ratio = 1 - AMP.ink * p;
+        odd = Object.assign({}, base, { ink: base.ink * ratio });
+        note = () => [["もよう", PAT_NAME(base)],
+                      ["こさ", Math.round(base.ink * 100) + " → " + Math.round(odd.ink * 100) + " %"]];
+      }
+    }
+
+    // このレベルで使う模様は2つだけ。defsに書いておく
+    const defs = document.getElementById("patDefs");
+    if (defs) defs.innerHTML = patMarkup(base, "patA", ink) + patMarkup(odd, "patB", ink);
+
+    const answer = Math.floor(rng() * size * size);
+
+    return {
+      kind: "PATTERN",
+      size, answer, board: "pattern",
+      decorate: (cell, i) => { cell.appendChild(patTile(i === answer ? "patB" : "patA", bg)); },
+      report: () => ({
+        sample: (a, b) => {
+          a.className = "sw track"; b.className = "sw track";
+          a.style.background = "none"; b.style.background = "none";
+          a.replaceChildren(patTile("patA", bg));
+          b.replaceChildren(patTile("patB", bg));
+        },
+        metrics: note(),
+        rows: null
+      })
+    };
+  }
+
   // 版ごとの生成器。将来 v2 を足しても、v1 はそのまま残す
   const GENERATORS = {
-    1: { color: generateColorPuzzle, move: generateMovePuzzle, shape: generateShapePuzzle },
+    1: { color: generateColorPuzzle, move: generateMovePuzzle, shape: generateShapePuzzle,
+         pattern: generatePatternPuzzle },
   };
 
   /* ==========================================================
