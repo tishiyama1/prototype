@@ -1981,6 +1981,7 @@
     if (next.mode) mode = next.mode;
     if (next.fresh && !usePlay()) {
       elTotal.textContent = "/ " + total();
+      elClear.classList.remove("show");   // 終わりの画面から来ていても畳んでおく
       openTop();
       say($("playMsg"), "きょうのPLAYはおしまい　＋ で1回ふえます");
       return false;
