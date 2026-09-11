@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
 <meta name="theme-color" content="#f6f6f4">
 <meta name="apple-mobile-web-app-capable" content="yes">
-<title>ちがい ― ONE SQUARE</title>
+<title>1マスだけ違う ― ONE SQUARE</title>
 <style>
   * { margin: 0; padding: 0; box-sizing: border-box; }
   [hidden] { display: none !important; }   /* display指定に負けないように */
@@ -107,6 +107,7 @@
     animation-duration: 2s;
     animation-timing-function: linear;
     animation-iteration-count: infinite;
+    animation-fill-mode: backwards;   /* 出るまでは消えたまま待つ */
     will-change: opacity;
   }
   .sw .tick { width: 82%; height: 82%; }
@@ -323,8 +324,30 @@
   .top-head h1 { font-size: clamp(22px, 6vw, 28px); font-weight: 700; letter-spacing: 0.3em; text-indent: 0.3em; }
   .top-head .en { margin-top: 8px; font-size: 10px; letter-spacing: 0.34em; text-indent: 0.34em; color: var(--faint); }
 
+  /* きょうのPLAY ― もんだいの上に置く */
+  .play {
+    display: flex; align-items: center; justify-content: center; gap: 10px;
+    margin-bottom: clamp(8px, 1.6vh, 14px);
+  }
+  .play .pl { font-size: 9.5px; letter-spacing: 0.3em; text-indent: 0.3em; color: var(--faint); }
+  .play b { font-size: 12px; letter-spacing: 0.22em; color: var(--ink); }
+  .play button {
+    appearance: none; -webkit-appearance: none;
+    background: none; border: 1px solid var(--line); border-radius: 999px;
+    font: inherit; font-size: 12px; line-height: 1; color: var(--ink);
+    width: 26px; height: 22px; padding: 0;
+  }
+  .playMsg {
+    min-height: 13px; margin: -4px 0 clamp(6px, 1.4vh, 12px);
+    text-align: center; font-size: 9.5px; letter-spacing: 0.12em; color: var(--dim);
+  }
+
   .top-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
-  .top-grid.bottom { margin-top: 10px; }
+  /* もんだいの6つと、それ以外の2つを線で分ける */
+  .top-rule {
+    height: 1px; background: var(--line);
+    margin: clamp(12px, 2.6vh, 20px) 10px clamp(10px, 2.2vh, 16px);
+  }
   .top-grid button {
     appearance: none; -webkit-appearance: none;
     background: none; border: 1px solid var(--line); border-radius: 10px;
@@ -337,7 +360,12 @@
   .top-grid button span { font-size: 9.5px; letter-spacing: 0.2em; color: var(--faint); }
   .top-grid button:disabled { border-style: dashed; }
   .top-grid button:disabled b { color: var(--faint); font-weight: 400; }
-  .top-grid.bottom button b { font-size: 13px; }
+  /* 枠線ではなく淡い地で、もんだいのボタンと見分ける(破線は準備中の意味なので使わない) */
+  .top-grid.bottom button {
+    min-height: 46px; padding: clamp(7px, 1.5vh, 11px) 8px;
+    border-color: transparent; background: rgba(51, 51, 47, 0.05);
+  }
+  .top-grid.bottom button b { font-size: 13px; font-weight: 400; letter-spacing: 0.2em; }
 
   /* ---- せつめい と seed のシート(普段は閉じている) ---- */
   .overlay {
@@ -454,7 +482,7 @@
 
   #helpSeed { z-index: 40; }   /* SEEDの画面の上に重ねる */
 
-  /* ---- 視覚特性のレーダーチャート ---- */
+  /* ---- 見え具合のレーダーチャート ---- */
   .traits { width: 100%; }
   .radar {
     display: block; width: 100%; max-width: 280px; height: auto;
@@ -473,14 +501,21 @@
   }
   .radar .axis.pending { fill: var(--faint); }
 
+  /* 6つを1列で。名前・到達レベル・試行回数の3つが入るので、
+     2列にすると狭い画面で折り返してしまう */
   .traitList {
-    display: grid; grid-template-columns: 1fr 1fr;
-    gap: 5px 16px; margin-top: 10px;
+    display: grid; grid-template-columns: 1fr;
+    gap: 3px; margin-top: 8px;
     font-size: 11.5px;
   }
-  .traitList .ti { display: flex; align-items: baseline; justify-content: space-between; gap: 8px; }
-  .traitList .ti span { color: var(--dim); }
+  .traitList .ti { display: flex; align-items: baseline; gap: 8px; }
+  .traitList .ti span { color: var(--dim); margin-right: auto; white-space: nowrap; }
   .traitList .ti b { color: var(--ink); font-weight: 700; font-size: 11px; }
+  /* 試行回数 ― 到達レベルの脇に小さく添える */
+  .traitList .ti em {
+    font-style: normal; font-size: 9px; letter-spacing: 0;
+    color: var(--faint); white-space: nowrap;
+  }
   .traitList .ti.pending span,
   .traitList .ti.pending b { color: var(--faint); font-weight: 400; }
 
@@ -495,7 +530,7 @@
     #clear button { min-height: 40px; padding: 10px; }
   }
 
-  /* 高さの足りない画面では、視覚特性を詰めてスクロールを出さない */
+  /* 高さの足りない画面では、見え具合を詰めてスクロールを出さない */
   @media (max-height: 560px) {
     .sheet-card { padding: 16px 18px 12px; }
     .radar { max-width: 176px; margin: 0 auto; }
@@ -528,6 +563,21 @@
     #clear .radar { max-width: 128px; margin: 0; }
     #clear .traitList { grid-template-columns: 1fr; margin-top: 0; gap: 1px; }
     #clear .btns { max-width: 400px; }
+  }
+
+  /* 横画面のTOP ― もんだいを3列にして2段に畳み、高さを稼ぐ */
+  @media (max-height: 470px) and (orientation: landscape) {
+    .top-inner { max-width: 580px; }
+    .top-head { margin-bottom: 8px; }
+    .top-head h1 { font-size: 20px; }
+    .top-head .en { margin-top: 5px; }
+    .play { margin-bottom: 6px; }
+    .playMsg { min-height: 11px; margin: -2px 0 6px; }
+    .top-grid { grid-template-columns: 1fr 1fr 1fr; gap: 8px; }
+    .top-grid button { min-height: 44px; padding: 8px 6px; }
+    .top-rule { margin: 9px 10px; }
+    .top-grid.bottom { grid-template-columns: 1fr 1fr; }
+    .top-grid.bottom button { min-height: 40px; padding: 7px 6px; }
   }
 
   /* 横画面では、チャートと一覧を横に並べて高さを稼ぐ */
@@ -628,15 +678,27 @@
 <div id="top">
   <div class="top-inner">
     <div class="top-head">
-      <h1>ちがい</h1>
+      <h1>1マスだけ違う</h1>
       <div class="en mono">ONE SQUARE</div>
     </div>
 
+    <!-- きょう遊べる回数。0になると ＋ が出る -->
+    <div class="play">
+      <span class="pl">PLAY</span>
+      <b class="mono" id="playDots">●●●</b>
+      <button id="playAdd" type="button" aria-label="広告をみて1回ふやす" hidden>＋</button>
+    </div>
+    <div class="playMsg" id="playMsg"></div>
+
+    <!-- ここから下の6つが もんだい -->
     <div class="top-grid" id="topGrid"></div>
 
+    <!-- 線から下は もんだい以外 -->
+    <div class="top-rule"></div>
+
     <div class="top-grid bottom">
-      <button id="topTrait" type="button"><b>視覚特性</b><span>CHART</span></button>
-      <button id="topSeed" type="button"><b>SEED</b><span class="mono" id="topSeedTxt">------</span></button>
+      <button id="topTrait" type="button"><b>見え具合</b><span>CHART</span></button>
+      <button id="topSeed" type="button"><b>SEED</b><span>INPUT</span></button>
     </div>
   </div>
 </div>
@@ -692,12 +754,12 @@
   </div>
 </div>
 
-<!-- 視覚特性 ― TOPのチャートから -->
+<!-- 見え具合 ― TOPのチャートから -->
 <div id="trait" class="overlay">
   <div class="sheet-card">
     <div class="lblRow">
-      <span class="lbl">視覚特性</span>
-      <button class="ask" id="askTrait" type="button" aria-label="視覚特性とは"></button>
+      <span class="lbl">見え具合</span>
+      <button class="ask" id="askTrait" type="button" aria-label="見え具合とは"></button>
     </div>
 
     <div class="traits">
@@ -709,10 +771,10 @@
   </div>
 </div>
 
-<!-- 用語の説明 ― 視覚特性の ? から -->
+<!-- 用語の説明 ― 見え具合の ? から -->
 <div id="helpTrait" class="overlay">
   <div class="sheet-card">
-    <span class="lbl">視覚特性とは</span>
+    <span class="lbl">見え具合とは</span>
     <div class="note">
       <p>並んだものの中から<b>1つだけ違うもの</b>を見つける ― その<b>違いの種類</b>が6つあります。</p>
       <dl>
@@ -723,8 +785,9 @@
         <dt>ボケ</dt><dd>輪郭の鮮明さがわずかに違う</dd>
         <dt>タイミング</dt><dd>出る・消える時刻がわずかに違う</dd>
       </dl>
-      <p>その種類で<b>いちばん先まで進んだレベル</b>が能力値です。seedを変えても消えません。</p>
-      <p class="q">数えるのは100問モードだけ。まだ遊んでいない種類は中心のままです。</p>
+      <p>その種類で<b>いちばん先まで進んだレベル</b>が能力値です。seedを変えても消えません。数えるのは100問モードだけ。</p>
+      <p>レベルの脇の<b>回数</b>は、その種類をあそんだ回数です。100問でも10問でも1回と数え、続きからは増えません。</p>
+      <p class="q">まだ遊んでいない種類は中心のままです。</p>
     </div>
     <button id="helpTraitClose" class="close" type="button">CLOSE</button>
   </div>
@@ -868,6 +931,11 @@
     // 1プレイで使えるスルーの回数。使い切ったあとの不正解でおしまい
     PASSES: 3,
 
+    /* ---- きょう遊べる回数 ----
+       あたらしい1回をはじめるたびに1つ減り、日付が変わると戻る。
+       続きから遊ぶぶんには減らない(同じ1回のつづきなので)。 */
+    PLAY_PER_DAY: 3,
+
     /* ---- SHAPE(形で見分ける問題) ----
        1マスだけ形が違う。何で差をつけるかはレベルの段(STAGES)で決まり、
        その中でさらに差が小さくなる(DIFF_CURVE)。AMPを触ると全体の効き方が変わる。 */
@@ -929,6 +997,9 @@
     TIME_ON: 0.46,           // 1周期のうち出ている割合
     TIME_FADE: 0.05,         // 出る/消えるのにかける割合(かたい点滅をやわらげる)
     TIME_SIZE: 0.76,         // 図形の大きさ(マスの一辺に対する割合)
+    // 最初のひと呼吸。盤面を真っ白から始めて、そこへ出てくるところを見せる。
+    // ここが 0 だと開いた瞬間にもう出ていて、早い/遅いが読めなくなる
+    TIME_LEAD: 0.60,         // 秒
 
     /* ---- 10問モード(テスト用) ----
        難易度のカーブ全体を10問で拾えるよう、100問から間引いて並べる。
@@ -1681,8 +1752,10 @@
       e.style.background = tint;
       e.style.animationName = odd ? "blinkB" : "blinkA";
       e.style.animationDuration = period.toFixed(3) + "s";
-      // マイナスの delay なので、読み込んだ瞬間から周期の途中で回りはじめる
-      e.style.animationDelay = (-period + (odd ? delay : 0)).toFixed(3) + "s";
+      /* プラスの delay ＋ fill-mode:backwards なので、待っているあいだは
+         0%のすがた(消えている)のまま。盤面は真っ白から始まり、そこへ出てくる。
+         ちがう1マスはその出る時刻だけがずれる。 */
+      e.style.animationDelay = (CONFIG.TIME_LEAD + (odd ? delay : 0)).toFixed(3) + "s";
       return e;
     }
 
@@ -1721,7 +1794,7 @@
   };
 
   /* ==========================================================
-     視覚特性 ― 6つの見抜く力
+     見え具合 ― 6つの見抜く力
      ----------------------------------------------------------
      並び順がそのままレーダーチャートの軸の順になる。
      GENERATORS に同じ id の生成器があるものが「実装済み」、
@@ -1797,7 +1870,7 @@
     } catch (e) {}
   }
 
-  /* 到達レベル ― 視覚特性の能力値。seedやモードをまたいで残る最高到達点。
+  /* 到達レベル ― 見え具合の能力値。seedやモードをまたいで残る最高到達点。
      100問モードで解いたレベルだけを数える(10問モードは難易度を見るための
      道具なので、能力値には混ぜない)。 */
   function recordBest(id, lv) {
@@ -1810,14 +1883,59 @@
     } catch (e) {}
   }
 
-  // 6つの軸を、名前・実装済みかどうか・到達レベルの形で並べて返す
+  // 保存の中身をひとつ書き換える。読んで、触って、書き戻すだけ
+  function edit(fn) {
+    try {
+      const st = readStore() || { v: PUZZLE_VERSION, slots: {} };
+      st.v = PUZZLE_VERSION;
+      fn(st);
+      localStorage.setItem(STORE_KEY, JSON.stringify(st));
+      return st;
+    } catch (e) { return null; }
+  }
+
+  /* 試行回数 ― その種類を何回あそんだか。100問でも10問でも1回と数える。
+     「あたらしい1回」をはじめたときだけ増え、続きからでは増えない。 */
+  const playsOf = st => (st && st.plays) || {};
+  function countPlay(id) {
+    edit(st => { st.plays = st.plays || {}; st.plays[id] = (parseInt(st.plays[id], 10) || 0) + 1; });
+  }
+
+  /* きょう遊べる回数 ― 0時(端末の時計)でその日ぶんに戻る。
+     日付は地元の暦で見るので、時差のある場所へ移っても その土地の0時で変わる。 */
+  const today = () => {
+    const d = new Date();
+    return d.getFullYear() + "-" + pad2(d.getMonth() + 1) + "-" + pad2(d.getDate());
+  };
+  const pad2 = n => String(n).padStart(2, "0");
+
+  // いま残っている回数。日付がまたいでいたらそこで戻す
+  function playLeft() {
+    const st = readStore();
+    const p = st && st.play;
+    if (!p || p.day !== today()) return CONFIG.PLAY_PER_DAY;
+    const n = parseInt(p.left, 10);
+    return n >= 0 ? n : CONFIG.PLAY_PER_DAY;
+  }
+  function setLeft(n) { edit(st => { st.play = { day: today(), left: Math.max(0, n) }; }); }
+  // 1回つかう。残っていなければ false(はじめない)
+  function usePlay() {
+    const n = playLeft();
+    if (n <= 0) return false;
+    setLeft(n - 1);
+    return true;
+  }
+  const addPlay = () => setLeft(playLeft() + 1);   // 広告のぶん(広告そのものは未実装)
+
+  // 6つの軸を、名前・実装済みかどうか・到達レベル・試行回数の形で並べて返す
   function traitData() {
     const st = readStore();
     const best = (st && st.best) || {};
+    const plays = playsOf(st);
     return TRAITS.map(t => {
       const ready = isReady(t.id);
       const lv = Math.max(0, Math.min(CONFIG.TOTAL_LEVELS, parseInt(best[t.id], 10) || 0));
-      return { ...t, ready, level: ready ? lv : 0 };
+      return { ...t, ready, level: ready ? lv : 0, plays: Math.max(0, parseInt(plays[t.id], 10) || 0) };
     });
   }
 
@@ -1854,10 +1972,20 @@
   }
 
   // 遊びはじめる。種類・モード・seed・レベルはここでまとめて切り替える
+  /* あそびはじめる。next.fresh は「あたらしい1回」― きょうの回数を1つつかい、
+     その種類の試行回数が1つ増える。続きからのときは fresh を付けない。
+     回数が残っていなければ何もはじめず、TOPに戻して false を返す。 */
   function start(next) {
     clearTimeout(timer);
     if (next.kind) kind = next.kind;
     if (next.mode) mode = next.mode;
+    if (next.fresh && !usePlay()) {
+      elTotal.textContent = "/ " + total();
+      openTop();
+      say($("playMsg"), "きょうのPLAYはおしまい　＋ で1回ふえます");
+      return false;
+    }
+    if (next.fresh) countPlay(kind);
     if (next.seed) seed = next.seed;
     level = next.level || 1;
     passes = next.passes != null ? next.passes : CONFIG.PASSES;
@@ -1876,18 +2004,26 @@
     elFoot.classList.remove("gone");
     render();
     elBoard.classList.remove("hidden");
+    return true;
   }
 
 
-  /* ---- TOP ― ボタンだけ。ここから もんだい / 視覚特性 / SEED へ ---- */
+  /* ---- TOP ― ボタンだけ。ここから もんだい / 見え具合 / SEED へ ---- */
   const pad3 = n => String(n).padStart(3, "0");
 
   function refreshTop() {
     const code = seedCode(kind, seed);
     elBigSeed.textContent = code;
     $("popSeed").textContent = code;
-    $("topSeedTxt").textContent = code;
+    refreshPlay();
     showTraits();
+  }
+
+  // きょうの残り。使い切っているあいだだけ ＋ を出す
+  function refreshPlay() {
+    const n = playLeft();
+    $("playDots").textContent = "●".repeat(n) + "○".repeat(Math.max(0, CONFIG.PLAY_PER_DAY - n));
+    $("playAdd").hidden = n > 0;
   }
 
   function openTop() {
@@ -2101,7 +2237,15 @@
 
   $("toTop").addEventListener("click", openTop);
   $("clearTop").addEventListener("click", () => { elClear.classList.remove("show"); openTop(); });
-  $("again").addEventListener("click", () => start({ level: 1 }));
+  $("again").addEventListener("click", () => start({ level: 1, fresh: true }));
+
+  /* ＋ ― 広告をみて1回ふやす。広告そのものはまだ入れていないので、
+     いまは押すと1増えるだけ。ここに広告の呼び出しを挟めばつながる。 */
+  $("playAdd").addEventListener("click", () => {
+    addPlay();                       // TODO: 広告を見せて、見おわったらここへ来る
+    refreshPlay();
+    say($("playMsg"), "1回ふえました");
+  });
 
   /* TOPのもんだい ― 6つの特性をぜんぶ並べる。生成器のあるものだけ押せて、
      準備中は押せないまま置く。生成器を1つ足せばここも押せるようになる。 */
@@ -2154,9 +2298,10 @@
     const run = countFresh ? null : savedRun(readStore(), countKind, m);
     $("countPop").classList.remove("show");
     // 続きがあればそのseedで、無ければ ここで 新しいseedを作ってはじめる
-    if (run) start({ kind: countKind, mode: m, seed: run.seed, level: run.level, passes: run.passes });
-    else      start({ kind: countKind, mode: m, seed: randomSeed(), level: 1 });
-    closeTop();
+    const ok = run
+      ? start({ kind: countKind, mode: m, seed: run.seed, level: run.level, passes: run.passes })
+      : start({ kind: countKind, mode: m, seed: randomSeed(), level: 1, fresh: true });
+    if (ok) closeTop();
   });
   $("countClose").addEventListener("click", () => $("countPop").classList.remove("show"));
   $("countPop").addEventListener("click", e => { if (e.target === $("countPop")) $("countPop").classList.remove("show"); });
@@ -2234,7 +2379,10 @@
       const v = document.createElement("b");
       v.className = "mono";
       v.textContent = t.ready ? "LV " + String(t.level).padStart(3, "0") : "準備中";
-      row.append(n, v);
+      const c = document.createElement("em");     // 何回あそんだか
+      c.className = "mono";
+      c.textContent = t.ready ? t.plays + "回" : "";
+      row.append(n, v, c);
       return row;
     }));
   }
@@ -2283,7 +2431,7 @@
     $(closer).addEventListener("click", () => el.classList.remove("show"));
     el.addEventListener("click", e => { if (e.target === el) el.classList.remove("show"); });
   }
-  // 視覚特性。TOPのチャートを押すと、一覧つきで開く
+  // 見え具合。TOPのチャートを押すと、一覧つきで開く
   $("topTrait").addEventListener("click", () => { showTraits(); $("trait").classList.add("show"); });
   $("traitClose").addEventListener("click", () => $("trait").classList.remove("show"));
   $("trait").addEventListener("click", e => { if (e.target === $("trait")) $("trait").classList.remove("show"); });
@@ -2337,8 +2485,7 @@
     if (!got) { say(elMsg, "SEEDを入力してください"); return; }
     elSeedIn.value = ""; elSeedIn.blur();
     $("seedScreen").classList.remove("show");
-    start({ kind: got.kind || kind, mode: "full", seed: got.seed, level: 1 });
-    closeTop();
+    if (start({ kind: got.kind || kind, mode: "full", seed: got.seed, level: 1, fresh: true })) closeTop();
   }
   $("setBtn").addEventListener("click", startFromInput);
   elSeedIn.addEventListener("keydown", e => { if (e.key === "Enter") startFromInput(); });
@@ -2369,7 +2516,7 @@
       const m = pick("mode", Object.keys(MODES)) || "full";
       const run = savedRun(st, k, m);
       const same = run && run.seed === got.seed;
-      start({ kind: k, mode: m, seed: got.seed,
+      start({ kind: k, mode: m, seed: got.seed, fresh: !same,
               level: same ? run.level : 1, passes: same ? run.passes : CONFIG.PASSES });
     } else {
       const k = (st && KINDS.includes(st.kind)) ? st.kind : "color";
