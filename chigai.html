@@ -90,13 +90,29 @@
   }
   .cell.press { opacity: 0.72; transition: none; }   /* 当たり外れに関わらず同じ反応 */
 
-  /* ---- MOVE / SHAPE ― マスは器になり、中の図形を見る ---- */
-  #board.move .cell, #board.shape .cell {
+  /* ---- MOVE / SHAPE / BLUR / TIMING ― マスは器になり、中の図形を見る ---- */
+  #board.move .cell, #board.shape .cell, #board.blur .cell, #board.time .cell {
     background: none !important;
     display: flex; align-items: center; justify-content: center;
     overflow: hidden;
   }
   .fig { width: 66%; height: 66%; display: block; overflow: visible; }
+  /* ボケは輪郭の外へにじむので、マスで切らずに外へ出す */
+  #board.blur .cell { overflow: visible; }
+  #board.blur .fig { width: var(--fig, 72%); height: var(--fig, 72%); }
+  /* タイミング ― 出たり消えたりするだけで、位置は動かさない */
+  .tick {
+    width: var(--fig, 76%); height: var(--fig, 76%);
+    border-radius: 4px;
+    animation-duration: 2s;
+    animation-timing-function: linear;
+    animation-iteration-count: infinite;
+    will-change: opacity;
+  }
+  .sw .tick { width: 82%; height: 82%; }
+  /* 答えを見せている間は点滅を止める ― 出ていない瞬間だと何も見えないため。
+     ちがいは正解カードの見本のほうで、そのまま動かしつづける */
+  #board.solved .tick { animation: none; opacity: 1; }
   #patDefsHost { position: absolute; width: 0; height: 0; overflow: hidden; }
   /* 模様 ― タイルの外形はどのマスも同じ。中身だけが違う */
   #board.pattern .cell { background: none !important; }
@@ -560,6 +576,8 @@
   <main id="stage">
     <!-- 模様の定義置き場。レベルごとに2つぶんだけ書き換える -->
     <svg id="patDefsHost" width="0" height="0" aria-hidden="true"><defs id="patDefs"></defs></svg>
+    <!-- タイミングの出かたは1レベルにつき2つ。ここに書き出す -->
+    <style id="tKeys"></style>
     <div id="board"></div>
 
     <div id="panel">
@@ -589,7 +607,7 @@
       <div class="s mono" id="clearSeed">SEED ------</div>
 
       <div class="traits">
-        <svg id="radarClear" class="radar" viewBox="0 0 240 208" aria-hidden="true"></svg>
+        <svg id="radarClear" class="radar" viewBox="-22 0 284 208" aria-hidden="true"></svg>
         <div class="traitList" id="traitListClear"></div>
       </div>
 
@@ -683,7 +701,7 @@
     </div>
 
     <div class="traits">
-      <svg id="radar" class="radar" viewBox="0 0 240 208" aria-hidden="true"></svg>
+      <svg id="radar" class="radar" viewBox="-22 0 284 208" aria-hidden="true"></svg>
       <div class="traitList" id="traitList"></div>
     </div>
 
@@ -702,11 +720,11 @@
         <dt>動体</dt><dd>動き方がわずかに違う</dd>
         <dt>形状</dt><dd>かたちがわずかに違う</dd>
         <dt>模様</dt><dd>模様がわずかに違う</dd>
-        <dt>方向</dt><dd>向きがわずかに違う</dd>
-        <dt>奥行き</dt><dd>奥行きがわずかに違う</dd>
+        <dt>ボケ</dt><dd>輪郭の鮮明さがわずかに違う</dd>
+        <dt>タイミング</dt><dd>出る・消える時刻がわずかに違う</dd>
       </dl>
       <p>その種類で<b>いちばん先まで進んだレベル</b>が能力値です。seedを変えても消えません。</p>
-      <p class="q">数えるのは100問モードだけ。準備中は未計測として中心に置いてあります。</p>
+      <p class="q">数えるのは100問モードだけ。まだ遊んでいない種類は中心のままです。</p>
     </div>
     <button id="helpTraitClose" class="close" type="button">CLOSE</button>
   </div>
@@ -747,6 +765,41 @@
   </div>
 </div>
 
+<!-- 用語の説明 ― BLURのリザルトの ? から -->
+<div id="helpBlur" class="overlay">
+  <div class="sheet-card">
+    <span class="lbl">この画面の見かた</span>
+    <div class="note">
+      <h3>BLUR</h3>
+      <p>図形も大きさも色も<b>どのマスも同じ</b>です。違うのは<b>輪郭の鮮明さ</b>だけ。1つだけボケていることも、1つだけ鮮明なこともあります。</p>
+      <p class="q">上の見本は、左がふつうのマス、右が違うマスです。</p>
+
+      <h3>ぼけの差</h3>
+      <p>図形の<b>半径を100％としたときのぼかしの強さ</b>です。数字が小さいほど見分けにくくなります。</p>
+      <p class="q">レベル1で13％くらい、レベル100で1.9％くらいまで小さくなります。</p>
+    </div>
+    <button id="helpBlurClose" class="close" type="button">CLOSE</button>
+  </div>
+</div>
+
+<!-- 用語の説明 ― TIMINGのリザルトの ? から -->
+<div id="helpTime" class="overlay">
+  <div class="sheet-card">
+    <span class="lbl">この画面の見かた</span>
+    <div class="note">
+      <h3>TIMING</h3>
+      <p>どのマスも<b>出る → 消える</b>をくりかえしています。場所は動きません。1つだけ<b>その時刻</b>がずれています。</p>
+      <p class="q">上の見本は、左がふつうのマス、右が違うマスです。何周か眺めると分かります。</p>
+
+      <h3>サイクル / その差</h3>
+      <p><b>サイクル</b>は出てから次に出るまでの秒数で、<b>どのマスも同じ</b>です。<b>その差</b>は、違う1マスがどれだけずれているかのミリ秒です。</p>
+      <p>レベルが進むと、まるごとずれる（出るのも消えるのも遅い）かたちから、<b>出るのは同時で消える時刻だけがずれる</b>かたちに変わります。</p>
+      <p class="q">レベル1で420msくらい、レベル100で45msくらいまで近づきます。</p>
+    </div>
+    <button id="helpTimeClose" class="close" type="button">CLOSE</button>
+  </div>
+</div>
+
 <!-- 用語の説明 ― seedの ? から -->
 <div id="helpSeed" class="overlay">
   <div class="sheet-card">
@@ -754,7 +807,7 @@
     <div class="note">
       <p>問題のもとになる合言葉です。<b>同じSEEDなら、誰がどの端末で開いても同じ100問</b>が同じ順番で出ます。友達に渡して、どちらが先に進めるか競えます。</p>
       <dl>
-        <dt>C-8K4M2P</dt><dd>頭の1文字が問題の種類（C=色彩　M=動体）</dd>
+        <dt>C-8K4M2P</dt><dd>頭の1文字が問題の種類（C=色彩　M=動体　S=形状　P=模様　B=ボケ　T=タイミング）</dd>
         <dt>入れる</dt><dd>もらったSEEDを入れると、その100問がすぐはじまる</dd>
         <dt>渡す</dt><dd>プレイ中の画面の上のSEEDから COPY / SHARE</dd>
       </dl>
@@ -849,6 +902,33 @@
     PATTERN_AMP: { period: 0.45, weight: 0.6, angle: 24, ink: 0.45 },
     PATTERN_INK: 0.85,       // 模様のこさ(基準)
     PATTERN_BG: 0.80,        // 地の色 ― 模様の色をこの割合だけ白に寄せる
+
+    /* ---- BLUR(ボケで見分ける問題) ----
+       どのマスも同じ図形・同じ大きさ・同じ色。ちがうのは輪郭の鮮明さだけ。
+       ぼかしの強さは図形の半径を1とした単位で持つので、
+       盤面が小さくなっても見え方の比率は変わらない。 */
+    BLUR_GRID_CURVE: [[1, 3], [20, 4], [50, 5], [75, 6], [100, 6]],
+    // ぼけの差。図形の半径を1としたときの標準偏差。レベルが上がるほど小さくなる
+    BLUR_DIFF_CURVE: [[1, 0.130], [20, 0.080], [50, 0.048], [75, 0.030], [100, 0.019]],
+    // 使う図形。輪郭の長さが極端に違うと難しさがぶれるので、素直なものだけにする
+    BLUR_FORMS: ["circle", "square", "tri", "star", "cross"],
+    BLUR_SIZE: 0.72,         // 図形の大きさ(マスの一辺に対する割合)
+
+    /* ---- TIMING(出る・消えるタイミングで見分ける問題) ----
+       どのマスも同じ図形が「出る → しばらく出たまま → 消える → しばらく消えたまま」
+       を延々とくりかえす。ちがう1マスだけ、その時刻がすこしずれている。
+       場所は動かさない ― 動体との違いはそこ。 */
+    TIME_GRID_CURVE: [[1, 3], [20, 4], [50, 5], [75, 6], [100, 6]],
+    // タイミングの差(ミリ秒)
+    TIME_DIFF_CURVE: [[1, 420], [20, 280], [40, 185], [60, 125], [80, 80], [100, 45]],
+    TIME_STAGES: [
+      { from: 1,  how: "phase" },   // まるごと後ろへずれる ― 出るのも消えるのも遅い
+      { from: 40, how: "duty"  },   // 出るのは同時。消える時刻だけがずれる
+    ],
+    TIME_PERIOD: [1.7, 2.3], // 1周期の秒数(そのレベルの全マス共通)
+    TIME_ON: 0.46,           // 1周期のうち出ている割合
+    TIME_FADE: 0.05,         // 出る/消えるのにかける割合(かたい点滅をやわらげる)
+    TIME_SIZE: 0.76,         // 図形の大きさ(マスの一辺に対する割合)
 
     /* ---- 10問モード(テスト用) ----
        難易度のカーブ全体を10問で拾えるよう、100問から間引いて並べる。
@@ -1103,7 +1183,7 @@
   /* ---- MOVE ― 1つだけ動き方が違う ----
      図形はすべて同じ位相で左右に往復する。違う1つは「移動幅」か「速さ」の
      どちらかだけがずれている。レベルが上がるほどその差が小さくなる。
-     方向を足すときは param に "dir" を増やせばよい。 */
+     ずらす軸を足したいときは param を増やせばよい。 */
   function generateMovePuzzle(level, rng) {
     const size  = curveAt(CONFIG.MOVE_GRID_CURVE, level);
     const ratio0 = curveAtF(CONFIG.MOVE_DIFF_CURVE, level);   // 差の割合
@@ -1480,10 +1560,164 @@
     };
   }
 
+  /* ---- BLUR ― 1つだけボケかたが違う ----
+     図形も大きさも色もどのマスも同じ。ちがうのは輪郭の鮮明さだけ。
+     ぼかしは SVG の feGaussianBlur で掛ける。図形の座標系(半径=1)の中で
+     ぼかすので、マスが小さくなってもボケ具合の比率はそのまま保たれる。
+     ボケの掛かった側を「ふつう」にすれば、1マスだけ鮮明という出しかたにもなる。 */
+
+  // 中の図形の大きさ(マスの一辺に対する割合)。CSSの var(--fig) に渡す
+  function setFigSize(k) {
+    const bd = document.getElementById("board");
+    if (bd) bd.style.setProperty("--fig", (k * 100).toFixed(1) + "%");
+  }
+
+  // ぼかしの定義をひと組(A=ふつう / B=ちがう1マス)だけ作って defs に置く
+  function blurDefs(a, b) {
+    const one = (id, sd) => sd <= 0.0001 ? ""
+      : `<filter id="${id}" x="-60%" y="-60%" width="220%" height="220%">` +
+        `<feGaussianBlur stdDeviation="${sd.toFixed(4)}"/></filter>`;
+    return one("blurA", a) + one("blurB", b);
+  }
+
+  function blurEl(sp, fill, id) {
+    const svg = shapeEl(sp, fill);
+    if (id) svg.firstChild.setAttribute("filter", "url(#" + id + ")");
+    return svg;
+  }
+
+  function generateBlurPuzzle(level, rng) {
+    const size = curveAt(CONFIG.BLUR_GRID_CURVE, level);
+    const d    = curveAtF(CONFIG.BLUR_DIFF_CURVE, level);    // ぼけの差
+    const tint = css(pickBaseColor(rng));
+
+    const key = CONFIG.BLUR_FORMS[Math.floor(rng() * CONFIG.BLUR_FORMS.length)];
+    const sp  = Object.assign({}, FORMS[key]);
+
+    // どちらをボケにするか。ボケているほうが多数なら「1つだけ鮮明」になる
+    const oddSoft = rng() < 0.5;
+    const blurA = oddSoft ? 0 : d;      // ふつうのマス
+    const blurB = oddSoft ? d : 0;      // ちがう1マス
+
+    const defs = document.getElementById("patDefs");
+    if (defs) defs.innerHTML = blurDefs(blurA, blurB);
+    setFigSize(CONFIG.BLUR_SIZE);
+
+    const answer = Math.floor(rng() * size * size);
+    const mk = odd => blurEl(sp, tint, odd ? (blurB > 0 ? "blurB" : null)
+                                           : (blurA > 0 ? "blurA" : null));
+
+    return {
+      kind: "BLUR",
+      size, answer, board: "blur",
+      decorate: (cell, i) => { cell.appendChild(mk(i === answer)); },
+      report: () => ({
+        sample: (a, b) => {
+          a.className = "sw track"; b.className = "sw track";
+          a.style.background = "none"; b.style.background = "none";
+          a.replaceChildren(mk(false));
+          b.replaceChildren(mk(true));
+        },
+        metrics: [
+          ["かたち",   FORM_NAME[key] || key],
+          ["ちがい",   oddSoft ? "1つだけボケている" : "1つだけ鮮明"],
+          ["ぼけの差", (d * 100).toFixed(1) + " %"],
+        ],
+        rows: null
+      })
+    };
+  }
+
+  /* ---- TIMING ― 1つだけ出る・消えるタイミングが違う ----
+     どのマスも同じ図形が「出る → 出たまま → 消える → 消えたまま」を
+     くりかえす。周期はぜんぶ同じで、ちがう1マスだけ時刻がずれている。
+     見逃しても何度でも見られるよう、ずっとループさせる。
+     場所は一切動かさない ― 動体(どう動くか)との違いはそこ。
+
+     ずれかたは2つ。
+       phase … まるごと後ろ(前)へずれる。出るのも消えるのも遅い
+       duty  … 出るのは同時で、消える時刻だけがずれる(長く/短く出ている)
+     どちらも「何ミリ秒ずれているか」がそのまま難しさになる。 */
+
+  // 1周期ぶんの出かた。fade は点滅のかどを落とすためのごく短い変化
+  function timeKeyframes(name, on, fade) {
+    const f = v => Math.max(0, Math.min(100, v)).toFixed(3) + "%";
+    return "@keyframes " + name + "{" +
+      "0%{opacity:0}" +
+      f(fade) + "{opacity:1}" +
+      f(on) + "{opacity:1}" +
+      f(on + fade) + "{opacity:0}" +
+      "100%{opacity:0}}";
+  }
+
+  function generateTimePuzzle(level, rng) {
+    const size   = curveAt(CONFIG.TIME_GRID_CURVE, level);
+    const gapMs  = curveAtF(CONFIG.TIME_DIFF_CURVE, level);   // ずれ(ミリ秒)
+    const tint   = css(pickBaseColor(rng));
+    const period = lerp(CONFIG.TIME_PERIOD[0], CONFIG.TIME_PERIOD[1], rng());
+    const fade   = CONFIG.TIME_FADE * 100;
+
+    let how = CONFIG.TIME_STAGES[0].how;
+    for (const st of CONFIG.TIME_STAGES) if (level >= st.from) how = st.how;
+
+    const late = rng() < 0.5;                    // 遅い/長い か、早い/短いか
+    const shift = (late ? 1 : -1) * gapMs / 1000;   // 秒
+    const onA = CONFIG.TIME_ON * 100;
+
+    // phase は出かたを変えずに位相をずらす。duty は出ている長さだけを変える
+    const onB   = how === "duty" ? onA + shift / period * 100 : onA;
+    const delay = how === "duty" ? 0 : shift;
+
+    const style = document.getElementById("tKeys");
+    if (style) style.textContent = timeKeyframes("blinkA", onA, fade) +
+                                   timeKeyframes("blinkB", onB, fade);
+    setFigSize(CONFIG.TIME_SIZE);
+
+    const answer = Math.floor(rng() * size * size);
+
+    function tick(odd) {
+      const e = document.createElement("i");
+      e.className = "tick";
+      e.style.background = tint;
+      e.style.animationName = odd ? "blinkB" : "blinkA";
+      e.style.animationDuration = period.toFixed(3) + "s";
+      // マイナスの delay なので、読み込んだ瞬間から周期の途中で回りはじめる
+      e.style.animationDelay = (-period + (odd ? delay : 0)).toFixed(3) + "s";
+      return e;
+    }
+
+    const onSec = odd => period * (odd ? onB : onA) / 100;
+
+    return {
+      kind: "TIMING",
+      size, answer, board: "time",
+      decorate: (cell, i) => { cell.appendChild(tick(i === answer)); },
+      report: () => ({
+        sample: (a, b) => {
+          a.className = "sw track"; b.className = "sw track";
+          a.style.background = "none"; b.style.background = "none";
+          a.replaceChildren(tick(false));
+          b.replaceChildren(tick(true));
+        },
+        metrics: [
+          ["サイクル", period.toFixed(1) + " 秒"],
+          ["ずれかた", how === "duty"
+              ? (late ? "1つだけ長く出ている" : "1つだけ早く消える")
+              : (late ? "1つだけ遅れて出る"   : "1つだけ早く出る")],
+          how === "duty"
+            ? ["出ている時間", onSec(false).toFixed(2) + " → " + onSec(true).toFixed(2) + " 秒"]
+            : ["出るタイミング", (late ? "+" : "-") + Math.round(gapMs) + " ms"],
+          ["その差", Math.round(gapMs) + " ms"],
+        ],
+        rows: null
+      })
+    };
+  }
+
   // 版ごとの生成器。将来 v2 を足しても、v1 はそのまま残す
   const GENERATORS = {
     1: { color: generateColorPuzzle, move: generateMovePuzzle, shape: generateShapePuzzle,
-         pattern: generatePatternPuzzle },
+         pattern: generatePatternPuzzle, blur: generateBlurPuzzle, time: generateTimePuzzle },
   };
 
   /* ==========================================================
@@ -1500,8 +1734,8 @@
     { id: "move",    code: "M", name: "動体",   en: "MOVE" },
     { id: "shape",   code: "S", name: "形状",   en: "SHAPE" },
     { id: "pattern", code: "P", name: "模様",   en: "PATTERN" },
-    { id: "dir",     code: "D", name: "方向",   en: "DIRECTION" },
-    { id: "depth",   code: "Z", name: "奥行き", en: "DEPTH" },
+    { id: "blur",    code: "B", name: "ボケ",     en: "BLUR" },
+    { id: "time",    code: "T", name: "タイミング", en: "TIMING" },
   ];
   const isReady = id => !!GENERATORS[PUZZLE_VERSION][id];
   const KINDS = TRAITS.filter(t => isReady(t.id)).map(t => t.id);
@@ -2055,9 +2289,13 @@
   $("trait").addEventListener("click", e => { if (e.target === $("trait")) $("trait").classList.remove("show"); });
   note("helpTrait", "askTrait", "helpTraitClose");
 
-  // リザルトの ? は、いま出ている問題の種類に合わせて開く
-  note("helpColor", "askColor", "helpColorClose", () => puzzle.kind === "MOVE" ? "helpMove" : "helpColor");
+  // リザルトの ? は、いま出ている問題の種類に合わせて開く。
+  // 専用の説明が無い種類は、いちばん基本の色彩の説明に落ちる
+  const HELP = { MOVE: "helpMove", BLUR: "helpBlur", TIMING: "helpTime" };
+  note("helpColor", "askColor", "helpColorClose", () => HELP[puzzle.kind] || "helpColor");
   note("helpMove", null, "helpMoveClose");
+  note("helpBlur", null, "helpBlurClose");
+  note("helpTime", null, "helpTimeClose");
   note("helpSeed", "askSeed", "helpSeedClose");
 
   /* プレイ中のヘッダーのSEED ― 渡すのはこちら(COPY / SHARE) */
