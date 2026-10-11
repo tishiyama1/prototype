@@ -1,0 +1,64 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
+<meta name="theme-color" content="#182f28">
+<title>Forest Action — 森の向こうへ</title>
+<link rel="stylesheet" href="./style.css">
+<script type="importmap">{"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.180.0/build/three.module.js"}}</script>
+</head>
+<body>
+<main id="game-shell">
+  <canvas id="world" aria-label="2レーンの森のアクションゲーム"></canvas>
+  <div class="vignette"></div>
+  <header id="hud">
+    <div class="identity"><span class="eyebrow">FOREST ACTION</span><span class="subtitle">森の向こうへ</span></div>
+    <div class="health"><span>HP <b id="hp-text">100</b></span><div class="hp-track"><i id="hp-fill"></i></div><span id="lane-label">FRONT · 手前</span></div>
+    <div class="journey"><span id="progress-text">森の入口</span><div class="progress-track"><i id="progress-fill"></i></div><small id="stats">0:00 · 0 / 7</small></div>
+    <nav><button id="sound" class="small-button" aria-label="音を切り替え">音 ON</button><button id="pause" class="small-button">Ⅱ</button><button id="debug-toggle" class="small-button">調整</button></nav>
+  </header>
+  <div id="hint" aria-live="polite"></div>
+  <div id="combo" aria-live="polite"></div>
+  <section id="controls" aria-label="タッチ操作">
+    <div class="movement">
+      <button class="pad back" data-action="back" aria-label="奥レーンへ">⌃<span>奥 W</span></button>
+      <button class="pad left" data-action="left" aria-label="左へ移動">◀<span>A</span></button>
+      <button class="pad right" data-action="right" aria-label="右へ移動">▶<span>D</span></button>
+      <button class="pad front" data-action="front" aria-label="手前レーンへ">⌄<span>手前 S</span></button>
+      <span class="pad-center">MOVE</span>
+    </div>
+    <div class="actions"><button class="dodge" data-action="dodge"><i id="dodge-ready"></i><b>回避</b><span>K</span></button><button class="attack" data-action="attack"><b>斬る</b><span>J · 3連撃</span></button></div>
+  </section>
+  <section id="overlay" class="overlay">
+    <div id="intro" class="panel">
+      <span class="eyebrow">2.5D ACTION STUDY / 01</span>
+      <h1>森の向こうへ<span>FOREST ACTION</span></h1>
+      <p>剣を振る。間合いを読む。<br>ふたつの道を、軽やかに渡る。</p>
+      <div class="instructions"><span><b>A / D</b> 左右移動</span><span><b>W / S</b> 奥 / 手前</span><span><b>J</b> 3連撃</span><span><b>K</b> ダッシュ回避</span></div>
+      <p class="tip">赤い突進予告は、もう一方の道へ。<br>7体を倒して、森の出口を目指してください。</p>
+      <button id="start" class="primary" disabled>森を準備しています…</button>
+      <a href="../" class="back-link">試作品一覧へ</a>
+    </div>
+    <div id="result" class="panel" hidden>
+      <span class="eyebrow" id="result-eyebrow">FOREST CLEARED</span><h2 id="result-title">森を抜けた。</h2>
+      <div class="result-grid"><span>TIME<b id="result-time"></b></span><span>DEFEATED<b id="result-kills"></b></span><span>DAMAGE<b id="result-damage"></b></span><span>SCORE<b id="result-score"></b></span></div>
+      <p id="best"></p><button id="retry" class="primary">もう一度、森へ</button><a href="../" class="back-link">試作品一覧へ</a>
+    </div>
+    <div id="pause-panel" class="panel" hidden><span class="eyebrow">PAUSED</span><h2>ひと休み。</h2><p>画面を離れている間は進行しません。</p><button id="resume" class="primary">続ける</button><button id="restart" class="secondary">入口からやり直す</button></div>
+  </section>
+  <aside id="debug-panel" hidden>
+    <div class="debug-header"><b>操作感の調整</b><button id="debug-close">×</button></div>
+    <output id="debug-status"></output>
+    <label class="check"><input id="hitboxes" type="checkbox">当たり判定・攻撃範囲</label>
+    <div id="sliders"></div><button id="reset-config" class="secondary">初期設定に戻す</button>
+    <p>切替完了まで元レーンの判定です。<br>切替中も被弾します。回避は開始直後に無敵。</p>
+  </aside>
+  <section id="portrait"><span>↻</span><h2>横画面で、森へ。</h2><p>iPhoneを横向きにしてください。</p></section>
+  <div id="fatal" hidden role="alert"></div>
+</main>
+<script type="module" src="./js/main.js"></script>
+<script>window.addEventListener('error',function(e){if(e.target&&e.target.tagName==='SCRIPT'){var f=document.getElementById('fatal');f.hidden=false;f.textContent='読み込みに失敗しました。通信環境を確認して再読み込みしてください。';}},true);</script>
+<noscript>このゲームにはJavaScriptが必要です。</noscript>
+</body>
+</html>
