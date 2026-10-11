@@ -22,6 +22,8 @@ export class PixelRenderer {
  resize(width,height){this.width=width;this.height=height;}
  render(scene,camera){
   const r=this.renderer;r.info.reset();r.shadowMap.enabled=visual.shadows;
+  // Preserve hard edges when Safari composites a DPR-capped canvas to its display.
+  r.domElement.style.imageRendering=visual.pixel?'pixelated':'auto';
   const size=renderSize(this.width,this.height,r.getPixelRatio(),visual.resolution);
   if(visual.pixel){
    this.material.uniforms.pixelStep.value=size.scale;

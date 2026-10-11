@@ -9,7 +9,7 @@ baseline=json.loads(Path(__file__).with_name('protected-baseline.json').read_tex
 base='https://tishiyama1.github.io/prototype/'
 files={p:h for p,h in baseline['files'].items() if Path(p).suffix!='.md'}
 for p in (root/'forest-action-pixel').rglob('*'):
-    if p.is_file() and p.suffix in ['.html','.css','.js','.png']:
+    if p.is_file() and p.suffix in ['.html','.css','.js','.png','.jpg']:
         files[p.relative_to(root).as_posix()]=sha256(p.read_bytes()).hexdigest()
 stamp=str(int(time.time()))
 def check(item):

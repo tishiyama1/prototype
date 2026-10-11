@@ -12,14 +12,14 @@
 | 同じ初期状態・入力による現行版／新版比較 | 1,450固定ステップの全スナップショット一致、撃破まで完了 |
 | 上記比較中の設定変更・停止・短縮 | 描画設定切替、4回の停止、10回の演出短縮でも一致 |
 | PCとタッチ操作のブラウザ確認 | 29項目PASS、実キー操作で8回の攻撃／被ダメージ0で撃破、再戦成功 |
-| 描画・静止画比較のブラウザ確認 | 17項目PASS |
+| 描画・静止画比較のブラウザ確認 | 19項目PASS |
 | 低解像度・整数拡大 | 3プリセットとも中央の全サンプルが整数ブロックで同色 |
 | UI | 4枚の評価カード・文字はDOMで通常解像度、横画面に収容 |
 | エラー | JavaScript・WebGLシェーダ・通信エラーなし |
 
 ブラウザはChromium / SwiftShader（ソフトウェアGPU）。PC 1280×720、モバイル相当844×390・DPR3（描画DPRは1.5）、横画面リサイズ740×360／667×375、縦画面390×844を使用しました。モバイルは仮想スティック＋攻撃の複数指入力、スワイプ、キャンセル、カード演出の短縮と詳細／高速モードを確認しました。実機Safariの検証ではありません。
 
-Medium・影ONのPC環境で40フレームを採取し、平均約17.1FPS、フレーム時間中央値16.8ms、95パーセンタイル166.7msでした。描画は141 calls／113,243 triangles（影パスと拡大パスを含む）。短いソフトウェアGPU上の測定なので、iPhoneの速度を推定する根拠にはできません。60FPS達成は未確認です。
+Medium・影ONのPC環境で40フレームを採取し、平均約17.8FPS、フレーム時間中央値50.1ms、95パーセンタイル150msでした。描画は141 calls／113,243 triangles（影パスと拡大パスを含む）。短いソフトウェアGPU上の測定なので、iPhoneの速度を推定する根拠にはできません。60FPS達成は未確認です。
 
 ## スクリーンショット
 
@@ -43,7 +43,15 @@ python tests/forest-action-pixel/public-files.py
 
 ## 公開環境
 
-公開反映後、両URLの起動、公開ファイル一致、戦闘・描画検証の結果を追記します。
+実装コミット `5c78ab6def8491b7cfd3a5c080d2e3dbf7a6044a` を既存mainへ追加し、Pages workflow `38135947638` が成功しました。実際の両URLへアクセスして確認しています。
+
+- https://tishiyama1.github.io/prototype/forest-action/
+- https://tishiyama1.github.io/prototype/forest-action-pixel/
+- https://tishiyama1.github.io/prototype/forest-action-pixel/comparison.html
+
+初回公開検証は66ファイルすべてHTTP 200／SHA256一致（既存37ファイルを含む）、新版の戦闘・タッチ操作29項目PASS、両版の起動と描画・比較19項目PASS。現行版も公開URLから接近・攻撃・カード短縮・通常復帰を実操作で確認しました。新版は8回の攻撃、被ダメージ0で撃破し、リトライできました。
+
+`public-browser-results.json`、`public-visual-results.json`、`public-file-results.json` に実際のURLと個別結果を保存しています。高DPRでの最終canvas拡大にもNearest指定を追加し、Low／Medium／Highのモバイル相当画面でピクセルブロックの同色を検証しています。公開画像のまとめは `media/comparison.jpg` と `media/resolutions.jpg`。
 
 ## 既知の制約・未検証
 
