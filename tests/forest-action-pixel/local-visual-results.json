@@ -1,0 +1,189 @@
+{
+  "base": "http://127.0.0.1:8001/",
+  "checks": [
+    {
+      "name": "現行版が独立起動",
+      "data": "3.0.0"
+    },
+    {
+      "name": "現行版と同じ初期キャラクター配置・カメラ",
+      "data": {
+        "zoom": 1,
+        "focus": [
+          0,
+          0.4,
+          0
+        ],
+        "position": [
+          0,
+          24.359065301418784,
+          18.054450694561453
+        ]
+      }
+    },
+    {
+      "name": "low：整数ピクセル拡大・判定/カメラ固定",
+      "data": {
+        "internal": [
+          256,
+          144
+        ],
+        "pixelStep": 5,
+        "uniform": 1
+      }
+    },
+    {
+      "name": "medium：整数ピクセル拡大・判定/カメラ固定",
+      "data": {
+        "internal": [
+          427,
+          240
+        ],
+        "pixelStep": 3,
+        "uniform": 1
+      }
+    },
+    {
+      "name": "high：整数ピクセル拡大・判定/カメラ固定",
+      "data": {
+        "internal": [
+          640,
+          360
+        ],
+        "pixelStep": 2,
+        "uniform": 1
+      }
+    },
+    {
+      "name": "pixel OFF：戦闘状態固定"
+    },
+    {
+      "name": "fog OFF：戦闘状態固定"
+    },
+    {
+      "name": "shadows OFF：戦闘状態固定"
+    },
+    {
+      "name": "environment OFF：戦闘状態固定"
+    },
+    {
+      "name": "描画設定初期化・静止画停止"
+    },
+    {
+      "name": "戦闘中の静止画停止・再開と操作UI復帰"
+    },
+    {
+      "name": "ソフトウェアGPUの描画負荷測定",
+      "data": {
+        "sampleFrames": 40,
+        "averageFPS": 17.143836790673753,
+        "medianFrameMs": 16.800000000000182,
+        "p95FrameMs": 166.70000000000073,
+        "render": {
+          "calls": 141,
+          "triangles": 113243
+        },
+        "hardwareGPU": false
+      }
+    },
+    {
+      "name": "iPhone横画面相当：DPR上限1.5・3解像度切替",
+      "data": {
+        "low": [
+          317,
+          147
+        ],
+        "medium": [
+          422,
+          195
+        ],
+        "high": [
+          633,
+          293
+        ]
+      }
+    },
+    {
+      "name": "横画面UI収容・CSSぼかしなし"
+    },
+    {
+      "name": "カード演出中のリサイズ・解像度変更でも評価を保護 / DOM文字"
+    },
+    {
+      "name": "解像度変更後もスキップと結果反映が一度だけ"
+    },
+    {
+      "name": "描画・JavaScript・通信エラーなし"
+    }
+  ],
+  "errors": [],
+  "sizes": {
+    "low": {
+      "resolution": "low",
+      "pixel": true,
+      "fog": true,
+      "shadows": true,
+      "environment": true,
+      "preset": "low",
+      "internal": [
+        256,
+        144
+      ],
+      "display": [
+        1280,
+        720
+      ],
+      "pixelStep": 5,
+      "passes": 2,
+      "dpr": 1,
+      "calls": 139,
+      "triangles": 112955,
+      "inspecting": true
+    },
+    "medium": {
+      "resolution": "medium",
+      "pixel": true,
+      "fog": true,
+      "shadows": true,
+      "environment": true,
+      "preset": "medium",
+      "internal": [
+        427,
+        240
+      ],
+      "display": [
+        1280,
+        720
+      ],
+      "pixelStep": 3,
+      "passes": 2,
+      "dpr": 1,
+      "calls": 139,
+      "triangles": 112955,
+      "inspecting": true
+    },
+    "high": {
+      "resolution": "high",
+      "pixel": true,
+      "fog": true,
+      "shadows": true,
+      "environment": true,
+      "preset": "high",
+      "internal": [
+        640,
+        360
+      ],
+      "display": [
+        1280,
+        720
+      ],
+      "pixelStep": 2,
+      "passes": 2,
+      "dpr": 1,
+      "calls": 139,
+      "triangles": 112955,
+      "inspecting": true
+    }
+  },
+  "source": "Chromium / SwiftShader, mobile viewport emulation (not physical iPhone)"
+}
