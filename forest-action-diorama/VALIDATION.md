@@ -42,7 +42,20 @@ Chromium＋SwiftShader（CPUによるソフトウェアGPU）で、稼働中の5
 
 ## 公開環境
 
-公開後に、実際の3つのURL、公開ファイルのハッシュ、Pagesの完了状態、公開環境でのブラウザ検査結果を追記します。現時点のこの節は公開確認の完了を意味しません。
+2026-10-11、コミット`67c7886c64080b52d954909e445dd6ca2760654b`のPages実行[38141174147](https://github.com/tishiyama1/prototype/actions/runs/38141174147)がsuccess。新規URLのHTMLをHTTP 200で取得し、公開環境の戦闘・タッチ検査29項目がすべて通過しました。実キー操作で8攻撃・被ダメージ0の撃破、リザルト、即再戦を確認。
+
+公開ファイル139点のSHA-256がリポジトリの内容と一致。うち既存の103点は通常版・ピクセル版・トップページ・他のHTMLコンテンツを含み、変更されていません。MarkdownはPagesの変換対象のためバイト比較から除外。ローカルの既存追跡ファイル112点はMarkdownも含めて元のコミットと一致しています。
+
+- ジオラマ版：https://tishiyama1.github.io/prototype/forest-action-diorama/
+- 通常3D版：https://tishiyama1.github.io/prototype/forest-action/
+- ピクセル版：https://tishiyama1.github.io/prototype/forest-action-pixel/
+- 比較：https://tishiyama1.github.io/prototype/forest-action-diorama/comparison.html
+
+公開環境の景観検査15項目もすべてPASS。3つの公開URLのWebGL起動、同じ初期戦況での比較、48地点の遮蔽、28姿勢の寸法、静止画からの復帰、844×390・667×375の画面内収まり、比較ページの4枚の画像と3版へのリンクを確認しました。JavaScript・通信・描画エラーは0です。
+
+公開版の描画時間を同じソフトウェアGPUで再計測：PC約9.0FPS（p95 317ms）、スマートフォン相当約10.1FPS（p95 267ms）、影OFF約7.8FPS（p95 267ms）。60FPSはこの環境で未達。実機Safariでの結果ではありません。
+
+生の記録は`tests/forest-action-diorama/tactical-public-qa.json`、`visual-public.json`、`public-files.json`に保存。公開後の変更はこの記録と文書だけで、ゲームのコード・素材・既存公開コンテンツは変更していません。
 
 ## 既知の制限・未検証
 
