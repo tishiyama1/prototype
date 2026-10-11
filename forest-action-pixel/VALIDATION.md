@@ -49,9 +49,9 @@ python tests/forest-action-pixel/public-files.py
 - https://tishiyama1.github.io/prototype/forest-action-pixel/
 - https://tishiyama1.github.io/prototype/forest-action-pixel/comparison.html
 
-初回公開検証は66ファイルすべてHTTP 200／SHA256一致（既存37ファイルを含む）、新版の戦闘・タッチ操作29項目PASS、両版の起動と描画・比較19項目PASS。現行版も公開URLから接近・攻撃・カード短縮・通常復帰を実操作で確認しました。新版は8回の攻撃、被ダメージ0で撃破し、リトライできました。
+最終公開検証は68ファイルすべてHTTP 200／SHA256一致（既存37ファイルを含む）、新版の戦闘・タッチ操作29項目PASS、両版の起動と描画・比較19項目PASS。現行版も公開URLから接近・攻撃・カード短縮・通常復帰を実操作で確認しました。新版は8回の攻撃、被ダメージ0で撃破し、リトライできました。
 
-`public-browser-results.json`、`public-visual-results.json`、`public-file-results.json` に実際のURLと個別結果を保存しています。高DPRでの最終canvas拡大にもNearest指定を追加し、Low／Medium／Highのモバイル相当画面でピクセルブロックの同色を検証しています。公開画像のまとめは `media/comparison.jpg` と `media/resolutions.jpg`。
+`public-browser-results.json`、`public-visual-results.json`、`public-file-results.json` に実際のURLと個別結果を保存しています。高DPRでの最終canvas拡大にもNearest指定を追加しました。改修コミット `6f6d5dfdffc0f8e94e6d4f7d6de32ec9794a6804` のPages workflow `38136317740` 成功後、公開URLで描画・比較19項目を再確認し、Low／Medium／Highのモバイル相当画面で全サンプルのピクセルブロック同色を確認しました。最終公開のソフトウェアGPU測定は40フレーム、平均約16.1FPS、フレーム時間中央値16.8ms／95パーセンタイル150msです。実機60FPSは未検証です。公開画像のまとめは `media/comparison.jpg` と `media/resolutions.jpg`。
 
 ## 既知の制約・未検証
 

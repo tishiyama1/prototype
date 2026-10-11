@@ -1,6 +1,6 @@
 {
   "base": "https://tishiyama1.github.io/prototype/",
-  "verified_at_utc": "2026-10-11T11:34:58Z",
+  "verified_at_utc": "2026-10-11T11:40:46Z",
   "checks": [
     {
       "path": "forest-action/style.css",
@@ -249,6 +249,12 @@
       "bytes": 131031
     },
     {
+      "path": "forest-action-pixel/media/comparison.jpg",
+      "status": 200,
+      "sha256": "5b069dabfef4daf71094cc9ce03ccee277b90d60fe89080991280b2dc76e205e",
+      "bytes": 104891
+    },
+    {
       "path": "forest-action-pixel/media/current.png",
       "status": 200,
       "sha256": "b38fc937db437f6e4d3c47c56ed0d5ff9e665ec58cb26d6abcbf6a25f3909f7f",
@@ -259,6 +265,12 @@
       "status": 200,
       "sha256": "52932aec389599d3e32343974b31aca096fdc2df3ed39ebcc0f8db2565e67e91",
       "bytes": 191281
+    },
+    {
+      "path": "forest-action-pixel/media/resolutions.jpg",
+      "status": 200,
+      "sha256": "4c4e98a7f4b608485dcbf8f2d7b7b1de14da66108f6c023f3e00111e5b5700ff",
+      "bytes": 117141
     },
     {
       "path": "forest-action-pixel/media/card-phase.png",
@@ -389,8 +401,8 @@
     {
       "path": "forest-action-pixel/js/pixel-renderer.js",
       "status": 200,
-      "sha256": "462c8977d3a26b60a36c4a3418da87d5c8016948d5b91c4b8de6b7e244b9732a",
-      "bytes": 2443
+      "sha256": "9289e9f162e3f7a853d099268274e0bb135cad6b00cb7cc8779d93e017a1fe46",
+      "bytes": 2596
     },
     {
       "path": "forest-action-pixel/js/attack-phase.js",

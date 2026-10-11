@@ -79,9 +79,9 @@
       "name": "ソフトウェアGPUの描画負荷測定",
       "data": {
         "sampleFrames": 40,
-        "averageFPS": 6.704210244033253,
-        "medianFrameMs": 150,
-        "p95FrameMs": 300,
+        "averageFPS": 16.108247422680407,
+        "medianFrameMs": 16.799999999999272,
+        "p95FrameMs": 150,
         "render": {
           "calls": 141,
           "triangles": 113243
@@ -92,18 +92,27 @@
     {
       "name": "iPhone横画面相当：DPR上限1.5・3解像度切替",
       "data": {
-        "low": [
-          317,
-          147
-        ],
-        "medium": [
-          422,
-          195
-        ],
-        "high": [
-          633,
-          293
-        ]
+        "low": {
+          "internal": [
+            317,
+            147
+          ],
+          "uniform": 1
+        },
+        "medium": {
+          "internal": [
+            422,
+            195
+          ],
+          "uniform": 1
+        },
+        "high": {
+          "internal": [
+            633,
+            293
+          ],
+          "uniform": 1
+        }
       }
     },
     {
