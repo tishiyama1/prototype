@@ -1,7 +1,7 @@
 export const FIXED_DT=1/120;
 export const ARENA=Object.freeze({x:11.5,z:7.2,margin:.55});
 export const DEFAULTS=Object.freeze({speed:3.8,orbitSpeed:3.4,dashDistance:3.1,invincibility:.18,dashCooldown:.9,
- pitch:53,zoom:1,attackZoom:1.9,cameraSpeed:10,cinemaSpeed:1,cinema:true,
+ pitch:53,zoom:1,attackZoom:1.10,cameraSpeed:10,cinemaSpeed:1,cinema:true,cardMode:'normal',declareTime:.15,revealTime:.35,resultTime:.30,actionTime:.35,returnTime:.15,effectStrength:1,
  flankAngle:65,lateralTolerance:.48,guardBreak:1.0,interceptGrace:.035});
 export const config={...DEFAULTS};
 export const MOVE_DEFAULTS=Object.freeze({

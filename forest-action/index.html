@@ -18,8 +18,7 @@
   <nav><button id="sound" class="small-button">音 ON</button><button id="pause" class="small-button" aria-label="一時停止">Ⅱ</button><button id="debug-toggle" class="small-button">調整</button></nav>
  </header>
  <div id="observation"><span id="enemy-intent">警戒</span><span id="distance-label">間合い 5.9</span><span id="timer">0:00.0</span></div>
- <div id="outcome" aria-live="polite"><b id="outcome-label"></b><span id="outcome-reason"></span></div>
- <div id="cinema-label">判断を、剣に。</div>
+ <section id="card-phase" class="card-phase" hidden aria-label="攻防の戦術評価"></section>
  <section id="controls" aria-label="タッチ操作">
   <div class="stick-wrap"><div id="joystick" role="application" aria-label="ターゲット相対移動"><span class="stick-up">接近</span><span class="stick-down">離脱</span><span class="stick-left">左回り</span><span class="stick-right">右回り</span><div id="stick-knob"></div></div><small>WASD / スティック</small></div>
   <div id="swipe-hint">フィールドをスワイプで回避 <span id="dash-ready">READY</span><small>PC：Shift ＋ WASD</small></div>
@@ -31,10 +30,10 @@
  </section>
  <section id="overlay" class="overlay">
   <div id="intro" class="panel">
-   <span class="eyebrow">TACTICAL ACTION STUDY / 02</span><h1>間合いを読む<span>FOREST ACTION</span></h1>
+   <span class="eyebrow">TACTICAL ACTION STUDY / 03</span><h1>間合いを読む<span>FOREST ACTION</span></h1>
    <p>動きを観察し、技を選ぶ。<br>判断した瞬間、剣が応える。</p>
    <div class="instructions"><span><b>W / S</b> 接近 / 離脱</span><span><b>A / D</b> 敵の周囲を回る</span><span><b>1 / 2 / 3</b> 技を選ぶ</span><span><b>J</b> 攻撃を指示</span></div>
-   <p class="tip">接近に斬撃。突進に突き。隙には強打。<br>スティック外の森をスワイプすると高速回避。<br>攻撃中は時間が止まり、確定した攻防を演じます。</p>
+   <p class="tip">接近に斬撃。突進に突き。隙には強打。<br>スティック外の森をスワイプすると高速回避。<br>攻撃中は時間が止まり、戦況を4枚の札で読み解きます。<br>タップ / Space で演出を短縮できます。</p>
    <button id="start" class="primary" disabled>森を準備しています…</button><a href="../" class="back-link">試作品一覧へ</a>
   </div>
   <div id="result" class="panel" hidden><span class="eyebrow" id="result-eyebrow">DUEL COMPLETE</span><h2 id="result-title">判断が、届いた。</h2>
@@ -47,7 +46,7 @@
  <aside id="debug-panel" hidden><div class="debug-header"><b>戦術・操作の調整</b><button id="debug-close" aria-label="調整画面を閉じる">×</button></div><output id="debug-status"></output>
   <label class="check"><input id="range-display" type="checkbox" checked>選択技の攻撃可能距離を表示</label>
   <label class="check"><input id="cinema-enabled" type="checkbox" checked>攻防演出を再生する</label>
-  <div id="sliders"></div><button id="reset-config" class="secondary">初期設定に戻す</button>
+  <label class="check">カード演出 <select id="card-mode"><option value="normal">通常</option><option value="fast">高速</option><option value="detail">詳細</option></select></label><div id="sliders"></div><button id="reset-config" class="secondary">初期設定に戻す</button>
   <p>調整は次の攻撃指示から判定へ反映。<br>演出OFFは同じ確定結果を即時反映します。<br>前の2レーン方式・コンボ入力は廃止しました。</p>
  </aside>
  <section id="portrait"><span>↻</span><h2>横画面で、森へ。</h2><p>iPhoneを横向きにしてください。</p></section><div id="fatal" hidden role="alert"></div>

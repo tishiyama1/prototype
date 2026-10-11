@@ -1,20 +1,12 @@
 {
-  "version": "2.0.0",
-  "verified_at": "2026-10-11T06:16:48.774658+00:00",
-  "public_url": "https://tishiyama1.github.io/prototype/forest-action/",
-  "functional_commit": "1966f94b85e7f831f2fc7b6e2340b05eb537efd8",
-  "logic_checks": 32,
-  "observer_policy_duel": "passed without HP or AI injection",
-  "pages_deployment": {
-    "run_id": 38117179957,
-    "conclusion": "success",
-    "url": "https://github.com/tishiyama1/prototype/actions/runs/38117179957"
-  },
-  "browser": {
-    "method": "Chromium WebGL via Playwright; PC and mobile executed separately",
-    "pc_checks": [
+  "version": "3.0.0",
+  "sourceBaseline": "7f3a0cf150072486bf350e85f60ef329b6638fd7",
+  "logicChecks": 43,
+  "unchangedBalanceCases": 1080,
+  "local": {
+    "pc": [
       {
-        "name": "PC: WebGL起動 / 2.0.0"
+        "name": "PC: WebGL起動 / 3.0.0"
       },
       {
         "name": "Wでターゲットに接近"
@@ -32,13 +24,16 @@
         "name": "1/2/3で技選択"
       },
       {
+        "name": "4枚の評価カードと総合判定"
+      },
+      {
         "name": "攻防演出中の一時停止"
       },
       {
         "name": "演出中の敵AI・HP・通常時計停止"
       },
       {
-        "name": "攻防時の寄り・通常視点への復帰"
+        "name": "俯瞰視点を維持・通常視点への復帰"
       },
       {
         "name": "確定結果の反映・通常進行への復帰",
@@ -58,12 +53,27 @@
         "name": "リザルトから即再戦"
       }
     ],
-    "mobile_checks": [
+    "mobile": [
       {
         "name": "iPhone横画面相当UI 844×390"
       },
       {
         "name": "スティック長押し＋攻撃の複数指入力・独立解除"
+      },
+      {
+        "name": "カード演出中の横画面リサイズ・確定結果維持"
+      },
+      {
+        "name": "カードのタップ短縮・結果を一度だけ反映"
+      },
+      {
+        "name": "再戦でカードと判定履歴を消去"
+      },
+      {
+        "name": "高速カードモード"
+      },
+      {
+        "name": "詳細カードモード・判定理由表示"
       },
       {
         "name": "フィールドの上スワイプが急接近 / 攻撃と分離"
@@ -87,130 +97,10 @@
         "name": "JavaScript・通信・WebGLエラーなし"
       }
     ],
-    "total_checks": 23,
-    "page_errors": [],
-    "physical_iPhone_Safari": "not tested"
+    "errors": []
   },
-  "published_files": [
-    {
-      "path": "forest-action/index.html",
-      "status": 200,
-      "match": true,
-      "sha256": "561772d5492f20756903a71722bf4a4128980cdcee732c8594ac840b59444150"
-    },
-    {
-      "path": "forest-action/js/main.js",
-      "status": 200,
-      "match": true,
-      "sha256": "70baddcef7600f6c6227fbc640ee8d06a360c37ebc4990316e646a7c954ffeb6"
-    },
-    {
-      "path": "forest-action/js/target.js",
-      "status": 200,
-      "match": true,
-      "sha256": "1027cf90c2816700c46ae9292f346c3445a5b77512d9fdafde876af551cc1079"
-    },
-    {
-      "path": "forest-action/js/combat.js",
-      "status": 200,
-      "match": true,
-      "sha256": "99d8727e00caff07bdf6e692ec082729e967733954515a0afdcf2dc917c8a860"
-    },
-    {
-      "path": "forest-action/style.css",
-      "status": 200,
-      "match": true,
-      "sha256": "e4474b3a9487cbc7b3d30b4f3ef42064f7da8ce55e182d125b980515f941e7eb"
-    },
-    {
-      "path": "chigai.html",
-      "status": 200,
-      "match": true,
-      "sha256": "088bf3a6a0b2de7c1b79be94faa529143a7f714a90d126d0e78616c30fb15dbd"
-    },
-    {
-      "path": "bingo.html",
-      "status": 200,
-      "match": true,
-      "sha256": "550d724b36a1f7f3827fb7620af3b90dfd7f780f462ac235272005d0f6c959df"
-    },
-    {
-      "path": "karesansui.html",
-      "status": 200,
-      "match": true,
-      "sha256": "396a3abaa85c93af86e281ba1969bc62a41cbea6eb449a1e94f20fd9b62f7ee4"
-    },
-    {
-      "path": "rakujan.html",
-      "status": 200,
-      "match": true,
-      "sha256": "627c76a71a15f37d5e3eb6377d95f408535238e319703b886a1f065128794023"
-    },
-    {
-      "path": "mebae.html",
-      "status": 200,
-      "match": true,
-      "sha256": "358a152daf1059496ce89eaea83a641cb6850ad6265b111d74a25ae9950cf22d"
-    },
-    {
-      "path": "engi.html",
-      "status": 200,
-      "match": true,
-      "sha256": "8516a39c598e6d2b5540bea4b93c0b62644dc8192af4f7ba9b80fa93bb777c32"
-    },
-    {
-      "path": "kata.html",
-      "status": 200,
-      "match": true,
-      "sha256": "e04703a3387e8fa96b7e3fb400c0a2b1887d7ed8d89aac3aad7f4129d0ca7308"
-    },
-    {
-      "path": "abyss.html",
-      "status": 200,
-      "match": true,
-      "sha256": "9b2eb49d364b5e5e16ff6c6bce237f79069dbeaccdd6f54aed875a240701e759"
-    },
-    {
-      "path": "galaxy.html",
-      "status": 200,
-      "match": true,
-      "sha256": "83375e98d8ff4c1647e27d205a6a2a3b6225e001fd5ad1580039db9af3f2366b"
-    },
-    {
-      "path": "doubutsu.html",
-      "status": 200,
-      "match": true,
-      "sha256": "3f2aa3b7274237fd683e1aa5f07accee4c2c4d6e87b7a2e8208ad8604fd86b58"
-    },
-    {
-      "path": "snake.html",
-      "status": 200,
-      "match": true,
-      "sha256": "1f93a45722b591439cba69f24c2a06705a614a2d5f2a88bc9562ec2b7ae4138c"
-    },
-    {
-      "path": "hakaba.html",
-      "status": 200,
-      "match": true,
-      "sha256": "0b1a92ccb68ceb8a96ec2f3cc709ec492e1cc13170bd8d8f7554fcc6e2a792fc"
-    },
-    {
-      "path": "hyoryu.html",
-      "status": 200,
-      "match": true,
-      "sha256": "adc319d19b3eb639c5723dc962ce51bfe86d9d83bc620a6bad70ddd74d747c45"
-    },
-    {
-      "path": "mahjong.html",
-      "status": 200,
-      "match": true,
-      "sha256": "9f5ece6751a96e1dbb8ba0eacf91c000e7688dab137be2a4e8732a01b1b9c778"
-    },
-    {
-      "path": "terra.html",
-      "status": 200,
-      "match": true,
-      "sha256": "f0c74929472ce73a883be2245226246e27ee378c703fb20976148f79f0c85af8"
-    }
-  ]
+  "public": {
+    "status": "awaiting-deployment-verification"
+  },
+  "physicalIPhoneSafari": "not-tested"
 }

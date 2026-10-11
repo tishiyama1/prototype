@@ -25,19 +25,20 @@ try {
  for(const id of ['start','retry','restart'])$(id).addEventListener('click',start);
  $('pause').addEventListener('click',pause);$('resume').addEventListener('click',()=>{if(portrait())return;game.status='playing';input.clear();input.enabled=true;accumulator=0;last=performance.now();ui.hideOverlay();audio.unlock();});
  $('sound').addEventListener('click',()=>{$('sound').textContent=audio.toggle()?'音 ON':'音 OFF';if(game.status==='playing')audio.unlock();});
- window.addEventListener('keydown',e=>{if(e.code==='Escape')pause();});window.addEventListener('blur',pause);document.addEventListener('visibilitychange',()=>{if(document.hidden)pause();last=performance.now();accumulator=0;});window.addEventListener('resize',resize);
+ const skip=()=>{if(game.skipPresentation()){input.clear();}};
+ $('card-phase').addEventListener('pointerdown',e=>{e.preventDefault();skip();});
+ window.addEventListener('keydown',e=>{if(e.code==='Escape')pause();if(e.code==='Space'&&game.cinematic){e.preventDefault();skip();}});window.addEventListener('blur',pause);document.addEventListener('visibilitychange',()=>{if(document.hidden)pause();last=performance.now();accumulator=0;});window.addEventListener('resize',resize);
  canvas.addEventListener('webglcontextlost',e=>{e.preventDefault();contextLost=true;pause();fatal('描画が停止しました。ページを再読み込みしてください。');});
  resize();camera.reset();ui.ready();
  function events(){for(const event of game.events){
    if(event.type==='attack')audio.play('swing');
    if(event.type==='impact'){
     const r=event.result,view=poses(game);effects.swing(view.player,r.moveId);
-    if(r.hit){effects.burst(view.enemy.x,view.enemy.z);camera.shake=r.moveId==='heavy'?.6:.28;audio.play('hit',r.moveId==='heavy');ui.showOutcome(r);}
-    else if(r.outcome==='guarded'){effects.burst((view.player.x+view.enemy.x)/2,(view.player.z+view.enemy.z)/2,'guarded');audio.tone(900,1800,.13,.3,'square');ui.showOutcome(r);}
-    else if(r.outcome==='interrupted'){effects.burst(view.player.x,view.player.z,'hurt');audio.play('hurt');ui.showOutcome(r);}
-    else {audio.play('dodge');ui.showOutcome(r);}
+    if(r.hit){effects.burst(view.enemy.x,view.enemy.z);camera.shake=r.moveId==='heavy'?.6:.28;audio.play('hit',r.moveId==='heavy');}
+    else if(r.outcome==='guarded'){effects.burst((view.player.x+view.enemy.x)/2,(view.player.z+view.enemy.z)/2,'guarded');audio.tone(900,1800,.13,.3,'square');}
+    else if(r.outcome==='interrupted'){effects.burst(view.player.x,view.player.z,'hurt');audio.play('hurt');}
+    else {audio.play('dodge');}
    }
-   if(event.type==='resolved')ui.showOutcome(event.result);
    if(event.type==='hurt'){effects.burst(event.x,event.z,'hurt');audio.play('hurt');}
    if(event.type==='dodge')audio.play('dodge');
    if(event.type==='result'){input.enabled=false;input.clear();ui.result();}

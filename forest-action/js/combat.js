@@ -24,12 +24,13 @@ export function resolve(s){
  const reach=distance(pEnd,predicted)<=m.range+.18;
  const relativeVelocity=e.velocity.x*(-dir.z)+e.velocity.z*dir.x;
  const lateral=Math.abs(relativeVelocity)*travel;
+ let guardBroken=false;
  let outcome='hit',why='踏み込み後の間合いに捉えた',damage=m.damage,playerDamage=0;
  if(danger&&arrival+r.interceptGrace<t){outcome='interrupted';why=`敵の${e.kind==='rush'?'突進':'攻撃'}が先着（${arrival.toFixed(2)}秒 < 発生${t.toFixed(2)}秒）`;playerDamage=e.kind==='heavy'?20:e.kind==='rush'?16:12;}
  else if(!reach){outcome='whiff';why=`射程外：予測距離${pd.toFixed(1)} > 間合い${m.range.toFixed(1)}＋踏み込み${m.step.toFixed(1)}`;}
  else if((e.state==='orbit'||lateral>r.lateralTolerance)&&s.moveId==='thrust'&&lateral>r.lateralTolerance){outcome='evaded';why=`横移動${lateral.toFixed(2)}が突きの許容幅${r.lateralTolerance.toFixed(2)}を超える`;}
  else if(e.state==='guard'&&e.remaining>=t&&front){
-  if(s.moveId==='heavy'&&distance(pEnd,predicted)<=m.range*r.guardBreak+1e-8){why='防御中の正面を、強打の有効間合いで崩した';}
+  if(s.moveId==='heavy'&&distance(pEnd,predicted)<=m.range*r.guardBreak+1e-8){guardBroken=true;why='防御中の正面を、強打の有効間合いで崩した';}
   else {outcome='guarded';why='正面の防御が発生時まで持続する';}
  }
  else if(vulnerable){why=`敵が${e.state==='recovery'?'硬直':e.state==='stagger'?'体勢崩れ':'被弾'}中（残り${e.remaining.toFixed(2)}秒 ≥ 発生${t.toFixed(2)}秒）`;}
@@ -50,5 +51,5 @@ export function resolve(s){
  }else if(outcome==='hit'||outcome==='intercept')eEnd=constrain({x:predicted.x+dir.x*(s.moveId==='heavy'?.6:.22),z:predicted.z+dir.z*(s.moveId==='heavy'?.6:.22)});
  else if(outcome==='interrupted'){pEnd=constrain({x:p.x-dir.x*.45,z:p.z-dir.z*.45});eEnd=constrain({x:p.x+dir.x*1.0,z:p.z+dir.z*1.0});}
  separate(pEnd,eEnd);
- return Object.freeze({outcome,reason:`${m.name}：${why}`,damage,playerDamage,step:actualStep,angle,distance:d,predictedDistance:pd,playerEnd:Object.freeze(pEnd),enemyEnd:Object.freeze(eEnd),moveId:s.moveId,move:Object.freeze({...m}),duration:m.duration,hit:['hit','intercept'].includes(outcome),snapshot:s});
+ return Object.freeze({outcome,reason:`${m.name}：${why}`,damage,playerDamage,step:actualStep,angle,distance:d,predictedDistance:pd,playerEnd:Object.freeze(pEnd),enemyEnd:Object.freeze(eEnd),moveId:s.moveId,move:Object.freeze({...m}),duration:m.duration,hit:['hit','intercept'].includes(outcome),snapshot:s,evidence:Object.freeze({reach,front,vulnerable,lateral,arrival,danger,guardBroken,contactDistance:distance(constrain({x:p.x+dir.x*step,z:p.z+dir.z*step}),predicted)})});
 }
