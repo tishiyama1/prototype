@@ -1,76 +1,18 @@
-import { config, COMBO, laneZ, clamp, approach, smooth, STAGE_END } from './config.js';
+import {config,clamp} from './config.js';
+import {relativeMove,distance} from './target.js';
 export class Player {
-  constructor() {
-    this.x = 2; this.z = laneZ(0); this.lane = 0; this.facing = 1; this.vx = 0;
-    this.hp = 100; this.state = 'idle'; this.time = 0; this.invulnerable = 0;
-    this.dodgeCooldown = 0; this.attack = null; this.transition = null;
-    this.buffer = 0; this.comboCount = 0; this.walk = 0; this.damageTaken = 0;
-  }
-  setState(state) { this.state = state; this.time = 0; }
-  changeLane(lane) {
-    if (lane === this.lane || !['idle','run'].includes(this.state)) return false;
-    this.transition = { from: this.lane, to: lane, duration: config.laneTime };
-    this.setState('lane'); return true;
-  }
-  startAttack(index = 0) {
-    const c = COMBO[index];
-    this.attack = { index, hits: new Set(), windup: c.windup / config.attackSpeed,
-      active: c.active / config.attackSpeed, recovery: c.recovery / config.attackSpeed,
-      range: config.attackRange, facing: this.facing, ...{damage:c.damage,knockback:c.knockback} };
-    this.buffer = 0; this.comboCount = index + 1; this.setState('attack');
-  }
-  get activeAttack() { const a = this.attack; return this.state === 'attack' && this.time >= a.windup && this.time < a.windup + a.active; }
-  get invincible() { return this.invulnerable > 0 || (this.state === 'dodge' && this.time < this.dodgeInvincibility); }
-  update(dt, input) {
-    this.invulnerable = Math.max(0,this.invulnerable-dt);
-    this.dodgeCooldown = Math.max(0,this.dodgeCooldown-dt);
-    this.buffer = Math.max(0,this.buffer-dt);
-    if (this.state === 'dead') { this.time += dt; return; }
-    const dir = Number(!!input.right) - Number(!!input.left);
-    if (input.attack) this.buffer = .22;
-    // A single destination is latched. Key repeat/held touch never toggles lanes.
-    if (input.back) this.changeLane(1);
-    else if (input.front) this.changeLane(0);
-    if (input.dodge && this.dodgeCooldown === 0 && ['idle','run','attack'].includes(this.state)) {
-      this.facing = dir || this.facing; this.dodgeDir = this.facing;
-      this.dodgeSpeed = config.dodgeDistance / .22;
-      this.dodgeInvincibility = config.invincibility;
-      this.dodgeCooldown = .64; this.attack = null; this.buffer = 0; this.setState('dodge');
-    }
-    if (['idle','run'].includes(this.state) && this.buffer > 0) this.startAttack();
-    this.time += dt;
-    if (this.state === 'attack') {
-      const a = this.attack;
-      this.vx = approach(this.vx, dir * config.speed * .18, config.deceleration * dt);
-      if (this.time >= a.windup + a.active + a.recovery) {
-        if (this.buffer > 0 && a.index < 2) this.startAttack(a.index + 1);
-        else { this.attack = null; this.comboCount = 0; this.setState('idle'); }
-      }
-    } else if (this.state === 'dodge') {
-      this.vx = this.time < .22 ? this.dodgeDir * this.dodgeSpeed : 0;
-      if (this.time >= .30) this.setState('idle');
-    } else if (this.state === 'hurt') {
-      this.vx = approach(this.vx, 0, 18 * dt);
-      if (this.time >= .22) this.setState('idle');
-    } else {
-      this.vx = approach(this.vx, dir * config.speed, (dir ? config.acceleration : config.deceleration) * dt);
-      if (dir) this.facing = dir;
-      if (this.state === 'lane') {
-        const tr = this.transition, t = clamp(this.time / tr.duration,0,1);
-        this.z = laneZ(tr.from) + (laneZ(tr.to)-laneZ(tr.from))*smooth(t);
-        if (t === 1) { this.lane = tr.to; this.transition = null; this.setState(dir ? 'run' : 'idle'); }
-      } else this.state = dir ? 'run' : 'idle';
-    }
-    this.x = clamp(this.x + this.vx * dt, .7, STAGE_END + .5);
-    this.walk += Math.abs(this.vx) * dt * 2.6;
-    if (this.state !== 'lane') this.z = laneZ(this.lane);
-  }
-  hurt(damage, direction) {
-    if (this.invincible || this.hp <= 0) return false;
-    this.hp = Math.max(0,this.hp-damage); this.damageTaken += damage;
-    this.invulnerable = .85; this.vx = direction * 4.5;
-    // Interrupted lane travel returns to the still-authoritative source lane.
-    this.transition = null; this.z = laneZ(this.lane); this.attack = null; this.buffer = 0;
-    this.setState(this.hp === 0 ? 'dead' : 'hurt'); return true;
-  }
+ constructor(){this.x=-3.6;this.z=2;this.hp=100;this.maxHP=100;this.yaw=0;this.state='idle';this.time=0;this.walk=0;this.cooldown=0;this.invulnerable=0;this.damageTaken=0;this.dash=null;this.attackCooldown=0;}
+ get invincible(){return !!this.dash&&this.dash.time<config.invincibility;}
+ update(dt,input,target){
+  this.cooldown=Math.max(0,this.cooldown-dt);this.attackCooldown=Math.max(0,this.attackCooldown-dt);this.invulnerable=Math.max(0,this.invulnerable-dt);this.time+=dt;
+  if(this.hp<=0){this.state='dead';return;}
+  if(this.state==='hurt'){if(this.time<.24)return;this.state='idle';}
+  let radial=input.radial||0,orbit=input.orbit||0;const magnitude=Math.hypot(radial,orbit);if(magnitude>1){radial/=magnitude;orbit/=magnitude;}
+  if(input.dash&&this.cooldown<=0){const d=input.dash,n=Math.hypot(d.radial,d.orbit);if(n>.01){this.dash={time:0,radial:d.radial/n,orbit:d.orbit/n};this.cooldown=config.dashCooldown;this.state='dash';this.time=0;}}
+  const x=this.x,z=this.z;
+  if(this.dash){const d=this.dash,previous=clamp(d.time/.24,0,1);d.time+=dt;const next=clamp(d.time/.24,0,1),delta=(Math.sin(next*Math.PI/2)-Math.sin(previous*Math.PI/2))*config.dashDistance;relativeMove(this,target,d.radial,d.orbit,delta,delta);this.state='dash';if(next>=1){this.dash=null;this.state='idle';this.time=0;}}
+  else {relativeMove(this,target,radial,orbit,config.speed*dt,config.orbitSpeed*dt);this.state=magnitude>.02?'move':'idle';}
+  this.walk+=Math.hypot(this.x-x,this.z-z)*4.7;
+ }
+ damage(amount){if(this.hp<=0||this.invincible||this.invulnerable>0)return false;const d=Math.min(this.hp,amount);this.hp-=d;this.damageTaken+=d;this.state=this.hp>0?'hurt':'dead';this.time=0;this.dash=null;this.invulnerable=.42;return true;}
 }

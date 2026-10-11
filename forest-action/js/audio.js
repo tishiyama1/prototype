@@ -9,6 +9,6 @@ export class AudioEngine {
     const c=this.context,t=c.currentTime,o=c.createOscillator(),g=c.createGain();o.type=type;o.frequency.setValueAtTime(from,t);o.frequency.exponentialRampToValueAtTime(Math.max(20,to),t+duration);g.gain.setValueAtTime(volume,t);g.gain.exponentialRampToValueAtTime(.001,t+duration);o.connect(g).connect(this.master);o.start(t);o.stop(t+duration);
   }
   noise(duration=.10){if(!this.context||this.context.state!=='running'||!this.enabled)return;const c=this.context,t=c.currentTime,n=c.createBufferSource(),g=c.createGain(),f=c.createBiquadFilter();n.buffer=this.noiseBuffer;f.type='highpass';f.frequency.value=1500;g.gain.setValueAtTime(.22,t);g.gain.exponentialRampToValueAtTime(.001,t+duration);n.connect(f).connect(g).connect(this.master);n.start(t);n.stop(t+duration);}
-  play(type,finish=false){if(type==='swing'){this.noise(.12);}if(type==='hit'){this.tone(finish?140:210,50,.13,finish ? .6:.4,'triangle');this.noise(.065);}if(type==='hurt')this.tone(95,35,.23,.5,'sawtooth');if(type==='dodge')this.noise(.18);if(type==='lane')this.tone(520,700,.09,.08,'sine');}
+  play(type,finish=false){if(type==='swing'){this.noise(.12);}if(type==='hit'){this.tone(finish?140:210,50,.13,finish ? .6:.4,'triangle');this.noise(.065);}if(type==='hurt')this.tone(95,35,.23,.5,'sawtooth');if(type==='dodge')this.noise(.18);}
   update(dt){this.clock+=dt;if(this.clock>7){this.clock=0;this.tone(1400,2000,.11,.045,'sine');}}
 }

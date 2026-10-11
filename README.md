@@ -4,7 +4,7 @@
 
 | ファイル | 内容 |
 |---|---|
-| [`forest-action/`](forest-action/) | Forest Action ― 森の2レーンを行き来し、剣の3連撃・回避・突進への反撃を試す2.5Dアクション（[説明](forest-action/README.md)） |
+| [`forest-action/`](forest-action/) | Forest Action ― 楕円形の森で間合いを読み、3つの技で攻防を指示する1対1の3D戦術アクション（[説明](forest-action/README.md)） |
 | [`index.html`](index.html) | 各作品への入口となるメニューページ(GitHub Pagesのトップ) |
 | [`hakaba.html`](hakaba.html) | 勇者の墓場 ― 死んだ勇者の遺品を回収して売り、30日で借金10万Gを返すドット絵ゲーム。戦えないので魔物は避け、水と食料（＝探索時間）と5階ごとの聖堂をにらみながら潜る（仕様書：[`hakaba.md`](hakaba.md)） |
 | [`bingo.html`](bingo.html) | フィールドビンゴ ― 5×5のお題を外で探すビンゴ。テーマ別の自動生成と手動セレクト、6文字のコードで同じ盤面を共有、カードは5種のきせかえつき |

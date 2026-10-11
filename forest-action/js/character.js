@@ -31,44 +31,50 @@ export class CharacterView {
     this.weapon=new THREE.Group();this.weapon.position.set(.05,-.33,.03);this.arms[1].add(this.weapon);
     this.weapon.add(part(geo.box,m.leather,[.08,.23,.08],0,.03));
     this.weapon.add(part(geo.box,m.gold,[.32,.065,.10],0,.16));
-    this.weapon.add(part(geo.box,enemy?m.leather:m.metal,[enemy ? .14:.10,enemy ? .55:.78,enemy ? .13:.045],0,enemy ? .45:.59));
-    const tip=part(geo.cone,enemy?m.leather:m.metal,[.35,.45,.18],0,.99);this.weapon.add(tip);
+    this.weapon.add(part(geo.box,m.metal,[enemy ? .14:.10,enemy ? .55:.78,enemy ? .13:.045],0,enemy ? .45:.59));
+    const tip=part(geo.cone,m.metal,[.35,.45,.18],0,enemy?.76:.99);this.weapon.add(tip);
     const ringGeo=new THREE.RingGeometry(.29,.36,32);const ringMat=new THREE.MeshBasicMaterial({color:enemy?'#db8868':'#bde4c4',transparent:true,opacity:.65,side:THREE.DoubleSide,depthWrite:false});
     this.ring=new THREE.Mesh(ringGeo,ringMat);this.ring.rotation.x=-Math.PI/2;this.ring.position.y=.025;this.root.add(this.ring);
     if(enemy){this.hp=new THREE.Mesh(geo.box,new THREE.MeshBasicMaterial({color:'#e6c271'}));this.hp.position.set(0,1.8,0);this.hp.scale.set(.65,.065,.04);this.root.add(this.hp);}
   }
   destroy(){this.root.removeFromParent();this.ring.geometry.dispose();this.ring.material.dispose();if(this.hp)this.hp.material.dispose();}
+
+
   update(a,worldTime) {
-    this.root.position.set(a.x,0,a.z);this.body.rotation.set(0,a.facing===1?0:Math.PI,0);
-    this.body.position.set(0,0,0);this.body.scale.setScalar(this.enemy ? .95:1.08);
-    this.root.visible=!(a.state==='dead' && a.time>1.0);
-    const move=['run','approach','lane'].includes(a.state) || (a.state==='strike' && a.kind==='rush');
-    const stride=move?Math.sin(a.walk)*.68:Math.sin(worldTime*2)*.025;
-    for(let i=0;i<2;i++){this.legs[i].rotation.z=(i?1:-1)*stride;this.arms[i].rotation.set(0,0,(i?-1:1)*stride*.6);}
-    this.body.position.y=move?Math.abs(Math.sin(a.walk))*.045:Math.sin(worldTime*2.2)*.018;
-    this.weapon.rotation.z=-.32;this.ring.material.opacity=a.invincible ? .28:.7;
+    this.root.position.set(a.x,0,a.z);this.body.rotation.set(0,a.yaw||0,0);
+    this.body.position.set(0,0,0);this.body.scale.setScalar(this.enemy?.95:1.08);this.body.visible=true;
+    this.root.visible=true;this.weapon.scale.set(1,1,1);
+    const move=['move','approach','orbit','retreat','dash'].includes(a.state);
+    const stride=move?Math.sin(a.walk)*.64:Math.sin(worldTime*2)*.025;
+    for(let i=0;i<2;i++){this.legs[i].rotation.set(0,0,(i?1:-1)*stride);this.arms[i].rotation.set(0,0,(i?-1:1)*stride*.5);}
+    this.body.position.y=move?Math.abs(Math.sin(a.walk))*.045:Math.sin(worldTime*2)*.018;
+    this.weapon.rotation.set(0,0,-.32);this.ring.material.opacity=a.invincible?.35:.7;
     if(this.scarf)this.scarf.rotation.z=-.4+Math.sin(worldTime*4)*.09+(move?-.3:0);
-    if(a.state==='attack') {
-      const attack=a.attack, reverse=attack.index===1;
-      const t=clamp((a.time-attack.windup)/attack.active,0,1);
-      const wind=clamp(a.time/attack.windup,0,1);
-      const recovery=clamp((a.time-attack.windup-attack.active)/attack.recovery,0,1);
-      const start=reverse?2.2:.8, end=reverse ? .8:2.3;
-      this.arms[1].rotation.z=a.time<attack.windup ? (reverse?2.7:-.65)+(start-(reverse?2.7:-.65))*wind : (start+(end-start)*t)*(1-recovery);
-      this.weapon.rotation.z=Math.PI*(1-recovery)-.32*recovery;
-      this.body.position.x=.15*Math.sin(t*Math.PI);
-      this.body.rotation.z=-.12*Math.sin(t*Math.PI);
+    if(a.state==='cinematic'){
+      const t=a.phase,wind=clamp((t-.10)/.22,0,1),strike=clamp((t-.34)/.20,0,1),follow=clamp((t-.54)/.16,0,1),release=clamp((t-.70)/.25,0,1);
+      this.weapon.rotation.z=Math.PI*(1-release)-.32*release;
+      if(a.moveId==='thrust'){
+        this.arms[1].rotation.z=(.55+(Math.PI/2-.55)*strike)*(1-release);
+        this.weapon.scale.y=1+strike*.55*(1-release);this.body.position.x=.20*strike*(1-release);this.body.rotation.z=-.13*strike;
+      }else{
+        this.arms[1].rotation.z=(a.moveId==='heavy'?-.3+wind*.7+strike*1.17+follow*.65:-.5+wind*1.25+strike*.82+follow*.75)*(1-release);
+        this.arms[0].rotation.z=a.moveId==='heavy'?this.arms[1].rotation.z*.7:wind*.4;
+        this.body.rotation.x=Math.sin(strike*Math.PI)*(a.moveId==='heavy'?.35:.22);
+        this.body.rotation.z=-Math.sin(strike*Math.PI)*(a.moveId==='heavy'?.25:.12);
+      }
+      this.legs[0].rotation.z=-.45*Math.sin(strike*Math.PI);this.legs[1].rotation.z=.4*Math.sin(strike*Math.PI);
     }
-    if(a.state==='dodge') {this.body.position.y=.05;this.body.rotation.z=-a.facing*.38;this.arms[1].rotation.z=1.1;this.legs[0].rotation.z=-.9;this.legs[1].rotation.z=.8;}
-    if(a.state==='lane') {this.body.rotation.x=Math.sin(a.time*Math.PI/.3)*.1;}
-    if(a.state==='hurt') {this.body.rotation.z=.3*Math.sin(a.time*16);this.body.position.y=.03;}
-    if(a.state==='dead'){this.body.rotation.z=-a.facing*Math.min(1.55,a.time*4);this.body.position.y=-.1;this.ring.visible=false;}
+    if(a.state==='dash'||a.state==='evade'){this.body.position.y=.04;this.body.rotation.z=-.35;this.arms[1].rotation.z=1.0;this.legs[0].rotation.z=-.8;this.legs[1].rotation.z=.8;this.ring.material.opacity=.25;}
+    if(a.state==='guard'||a.state==='wary'){this.arms[1].rotation.z=a.state==='guard'?1.1:.6;this.weapon.rotation.z=Math.PI;this.arms[0].rotation.z=.6;this.legs[0].rotation.z=-.15;this.body.rotation.z=.10;}
+    if(a.state==='windup'){this.arms[1].rotation.z=2.7;this.weapon.rotation.z=Math.PI;this.arms[0].rotation.z=1.2;this.body.rotation.z=-.2;}
+    if(a.state==='attack'||a.state==='counter'){this.arms[1].rotation.z=1.55;this.weapon.rotation.z=Math.PI;this.body.position.x=.15;this.body.rotation.z=-.2;}
+    if(a.state==='recovery'){this.arms[1].rotation.z=.5;this.body.rotation.z=.2;this.body.position.y=-.06;}
+    if(a.state==='hurt'){this.body.rotation.z=.28*Math.sin(a.time*18);this.body.position.y=.02;this.arms[1].rotation.z=-.45;}
+    if(a.state==='stagger'){this.body.rotation.z=.5;this.body.position.y=-.23;this.legs[0].rotation.z=.7;this.arms[1].rotation.z=-.7;}
+    if(a.state==='dead'){this.body.rotation.z=-Math.min(1.55,a.time*4);this.body.position.y=-.18;this.ring.visible=false;}
     else this.ring.visible=true;
-    if(a.state==='windup'){this.arms[1].rotation.z=2.1;this.body.rotation.z=-.15;this.ring.material.color.set('#ef7452');this.ring.scale.setScalar(1+Math.sin(worldTime*22)*.1);}
-    else {this.ring.material.color.set(this.enemy?'#d8aa73':'#d0ead9');this.ring.scale.setScalar(1);}
-    if(a.state==='strike'){this.arms[1].rotation.z=-1.4;this.body.rotation.z=-.27;}
-    if(this.hp){this.hp.visible=a.hp>0 && a.hp<64;this.hp.scale.x=.65*a.hp/64;}
-    // Damage flashes without modifying materials shared by other characters.
-    this.body.visible = !a.invulnerable || a.state==='dead' || Math.floor(a.invulnerable*24)%2===0;
+    this.ring.material.color.set(a.state==='windup'?'#ff7049':a.state==='guard'?'#a8caff':a.state==='recovery'||a.state==='stagger'?'#ffe283':this.enemy?'#d8aa73':'#d0ead9');
+    this.ring.scale.setScalar(a.state==='windup'?1+Math.sin(worldTime*22)*.10:1);
+    if(this.hp){this.hp.visible=a.hp>0&&a.hp<a.maxHP;this.hp.scale.x=.65*a.hp/a.maxHP;}
   }
 }
