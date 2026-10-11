@@ -4,6 +4,7 @@ import {Game} from '../../forest-action/js/game.js';
 import {Enemy} from '../../forest-action/js/enemy.js';
 import {resolveCombat} from '../../forest-action/js/combat.js';
 import {config,DEFAULTS,FIXED_DT,laneZ} from '../../forest-action/js/config.js';
+import {formatTime} from '../../forest-action/js/ui.js';
 let checks=0;
 function check(name,fn){Object.assign(config,DEFAULTS);fn();checks++;console.log('PASS',name);}
 const steps=(p,n,input={})=>{for(let i=0;i<n;i++)p.update(FIXED_DT,i===0?input:{left:input.left,right:input.right});};
@@ -17,4 +18,5 @@ check('rush locks its lane/direction during telegraph; recovery provides punish 
 check('death interrupts attacks and retry resets all progress',()=>{const g=new Game();g.reset();g.player.startAttack();g.player.hurt(100,1);for(let i=0;i<110;i++)g.step(FIXED_DT,{});assert.equal(g.status,'dead');g.reset();assert.equal(g.player.hp,100);assert.equal(g.kills,0);assert.equal(g.elapsed,0);assert.equal(g.status,'playing');});
 check('goal requires all enemies, and clear result score is deterministic',()=>{const g=new Game();g.reset();g.player.x=66;g.step(FIXED_DT,{});assert.equal(g.status,'playing');g.enemies.forEach(e=>e.hp=0);g.kills=g.enemies.length;g.step(FIXED_DT,{});assert.equal(g.status,'clear');assert.equal(g.score,11500);});
 check('render frame partition does not alter fixed-step movement',()=>{function simulate(frames){const g=new Game();g.reset();g.enemies=[];let a=0;for(const dt of frames){a+=dt;while(a+1e-9>=FIXED_DT){g.step(FIXED_DT,{right:true});a-=FIXED_DT;}}return g.player.x;}assert(Math.abs(simulate(Array(60).fill(1/60))-simulate(Array(30).fill(1/30)))<1e-8);});
+check('time display carries rounded seconds into the next minute',()=>{assert.equal(formatTime(0),'0:00.0');assert.equal(formatTime(59.94),'0:59.9');assert.equal(formatTime(59.96),'1:00.0');assert.equal(formatTime(119.96),'2:00.0');});
 console.log(`${checks} checks passed`);

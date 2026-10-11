@@ -1,6 +1,6 @@
 import {config,DEFAULTS,STAGE_END,clamp} from './config.js';
 const $=id=>document.getElementById(id);
-export const formatTime=s=>`${Math.floor(s/60)}:${(s%60).toFixed(1).padStart(4,'0')}`;
+export const formatTime=s=>{const ticks=Math.max(0,Math.round(s*10));return `${Math.floor(ticks/600)}:${String(Math.floor(ticks/10)%60).padStart(2,'0')}.${ticks%10}`;};
 const sliders=[['speed','移動速度',2,10,.1],['acceleration','加速度',10,100,1],['deceleration','減速度',10,100,1],['attackSpeed','攻撃速度',.5,2,.05],['attackRange','攻撃範囲',1,3,.05],['hitstop','ヒットストップ (秒)',0,.12,.005],['dodgeDistance','回避距離',1,4,.1],['invincibility','回避無敵 (秒)',.05,.28,.01],['laneTime','レーン切替 (秒)',.1,.6,.01],['laneDistance','レーン間距離',1.7,4,.1],['pitch','カメラ俯角 (度)',15,40,1],['zoom','ズーム',.7,1.5,.05],['follow','カメラ追従',2,20,.5],['screenPosition','画面内の左右位置',.25,.65,.01]];
 export class UI {
   constructor(game) {
