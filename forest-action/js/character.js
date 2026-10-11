@@ -57,7 +57,13 @@ export class CharacterView {
         this.arms[1].rotation.z=(.55+(Math.PI/2-.55)*strike)*(1-release);
         this.weapon.scale.y=1+strike*.55*(1-release);this.body.position.x=.20*strike*(1-release);this.body.rotation.z=-.13*strike;
       }else{
-        this.arms[1].rotation.z=(a.moveId==='heavy'?-.3+wind*.7+strike*1.17+follow*.65:-.5+wind*1.25+strike*.82+follow*.75)*(1-release);
+        if(a.moveId==='heavy'){
+          this.arms[1].rotation.z=(2.7*wind-1.13*strike-.65*follow)*(1-release);
+          this.body.position.x=.15*strike*(1-release);
+        }else{
+          this.arms[1].rotation.z=(.55+1.02*wind)*(1-release);
+          this.arms[1].rotation.y=(-.85*wind+.85*strike+.75*follow)*(1-release);
+        }
         this.arms[0].rotation.z=a.moveId==='heavy'?this.arms[1].rotation.z*.7:wind*.4;
         this.body.rotation.x=Math.sin(strike*Math.PI)*(a.moveId==='heavy'?.35:.22);
         this.body.rotation.z=-Math.sin(strike*Math.PI)*(a.moveId==='heavy'?.25:.12);

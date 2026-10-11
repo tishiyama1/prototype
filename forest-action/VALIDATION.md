@@ -29,7 +29,7 @@ WebGLを有効にしたChromium / PlaywrightでPC 1280×720、モバイル844×3
 - タッチキャンセル、縦画面での案内と停止、横画面復帰
 - JavaScriptエラー・通信失敗の検出、画面の視覚確認
 
-公開URLでの最終確認結果は、公開後の確認欄へ追記します。
+公開URLへの実アクセスで、PC14件・モバイル9件、計23件の検証項目を通過しました。PCとモバイルは別実行です。記録は [validation.json](../tests/forest-action/validation.json) に保存しています。
 
 ## 検証の範囲と残る課題
 
@@ -41,4 +41,13 @@ WebGLを有効にしたChromium / PlaywrightでPC 1280×720、モバイル844×3
 
 ## 公開後の確認
 
-公開・起動検証後に記録します。
+検証日：2026-10-11（UTC）。
+
+- 公開URL https://tishiyama1.github.io/prototype/forest-action/ に実アクセスし、WebGL起動とバージョン2.0.0を確認。
+- 機能実装コミット [`1966f94`](https://github.com/tishiyama1/prototype/commit/1966f94b85e7f831f2fc7b6e2340b05eb537efd8)。[Pagesデプロイ](https://github.com/tishiyama1/prototype/actions/runs/38117179957) は成功。
+- 公開環境で実キー操作による敵撃破・結果・再戦を確認。最終試戦闘は攻撃8回、被ダメージ0。
+- 公開環境でスティック＋攻撃の複数指入力、フィールドスワイプ、キャンセル、技選択、調整パネルの指スクロール、縦画面停止・復帰を確認。
+- 通常時間の停止・再開、カメラの寄り・復帰、演出OFF、再戦初期化を確認。ページのJavaScriptエラーと通信失敗は検出されませんでした。
+- HTML・main.js・target.js・combat.js・CSSは公開ファイルとソースの一致を確認。
+- 他の15試作品は変更前と同じファイル内容で、各公開URLのHTTP 200とSHA-256一致を確認。ルートの紹介カードだけ新版の説明へ更新し、URL・Pages設定は維持。
+- 最終の斬撃・強打ポーズ調整は判定・時間管理を変更していません。指示時の確定と結果反映は同じです。
