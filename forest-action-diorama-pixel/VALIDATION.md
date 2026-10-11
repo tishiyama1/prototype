@@ -34,7 +34,25 @@ CPUで3Dを描くChromium/SwiftShaderの逐次計測：PC約4.6FPS、スマー�
 
 初回の詳細モード検査はソフトウェアGPUで15秒の待ち上限を超過。固定背景影の再利用などを導入し、検査側の上限を30秒へ変更して再検査しました。ゲームの演出時間・AI・入力は変更していません。
 
-公開URLへ反映後、公開環境の起動・操作・配信ファイル照合を追記します。現時点では公開完了を意味しません。
+2026-10-12、コミット`4979f71077a31512bba3a3015bbc6bd92b66717f`のPages実行[38184502257](https://github.com/tishiyama1/prototype/actions/runs/38184502257)がsuccess。公開版でPC15項目とモバイル14項目の合計29項目を確認しました。PCの実キーで8攻撃・被ダメージ0の撃破、リザルト、再戦。モバイルは複数指、スワイプ、キャンセル、カード、リサイズ、再戦、縦画面停止と復帰を確認。
+
+公開モバイル検査では撮影の30秒上限を一度超過。撮影だけをCSSサイズに変更し、撮影上限を60秒にしてモバイル14項目を再検査し、すべて通りました。PC15項目とモバイル14項目の記録は分けて検証した結果を統合しています。ゲームの描画解像度・戦闘時間・演出条件は変更していません。
+
+公開ファイル178点のHTTP 200とSHA-256一致を確認。うち既存142点は通常版・全面ピクセル版・ジオラマ版・他のコンテンツを含みます。MarkdownのPages変換と非公開の内部ファイルはバイト比較から除外しています。既存追跡ファイル154点はローカルで元のハッシュと一致。
+
+新版：https://tishiyama1.github.io/prototype/forest-action-diorama-pixel/
+
+改修前：https://tishiyama1.github.io/prototype/forest-action-diorama/
+
+比較：https://tishiyama1.github.io/prototype/forest-action-diorama-pixel/comparison.html
+
+公開環境の原画・景観検査18項目もすべてPASS。既存3版と新版のWebGL起動、同じ初期戦況・カメラの比較、アトラスの二値アルファ・最大21色・4方向・3技の違い、4体の独立した描画、頭上HPバー、48地点の遮蔽、静止画と復帰、844×390・667×375の画面内収まり、比較ページの4枚の画像を確認。
+
+公開環境の逐次描画計測：PC約4.3FPS（p95 550ms）、スマートフォン相当約3.7FPS（p95 717ms）、影OFF約3.8FPS（p95 683ms）。いずれもCPUのソフトウェアGPUであり、iPhoneの性能値ではありません。
+
+検査中のJavaScript・通信・WebGLエラー0。実機Safariは未検証。公開検査後の変更は検証記録、撮影用の検査設定、比較ページの説明だけで、ゲームのコード・素材は変更していません。
+
+生の記録は`tests/forest-action-diorama-pixel/tactical-public-qa.json`、`visual-public.json`、`public-files.json`に保存しています。
 
 ## 残っている課題
 
