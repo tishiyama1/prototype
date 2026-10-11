@@ -100,7 +100,332 @@
     "errors": []
   },
   "public": {
-    "status": "awaiting-deployment-verification"
+    "status": "verified",
+    "checkedAt": "2026-10-11T18:38:23.809143+09:00",
+    "codeCommit": "958b2e1812ca39cc9394b4d638e34d1f5bb57180",
+    "deployment": "https://github.com/tishiyama1/prototype/actions/runs/38128754371",
+    "url": "https://tishiyama1.github.io/prototype/forest-action/",
+    "checks": [
+      {
+        "name": "PC: WebGL起動 / 3.0.0"
+      },
+      {
+        "name": "Wでターゲットに接近"
+      },
+      {
+        "name": "Sでターゲットから離脱"
+      },
+      {
+        "name": "Dの円弧移動は半径を維持"
+      },
+      {
+        "name": "Shift＋Wで高速移動・クールダウン"
+      },
+      {
+        "name": "1/2/3で技選択"
+      },
+      {
+        "name": "4枚の評価カードと総合判定"
+      },
+      {
+        "name": "攻防演出中の一時停止"
+      },
+      {
+        "name": "演出中の敵AI・HP・通常時計停止"
+      },
+      {
+        "name": "俯瞰視点を維持・通常視点への復帰"
+      },
+      {
+        "name": "確定結果の反映・通常進行への復帰",
+        "detail": "whiff"
+      },
+      {
+        "name": "演出OFFでも結果を一度反映"
+      },
+      {
+        "name": "再戦でHP・集計・状態を初期化"
+      },
+      {
+        "name": "実キー操作による撃破・リザルト",
+        "detail": "8回 / 被ダメージ0"
+      },
+      {
+        "name": "リザルトから即再戦"
+      },
+      {
+        "name": "iPhone横画面相当UI 844×390"
+      },
+      {
+        "name": "スティック長押し＋攻撃の複数指入力・独立解除"
+      },
+      {
+        "name": "カード演出中の横画面リサイズ・確定結果維持"
+      },
+      {
+        "name": "カードのタップ短縮・結果を一度だけ反映"
+      },
+      {
+        "name": "再戦でカードと判定履歴を消去"
+      },
+      {
+        "name": "高速カードモード"
+      },
+      {
+        "name": "詳細カードモード・判定理由表示"
+      },
+      {
+        "name": "フィールドの上スワイプが急接近 / 攻撃と分離"
+      },
+      {
+        "name": "touchCancelで入力・押下状態解除"
+      },
+      {
+        "name": "タッチで技選択・選択状態表示"
+      },
+      {
+        "name": "調整パネルを指でスクロール / フィールド操作と分離"
+      },
+      {
+        "name": "縦画面案内・自動停止"
+      },
+      {
+        "name": "横画面への復帰・再開"
+      },
+      {
+        "name": "JavaScript・通信・WebGLエラーなし"
+      }
+    ],
+    "errors": [],
+    "fileVerification": {
+      "base": "https://tishiyama1.github.io/prototype/",
+      "files": [
+        {
+          "path": "index.html",
+          "status": 200,
+          "sha256": "641401ddaaa056535b2cb08062a1a28c79bcbef7d79ac30caa82ff75b3923a70",
+          "unchanged": true
+        },
+        {
+          "path": "chigai.html",
+          "status": 200,
+          "sha256": "088bf3a6a0b2de7c1b79be94faa529143a7f714a90d126d0e78616c30fb15dbd",
+          "unchanged": true
+        },
+        {
+          "path": "bingo.html",
+          "status": 200,
+          "sha256": "550d724b36a1f7f3827fb7620af3b90dfd7f780f462ac235272005d0f6c959df",
+          "unchanged": true
+        },
+        {
+          "path": "karesansui.html",
+          "status": 200,
+          "sha256": "396a3abaa85c93af86e281ba1969bc62a41cbea6eb449a1e94f20fd9b62f7ee4",
+          "unchanged": true
+        },
+        {
+          "path": "rakujan.html",
+          "status": 200,
+          "sha256": "627c76a71a15f37d5e3eb6377d95f408535238e319703b886a1f065128794023",
+          "unchanged": true
+        },
+        {
+          "path": "mebae.html",
+          "status": 200,
+          "sha256": "358a152daf1059496ce89eaea83a641cb6850ad6265b111d74a25ae9950cf22d",
+          "unchanged": true
+        },
+        {
+          "path": "engi.html",
+          "status": 200,
+          "sha256": "8516a39c598e6d2b5540bea4b93c0b62644dc8192af4f7ba9b80fa93bb777c32",
+          "unchanged": true
+        },
+        {
+          "path": "kata.html",
+          "status": 200,
+          "sha256": "e04703a3387e8fa96b7e3fb400c0a2b1887d7ed8d89aac3aad7f4129d0ca7308",
+          "unchanged": true
+        },
+        {
+          "path": "abyss.html",
+          "status": 200,
+          "sha256": "9b2eb49d364b5e5e16ff6c6bce237f79069dbeaccdd6f54aed875a240701e759",
+          "unchanged": true
+        },
+        {
+          "path": "galaxy.html",
+          "status": 200,
+          "sha256": "83375e98d8ff4c1647e27d205a6a2a3b6225e001fd5ad1580039db9af3f2366b",
+          "unchanged": true
+        },
+        {
+          "path": "doubutsu.html",
+          "status": 200,
+          "sha256": "3f2aa3b7274237fd683e1aa5f07accee4c2c4d6e87b7a2e8208ad8604fd86b58",
+          "unchanged": true
+        },
+        {
+          "path": "snake.html",
+          "status": 200,
+          "sha256": "1f93a45722b591439cba69f24c2a06705a614a2d5f2a88bc9562ec2b7ae4138c",
+          "unchanged": true
+        },
+        {
+          "path": "hakaba.html",
+          "status": 200,
+          "sha256": "0b1a92ccb68ceb8a96ec2f3cc709ec492e1cc13170bd8d8f7554fcc6e2a792fc",
+          "unchanged": true
+        },
+        {
+          "path": "hyoryu.html",
+          "status": 200,
+          "sha256": "adc319d19b3eb639c5723dc962ce51bfe86d9d83bc620a6bad70ddd74d747c45",
+          "unchanged": true
+        },
+        {
+          "path": "mahjong.html",
+          "status": 200,
+          "sha256": "9f5ece6751a96e1dbb8ba0eacf91c000e7688dab137be2a4e8732a01b1b9c778",
+          "unchanged": true
+        },
+        {
+          "path": "terra.html",
+          "status": 200,
+          "sha256": "f0c74929472ce73a883be2245226246e27ee378c703fb20976148f79f0c85af8",
+          "unchanged": true
+        },
+        {
+          "path": "forest-action/index.html",
+          "status": 200,
+          "sha256": "53ed8860209350adf89f6b98b25bd55c27a90fda7bdcec3caf0c0619dc86f77d",
+          "unchanged": false
+        },
+        {
+          "path": "forest-action/style.css",
+          "status": 200,
+          "sha256": "48231054bb589f9b8bb1c35adb2fbb4bbbd339a237f2201e2e1bee7d865c011a",
+          "unchanged": false
+        },
+        {
+          "path": "forest-action/media/card-phase-normal.png",
+          "status": 200,
+          "sha256": "b92cdef30731fa75615b6094d8ea37eab1f0f16e97c58d394956382cdf21d5f7",
+          "unchanged": false
+        },
+        {
+          "path": "forest-action/js/player.js",
+          "status": 200,
+          "sha256": "5ff08533bfab2f80b978aa447bf340685e73a5e40d935cc2d86c3a418aadde70",
+          "unchanged": false
+        },
+        {
+          "path": "forest-action/js/audio.js",
+          "status": 200,
+          "sha256": "9f963b011234bf04e59be09c7e6560519c04d43303e19d19ade04384bd74f316",
+          "unchanged": false
+        },
+        {
+          "path": "forest-action/js/attack-phase.js",
+          "status": 200,
+          "sha256": "8c7d939d6312765f61ca8462dbce2d32c738b93c0f5833f35883306200efa218",
+          "unchanged": false
+        },
+        {
+          "path": "forest-action/js/main.js",
+          "status": 200,
+          "sha256": "c3c753c33036972f836cd68808724821d6d4816807733e0f7a4e50ac1990fc77",
+          "unchanged": false
+        },
+        {
+          "path": "forest-action/js/enemy.js",
+          "status": 200,
+          "sha256": "360cc896fc560bfe46a15eea9f0c0c10ea58b76a4fc31227c01c2bc67a4ec38f",
+          "unchanged": false
+        },
+        {
+          "path": "forest-action/js/game.js",
+          "status": 200,
+          "sha256": "76aa1c74546d3366adef4dcae2dbd0822e324fc778e1aaff24789c2bd62626e4",
+          "unchanged": false
+        },
+        {
+          "path": "forest-action/js/combat.js",
+          "status": 200,
+          "sha256": "9145dc0a67bf528f579286a0edcfd93c6c77f4533fd62c34c0e1dd91ecde882a",
+          "unchanged": false
+        },
+        {
+          "path": "forest-action/js/effects.js",
+          "status": 200,
+          "sha256": "5fb4e0150fe9ba90071ce63ad1ce834eb41b73b1dcea79c711e25319fbdf6a6e",
+          "unchanged": false
+        },
+        {
+          "path": "forest-action/js/ui.js",
+          "status": 200,
+          "sha256": "a79fa194c5263beb9c34857f3855f690411320e4f3b6acc8797ac718c381883c",
+          "unchanged": false
+        },
+        {
+          "path": "forest-action/js/forest.js",
+          "status": 200,
+          "sha256": "88cdcc011cd42e508e5d915e6cc690f68d461e83a10d9cf1eccd43e5c81706d0",
+          "unchanged": false
+        },
+        {
+          "path": "forest-action/js/target.js",
+          "status": 200,
+          "sha256": "1027cf90c2816700c46ae9292f346c3445a5b77512d9fdafde876af551cc1079",
+          "unchanged": false
+        },
+        {
+          "path": "forest-action/js/input.js",
+          "status": 200,
+          "sha256": "b547baafe284d5ff1ad3cad08f33248b276e891100e57c2f9b5260f0a520f2d3",
+          "unchanged": false
+        },
+        {
+          "path": "forest-action/js/character.js",
+          "status": 200,
+          "sha256": "8178bef2967c63cd1400d3911c51826b8282e5dfb4d1c58c80238955acbc2a0e",
+          "unchanged": false
+        },
+        {
+          "path": "forest-action/js/camera.js",
+          "status": 200,
+          "sha256": "43b308ec676ffb17429b314b5f3d2f7bf4ff228657508ebb10ccba1fe0049f30",
+          "unchanged": false
+        },
+        {
+          "path": "forest-action/js/config.js",
+          "status": 200,
+          "sha256": "ef9674696629f09163a1b7cf298690ec63c04dee63a21731d5e6bececd6873fe",
+          "unchanged": false
+        },
+        {
+          "path": "forest-action/js/presentation.js",
+          "status": 200,
+          "sha256": "32ea429e8a0da6db7070337d4c899da3274abd0dab9385f339a3fbbcb9841b3f",
+          "unchanged": false
+        },
+        {
+          "path": "forest-action/js/cards.js",
+          "status": 200,
+          "sha256": "8e532d3739adcf8e8d033af3b2bafa31192bc1e556abb1bc0af217b8437df323",
+          "unchanged": false
+        },
+        {
+          "path": "forest-action/js/assessment.js",
+          "status": 200,
+          "sha256": "c28de779e6bc4a1f5dd3d3c170bfd1c7a5a143edc4af7acc1528e555d5bed041",
+          "unchanged": false
+        }
+      ],
+      "unchangedOtherGames": 15,
+      "unchangedHomepage": true
+    }
   },
   "physicalIPhoneSafari": "not-tested"
 }
