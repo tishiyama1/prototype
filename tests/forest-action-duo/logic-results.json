@@ -1,0 +1,5 @@
+{
+  "passed": 11,
+  "config": "default",
+  "description": "deterministic model tests; browser and device checks separate"
+}
