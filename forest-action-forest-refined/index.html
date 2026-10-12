@@ -1,0 +1,58 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
+<meta name="theme-color" content="#1c342c">
+<title>擬似3D背景 | Forest Action Layered — 忘れられた森の古道</title>
+<link rel="stylesheet" href="./style.css">
+<script type="importmap">{"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.180.0/build/three.module.js"}}</script>
+</head>
+<body>
+<main id="game-shell">
+ <canvas id="world" aria-label="森の1対1戦術アクション"></canvas><div class="vignette"></div>
+ <header id="hud">
+  <div class="identity"><span class="eyebrow">FOREST ACTION / FOREST</span><span class="subtitle">古道の剣戟</span></div>
+  <div class="health"><span>冒険者 <b id="hp-text">100</b></span><div class="hp-track"><i id="hp-fill"></i></div></div>
+  <div class="health enemy-health"><span>森の剣鬼 <b id="enemy-hp-text">120</b></span><div class="hp-track"><i id="enemy-hp-fill"></i></div></div>
+  <nav><button id="sound" class="small-button">音 ON</button><button id="pause" class="small-button" aria-label="一時停止">Ⅱ</button><button id="inspect" class="small-button">静止画</button><button id="debug-toggle" class="small-button">調整</button></nav>
+ </header>
+ <div id="observation"><span id="enemy-intent">警戒</span><span id="distance-label">間合い 5.9</span><span id="timer">0:00.0</span></div>
+ <section id="card-phase" class="card-phase" hidden aria-label="攻防の戦術評価"></section>
+ <section id="controls" aria-label="タッチ操作">
+  <div class="stick-wrap"><div id="joystick" role="application" aria-label="ターゲット相対移動"><span class="stick-up">接近</span><span class="stick-down">離脱</span><span class="stick-left">左回り</span><span class="stick-right">右回り</span><div id="stick-knob"></div></div><small>WASD / スティック</small></div>
+  <div id="swipe-hint">フィールドをスワイプで回避 <span id="dash-ready">READY</span><small>PC：Shift ＋ WASD</small></div>
+  <div class="actions">
+   <div class="moves" role="group" aria-label="攻撃技を選択"><button data-move="slash" class="selected" aria-pressed="true">斬撃<small>1</small></button><button data-move="thrust" aria-pressed="false">突き<small>2</small></button><button data-move="heavy" aria-pressed="false">強打<small>3</small></button></div>
+   <button id="attack" data-action="attack"><b id="attack-name">斬撃</b><span>攻撃指示 · J</span></button>
+   <span id="move-range">射程 2.7 / 威力 10</span>
+  </div>
+ </section>
+ <section id="overlay" class="overlay">
+  <div id="intro" class="panel">
+   <span class="eyebrow">3D FOREST / PIXEL CHARACTERS</span><h1>古道で、間合いを読む<span>FOREST ACTION HYBRID</span></h1>
+   <p>動きを観察し、技を選ぶ。<br>判断した瞬間、剣が応える。</p>
+   <div class="instructions"><span><b>W / S</b> 接近 / 離脱</span><span><b>A / D</b> 敵の周囲を回る</span><span><b>1 / 2 / 3</b> 技を選ぶ</span><span><b>J</b> 攻撃を指示</span></div>
+   <p class="tip">接近に斬撃。突進に突き。隙には強打。<br>スティック外の森をスワイプすると高速回避。<br>攻撃中は時間が止まり、戦況を4枚の札で読み解きます。<br>タップ / Space で演出を短縮できます。</p>
+   <button id="start" class="primary" disabled>森を準備しています…</button><button id="inspect-start" class="secondary">森を眺める</button><div class="version-links"><a href="../forest-action-layered/">調整前の森</a><a href="../forest-action-cave-refined/">調整後の洞窟</a><a href="./comparison.html">比較を見る</a></div>
+  </div>
+  <div id="result" class="panel" hidden><span class="eyebrow" id="result-eyebrow">DUEL COMPLETE</span><h2 id="result-title">判断が、届いた。</h2>
+   <div class="result-grid"><span>戦闘時間<b id="result-time"></b></span><span>被ダメージ<b id="result-damage"></b></span><span>攻撃回数<b id="result-attacks"></b></span><span>命中率<b id="result-accuracy"></b></span></div>
+   <div id="result-breakdown"></div><p class="tip">戦闘時間は攻防演出・一時停止を除きます。<br>命中率は「命中＋迎撃成功 / 攻撃指示数」です。</p>
+   <button id="retry" class="primary">もう一度、剣を交える</button><div class="version-links"><a href="../forest-action-layered/">調整前の森</a><a href="../forest-action-cave-refined/">調整後の洞窟</a><a href="./comparison.html">比較を見る</a></div>
+  </div>
+  <div id="pause-panel" class="panel" hidden><span class="eyebrow">PAUSED</span><h2>ひと呼吸。</h2><p>戦闘・攻防演出とも進行しません。</p><button id="resume" class="primary">続ける</button><button id="restart" class="secondary">最初から再戦</button></div>
+ </section>
+ <div id="inspect-actions" hidden><span>静止画 · 戦闘時間停止</span><a href="./comparison.html" target="_blank" rel="noopener">森・洞窟を比較</a><button id="inspect-resume">戦闘へ</button></div>
+ <aside id="debug-panel" hidden><div class="debug-header"><b>戦術・操作の調整</b><button id="debug-close" aria-label="調整画面を閉じる">×</button></div><div class="scenery-options"><b>森の描画</b><label class="check"><input id="scene-shadows" type="checkbox" checked>キャラクターの投影影</label><label class="check"><input id="scene-fog" type="checkbox" checked>遠景の霞色（焼き込み基準）</label><label class="check"><input id="scene-environment" type="checkbox" checked>木漏れ日・落ち葉・浮遊粒子</label><label class="check"><input id="scene-parallax" type="checkbox" checked>控えめな追加視差</label></div><output id="debug-status"></output>
+  <label class="check"><input id="range-display" type="checkbox" checked>選択技の攻撃可能距離を表示</label>
+  <label class="check"><input id="cinema-enabled" type="checkbox" checked>攻防演出を再生する</label>
+  <label class="check">カード演出 <select id="card-mode"><option value="normal">通常</option><option value="fast">高速</option><option value="detail">詳細</option></select></label><div id="sliders"></div><button id="reset-config" class="secondary">初期設定に戻す</button>
+  <p>調整は次の攻撃指示から判定へ反映。<br>演出OFFは同じ確定結果を即時反映します。<br>前の2レーン方式・コンボ入力は廃止しました。</p>
+ </aside>
+ <section id="portrait"><span>↻</span><h2>横画面で、森へ。</h2><p>iPhoneを横向きにしてください。</p></section><div id="fatal" hidden role="alert"></div>
+</main>
+<script type="module" src="./js/main.js"></script>
+<script>window.addEventListener('error',function(e){if(e.target&&e.target.tagName==='SCRIPT'){var f=document.getElementById('fatal');f.hidden=false;f.textContent='読み込みに失敗しました。通信環境を確認して再読み込みしてください。';}},true);</script>
+<noscript>このゲームにはJavaScriptが必要です。</noscript>
+</body></html>

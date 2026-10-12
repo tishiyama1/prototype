@@ -1,0 +1,4 @@
+import {readFileSync} from 'node:fs';import assert from 'node:assert/strict';
+for(const name of ['ground','far','rear','middle','left','right'])assert.deepEqual(readFileSync(new URL('../../forest-action-layered/media/'+name+'.webp',import.meta.url)),readFileSync(new URL('../../forest-action-forest-refined/media/'+name+'.webp',import.meta.url)));
+assert.deepEqual(readFileSync(new URL('../../forest-action-layered/media/layers.json',import.meta.url)),readFileSync(new URL('../../forest-action-forest-refined/media/layers.json',import.meta.url)));console.log('PASS six forest art layers and placement manifest unchanged');
+const a=JSON.parse(readFileSync(new URL('../../forest-action-cave/media/scene.json',import.meta.url))),b=JSON.parse(readFileSync(new URL('../../forest-action-cave-refined/media/scene.json',import.meta.url)));assert.deepEqual(a,b);console.log('PASS cave art uses unchanged plane dimensions, camera, positions and parallax');
