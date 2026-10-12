@@ -4,7 +4,7 @@ Independent comparison path: `/forest-action-card-impact/`. Base: the published 
 
 ## Play / preview
 - `index.html`: normal 1v1 combat. IMPACT OFF / NORMAL / OVER controls only the added card overlay. NORMAL is default.
-- `preview.html`: select slash / thrust / heavy, strength and HIT / CRITICAL, then Replay. Changing a selection also replays. Pause can freeze the effect; viewport changes keep it anchored to the Technique card.
+- `preview.html`: select slash / thrust / heavy, strength and HIT / CRITICAL, then Replay. Changing a selection also replays. Pause can freeze the effect; viewport changes keep it sized across the entire screen.
 - `?impact=off|normal|over` chooses the initial added-effect mode. Existing card normal/fast/detail modes, tap/Space skip, movement, touch swipe and retry remain available.
 - Preview CRITICAL is explicitly labelled as presentation-only. The current resolver returns `critical:false`; no chance, critical damage, new move or outcome was introduced.
 
