@@ -1,0 +1,25 @@
+<!doctype html><meta charset="utf-8"><script type="importmap">{"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.180.0/build/three.module.js"}}</script><script type="module">
+import * as THREE from 'three';
+import {Forest} from '../../forest-action-diorama-pixel/js/forest.js';
+const scene=new THREE.Scene(),forest=new Forest(scene),renderer=new THREE.WebGLRenderer({antialias:true,alpha:true,preserveDrawingBuffer:true});document.body.append(renderer.domElement);
+renderer.setPixelRatio(1);renderer.outputColorSpace=THREE.SRGBColorSpace;renderer.toneMapping=THREE.ACESFilmicToneMapping;renderer.toneMappingExposure=1.08;renderer.shadowMap.enabled=true;renderer.shadowMap.type=THREE.PCFSoftShadowMap;
+forest.update(0);scene.updateMatrixWorld(true);
+const originals=[];scene.traverse(o=>{if(o.isMesh||o.isLine||o.isPoints)originals.push(o)});
+const bins={ground:[],far:[],rear:[],middle:[],left:[],right:[],front:[]};
+function classify(box,source){const width=source.material.map?.image?.width,solid=(width===64||width===128)&&box.getSize(new THREE.Vector3()).y>.075;if(box.max.y<.82&&!solid)return 'ground';const c=box.getCenter(new THREE.Vector3());if(c.z<-13)return 'far';if(c.z<-8)return 'rear';if(c.z<1)return 'middle';if(c.x<-7)return 'left';if(c.x>7)return 'right';return c.x<0?'left':'right';}
+for(const source of originals){if(source.isPoints)continue;if(source.material.transparent&&source.material.opacity<.2)continue;
+ if(source.isInstancedMesh){const buckets={};for(let i=0;i<source.count;i++){const m=new THREE.Matrix4();source.getMatrixAt(i,m);m.premultiply(source.matrixWorld);const box=new THREE.Box3().setFromBufferAttribute(source.geometry.attributes.position).applyMatrix4(m),key=classify(box,source);(buckets[key]??=[]).push({m,c:source.instanceColor?new THREE.Color().fromArray(source.instanceColor.array,i*3):null});}for(const [key,items]of Object.entries(buckets)){const o=new THREE.InstancedMesh(source.geometry,source.material.clone(),items.length);items.forEach((a,i)=>{o.setMatrixAt(i,a.m);if(a.c)o.setColorAt(i,a.c)});o.castShadow=source.castShadow;o.receiveShadow=source.receiveShadow;scene.add(o);bins[key].push(o);}
+ }else{const o=source.clone();o.children=[];o.material=source.material.clone();o.matrixAutoUpdate=false;o.matrix.copy(source.matrixWorld);const box=new THREE.Box3().setFromBufferAttribute(o.geometry.attributes.position).applyMatrix4(o.matrix);scene.add(o);bins[classify(box,source)].push(o);}}
+originals.forEach(o=>o.visible=false);scene.background=null;
+const all=Object.values(bins).flat();
+async function save(name){await new Promise(resolve=>renderer.domElement.toBlob(async blob=>{const r=await fetch('/__save/'+name,{method:'POST',body:blob});if(!r.ok)throw Error('save');resolve()},'image/png'));}
+window.bake=async()=>{
+ // Flat world-ground texture: projected sprite/contact shadows stay live at runtime.
+ renderer.setSize(3072,2304);const top=new THREE.OrthographicCamera(-33,33,24.75,-24.75,.1,120);top.position.set(0,60,0);top.up.set(0,0,-1);top.lookAt(0,0,0);
+ scene.fog=null;all.forEach(o=>{const visible=bins.ground.includes(o);o.material.colorWrite=visible;o.material.depthWrite=visible;o.visible=true;});renderer.render(scene,top);await save('ground.png');
+ all.forEach(o=>{o.material.colorWrite=true;o.material.depthWrite=true;o.visible=false;});renderer.shadowMap.enabled=true;scene.fog=forest.fog;
+ const layers=[['far',-19],['rear',-10.3],['middle',-5.5],['left',3],['right',4]];const pitch=43*Math.PI/180,q=new THREE.Quaternion();
+ for(const [key,z]of layers){bins[key].forEach(o=>o.visible=true);renderer.setSize(3072,2048);const camera=new THREE.OrthographicCamera(-33,33,22,-22,.1,150);camera.position.set(0,Math.sin(pitch)*30,z+Math.cos(pitch)*30);camera.lookAt(0,0,z);renderer.render(scene,camera);await save(key+'.png');bins[key].forEach(o=>o.visible=false);}
+ return {counts:Object.fromEntries(Object.entries(bins).map(([k,v])=>[k,v.length])),layers};
+};
+</script>
