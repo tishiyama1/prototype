@@ -1,0 +1,74 @@
+{
+  "ground": {
+    "source": "exec-f5530f97-6407-4a72-9e51-0d9a94b8629e.png",
+    "sourcePixels": [
+      1448,
+      1086
+    ],
+    "crop": [
+      0,
+      0,
+      1448,
+      1086
+    ],
+    "pixels": [
+      1448,
+      1086
+    ],
+    "bytes": 384970
+  },
+  "far": {
+    "source": "exec-7a56bc60-2a91-4cf9-8540-3dbcc6cde1d8.png",
+    "sourcePixels": [
+      1536,
+      1024
+    ],
+    "crop": [
+      0,
+      9,
+      1536,
+      1024
+    ],
+    "pixels": [
+      1536,
+      1015
+    ],
+    "bytes": 414608
+  },
+  "middle": {
+    "source": "exec-2a646625-f02f-4a3f-9d1d-918fbb8494e2.png",
+    "sourcePixels": [
+      1536,
+      1024
+    ],
+    "crop": [
+      0,
+      0,
+      1536,
+      1024
+    ],
+    "pixels": [
+      1536,
+      1024
+    ],
+    "bytes": 334914
+  },
+  "foreground": {
+    "source": "exec-a9195c17-1c11-48dd-b25c-0125c69eb339.png",
+    "sourcePixels": [
+      1774,
+      887
+    ],
+    "crop": [
+      0,
+      29,
+      1774,
+      869
+    ],
+    "pixels": [
+      1774,
+      840
+    ],
+    "bytes": 172128
+  }
+}
