@@ -49,3 +49,13 @@ jobs:
           name: forest-action-duo-browser-evidence
           path: forest-action-duo/media/validation-*/
           compression-level: 0
+      - name: Export verified public screenshot bytes
+        run: |
+          node - <<'NODE'
+          const fs=require('fs'),crypto=require('crypto');
+          for(const name of ['forest-four.jpg','cave-four.jpg']){
+            const data=fs.readFileSync('forest-action-duo/media/validation-public/'+name),b=data.toString('base64');
+            console.log('DUO_IMAGE_META '+JSON.stringify({name,bytes:data.length,sha256:crypto.createHash('sha256').update(data).digest('hex'),parts:Math.ceil(b.length/16000)}));
+            for(let i=0;i<b.length;i+=16000)console.log('DUO_IMAGE_PART '+name+' '+Math.floor(i/16000)+' '+b.slice(i,i+16000));
+          }
+          NODE
