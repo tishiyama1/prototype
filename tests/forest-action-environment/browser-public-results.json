@@ -1,0 +1,374 @@
+{
+  "base": "https://tishiyama1.github.io/prototype/",
+  "checks": [
+    {
+      "name": "forest: 背景を維持／人物固定の環境再生で起動"
+    },
+    {
+      "name": "forest: OFFの実動作・戦況/背景板固定",
+      "detail": "{\"calls\":17,\"fps\":14.251425142514204,\"p95ms\":116.70000000000437}"
+    },
+    {
+      "name": "forest: NORMALの実動作・戦況/背景板固定",
+      "detail": "{\"calls\":26,\"fps\":11.875,\"p95ms\":150}"
+    },
+    {
+      "name": "forest: OVERの実動作・戦況/背景板固定",
+      "detail": "{\"calls\":26,\"fps\":13.256122235400797,\"p95ms\":133.40000000000146}"
+    },
+    {
+      "name": "forest: OVERは演出量増・描画呼出し数は増加しない"
+    },
+    {
+      "name": "forest: 環境だけ停止/再生・強度0%で追加演出を消す"
+    },
+    {
+      "name": "forest: 通常移動・技・カード・スキップ・再戦を維持"
+    },
+    {
+      "name": "forest: 横画面2サイズ・切替とスワイプを分離・縦画面案内"
+    },
+    {
+      "name": "cave: 背景を維持／人物固定の環境再生で起動"
+    },
+    {
+      "name": "cave: OFFの実動作・戦況/背景板固定",
+      "detail": "{\"calls\":13,\"fps\":20.35786992392587,\"p95ms\":100}"
+    },
+    {
+      "name": "cave: NORMALの実動作・戦況/背景板固定",
+      "detail": "{\"calls\":25,\"fps\":13.256122235400829,\"p95ms\":183.29999999999927}"
+    },
+    {
+      "name": "cave: OVERの実動作・戦況/背景板固定",
+      "detail": "{\"calls\":25,\"fps\":15.61601052025971,\"p95ms\":133.29999999999927}"
+    },
+    {
+      "name": "cave: OVERは演出量増・描画呼出し数は増加しない"
+    },
+    {
+      "name": "cave: 環境だけ停止/再生・強度0%で追加演出を消す"
+    },
+    {
+      "name": "cave: 通常移動・技・カード・スキップ・再戦を維持"
+    },
+    {
+      "name": "cave: 横画面2サイズ・切替とスワイプを分離・縦画面案内"
+    },
+    {
+      "name": "比較ページの2録画・10リンク・H264再生・動画ファイルHTTP200"
+    },
+    {
+      "name": "JavaScript・WebGL・通信エラーなし"
+    }
+  ],
+  "errors": [],
+  "cancelledMediaRequests": [
+    "https://tishiyama1.github.io/prototype/forest-action-forest-environment/media/environment.mp4: net::ERR_ABORTED",
+    "https://tishiyama1.github.io/prototype/forest-action-cave-environment/media/environment.mp4: net::ERR_ABORTED"
+  ],
+  "metrics": {
+    "forest": {
+      "off": {
+        "fps": 14.251425142514204,
+        "p95ms": 116.70000000000437,
+        "render": {
+          "calls": 17,
+          "triangles": 282
+        },
+        "environment": {
+          "mode": "off",
+          "gain": 1,
+          "time": 1.6962999999999995,
+          "enabled": false,
+          "leafCount": 0,
+          "dustCount": 0,
+          "grassCount": 0,
+          "lightOpacity": [
+            0.1340836580079609,
+            0.08591186080747364
+          ],
+          "shadowOpacity": [
+            0.04390861259248429,
+            0.04390861259248429
+          ],
+          "firstLeaf": [
+            -9.255306243896484,
+            1.1042689085006714,
+            -4.585474014282227
+          ],
+          "firstParticle": [
+            -9.906168937683105,
+            0.36159229278564453,
+            -6.917781352996826
+          ],
+          "lampOpacity": [],
+          "flameScale": [],
+          "visibleNodes": 0
+        }
+      },
+      "normal": {
+        "fps": 11.875,
+        "p95ms": 150,
+        "render": {
+          "calls": 26,
+          "triangles": 330
+        },
+        "environment": {
+          "mode": "normal",
+          "gain": 1,
+          "time": 9.879399999999999,
+          "enabled": true,
+          "leafCount": 6,
+          "dustCount": 8,
+          "grassCount": 4,
+          "lightOpacity": [
+            0.13542218344748783,
+            0.0883117172350848
+          ],
+          "shadowOpacity": [
+            0.04444641299229421,
+            0.04444641299229421
+          ],
+          "firstLeaf": [
+            -4.730986595153809,
+            1.4484256505966187,
+            -4.704461097717285
+          ],
+          "firstParticle": [
+            -9.336104393005371,
+            1.0395616292953491,
+            -6.825870037078857
+          ],
+          "lampOpacity": [],
+          "flameScale": [],
+          "visibleNodes": 7
+        }
+      },
+      "over": {
+        "fps": 13.256122235400797,
+        "p95ms": 133.40000000000146,
+        "render": {
+          "calls": 26,
+          "triangles": 402
+        },
+        "environment": {
+          "mode": "over",
+          "gain": 1,
+          "time": 14.395900000000006,
+          "enabled": true,
+          "leafCount": 24,
+          "dustCount": 40,
+          "grassCount": 4,
+          "lightOpacity": [
+            0.23867121480200748,
+            0.1846695433923805
+          ],
+          "shadowOpacity": [
+            0.1265648022772319,
+            0.1265648022772319
+          ],
+          "firstLeaf": [
+            -4.407289028167725,
+            1.4422951936721802,
+            -5.303528785705566
+          ],
+          "firstParticle": [
+            -6.775318622589111,
+            0.38506776094436646,
+            -7.0770792961120605
+          ],
+          "lampOpacity": [],
+          "flameScale": [],
+          "visibleNodes": 7
+        }
+      }
+    },
+    "cave": {
+      "off": {
+        "fps": 20.35786992392587,
+        "p95ms": 100,
+        "render": {
+          "calls": 13,
+          "triangles": 274
+        },
+        "environment": {
+          "mode": "off",
+          "gain": 1,
+          "time": 1.2999999999999998,
+          "enabled": false,
+          "leafCount": 0,
+          "dustCount": 0,
+          "grassCount": 0,
+          "lightOpacity": [
+            0.22243419165277858,
+            0.13523368437652405,
+            0.12409943075724202,
+            0.12426324909920784
+          ],
+          "shadowOpacity": [
+            0.03765799153978706
+          ],
+          "firstLeaf": [
+            0,
+            0,
+            0
+          ],
+          "firstParticle": [
+            -9.993560791015625,
+            0.27893149852752686,
+            -6.977034568786621
+          ],
+          "lampOpacity": [
+            0.44486838330555717,
+            0.11754578220170127
+          ],
+          "flameScale": [
+            [
+              0.23287613022005046,
+              0.5438958984774447,
+              1
+            ],
+            [
+              0.10585278646365931,
+              0.19580252345188007,
+              1
+            ]
+          ],
+          "visibleNodes": 0
+        }
+      },
+      "normal": {
+        "fps": 13.256122235400829,
+        "p95ms": 183.29999999999927,
+        "render": {
+          "calls": 25,
+          "triangles": 296
+        },
+        "environment": {
+          "mode": "normal",
+          "gain": 1,
+          "time": 5.3832,
+          "enabled": true,
+          "leafCount": 0,
+          "dustCount": 14,
+          "grassCount": 0,
+          "lightOpacity": [
+            0.18606164565470665,
+            0.12203160162123709,
+            0.12141182744272543,
+            0.12851389268937624
+          ],
+          "shadowOpacity": [
+            0.03355582469789924
+          ],
+          "firstLeaf": [
+            0,
+            0,
+            0
+          ],
+          "firstParticle": [
+            -9.909562110900879,
+            0.6563239097595215,
+            -6.759655475616455
+          ],
+          "lampOpacity": [
+            0.3721232913094133,
+            0.10906343929119587
+          ],
+          "flameScale": [
+            [
+              0.21843650293660535,
+              0.4946698963747909,
+              1
+            ],
+            [
+              0.0992893195166388,
+              0.17808116269492472,
+              1
+            ]
+          ],
+          "visibleNodes": 12
+        }
+      },
+      "over": {
+        "fps": 15.61601052025971,
+        "p95ms": 133.29999999999927,
+        "render": {
+          "calls": 25,
+          "triangles": 296
+        },
+        "environment": {
+          "mode": "over",
+          "gain": 1,
+          "time": 9.133100000000008,
+          "enabled": true,
+          "leafCount": 0,
+          "dustCount": 56,
+          "grassCount": 0,
+          "lightOpacity": [
+            0.4796749923341441,
+            0.2235401518828851,
+            0.20650527313295788,
+            0.20722849856889744
+          ],
+          "shadowOpacity": [
+            0.11979981985892732
+          ],
+          "firstLeaf": [
+            0,
+            0,
+            0
+          ],
+          "firstParticle": [
+            -9.424614906311035,
+            2.8351240158081055,
+            -6.79669713973999
+          ],
+          "lampOpacity": [
+            0.7573815668433854,
+            0.14680034186928098
+          ],
+          "flameScale": [
+            [
+              0.24266294562544746,
+              0.5772600419049346,
+              1
+            ],
+            [
+              0.11030133892065795,
+              0.20781361508577645,
+              1
+            ]
+          ],
+          "visibleNodes": 12
+        }
+      }
+    },
+    "videos": [
+      {
+        "src": "https://tishiyama1.github.io/prototype/forest-action-forest-environment/media/environment.mp4",
+        "support": "probably"
+      },
+      {
+        "src": "https://tishiyama1.github.io/prototype/forest-action-cave-environment/media/environment.mp4",
+        "support": "probably"
+      }
+    ],
+    "videoMetadata": [
+      {
+        "error": null,
+        "duration": 13.041667,
+        "width": 960,
+        "height": 540
+      },
+      {
+        "error": null,
+        "duration": 12.916667,
+        "width": 960,
+        "height": 540
+      }
+    ]
+  },
+  "environment": "Chromium / SwiftShader software GPU, physical iPhone Safari untested"
+}
