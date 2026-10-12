@@ -21,4 +21,7 @@ media/card-impact.mp4 is a real 960x540 browser capture, 11.03 seconds, H264/yuv
 ## Limits
 Physical iPhone Safari, on-device FPS/thermal behavior and subjective responsiveness are untested. Chromium/SwiftShader, 844x390/667x375 and CDP touch are browser checks only. Very fast/skipped phases may truncate the overlay rather than prolong battle time. No extra WebGL pass is introduced; a small 2D canvas is drawn only during the impact. No 60FPS claim is made.
 
-Public URL validation is pending deployment.
+## Published verification
+Implementation e3c540ccb471f2f140583a339c3ca684172d9490, GitHub Pages run 38234353618: completed/success. The real public index and preview URLs were opened. All 24 public browser checks passed, including all nine arranged combat outcomes, impact/pose event synchronization, identical commit/presentation time for OFF/NORMAL/OVER, layout without result/card overlap, mobile resize/touch, victory/retry and actual H264 playback (960x540, 11.033333s).
+
+All 37 fetched files returned HTTP 200 and SHA256 matched the deployed code/assets: 34 new published files, unchanged top page, original forest environment entry and cave environment entry. Existing baseline protection still covers all 469 original tracked files. No app JavaScript, WebGL or unhandled failed-request errors remained. Browser-cancelled video streams, if any, are logged separately after successful metadata/playback verification. See browser-public-results.json and public-files.json. Physical iPhone limitations remain unchanged.
