@@ -20,6 +20,7 @@
 .preview-surface{position:relative;min-height:475px;height:calc(100dvh - 215px)}
 .preview-surface .card-phase{padding:15px 22px;z-index:3}
 .preview-surface .card-stage{width:min(870px,100%)}
+.preview-surface .skip-hint{display:none}
 .preview-note{position:relative;z-index:9;margin:0 auto;padding:8px 18px;max-width:860px;font-size:12px;line-height:1.6;color:#dce1d1;text-align:center}.preview-note b{color:#f0dba0}
 .preview-stage-name{min-width:7em;color:#e6d19d;font-size:11px;text-align:center}
 .preview-video{position:relative;z-index:2;max-width:960px;margin:25px auto;padding:16px}.preview-video video{display:block;width:100%;border-radius:9px}.preview-video p{font-size:12px;line-height:1.7}.preview-video a{color:#e5d1a4}
