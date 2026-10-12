@@ -1,0 +1,12 @@
+<!doctype html><html lang="ja"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><title>Forest Action — ピクセル攻撃演出プレビュー</title><link rel="stylesheet" href="./style.css"><link rel="stylesheet" href="./impact.css"></head>
+<body class="preview-page"><header class="preview-header"><h1>カード上の、一瞬の衝撃。</h1><a href="./">実戦へ →</a></header>
+<div class="preview-controls">
+<fieldset><legend>技</legend><button data-preview-move="slash">斬撃</button><button data-preview-move="thrust">突き</button><button data-preview-move="heavy">強打</button></fieldset>
+<fieldset><legend>演出強度</legend><aside id="impact-controls"><button data-impact="off">OFF</button><button data-impact="normal">NORMAL</button><button data-impact="over">OVER</button></aside></fieldset>
+<fieldset><legend>成功表現の比較</legend><button data-preview-outcome="hit">HIT</button><button data-preview-outcome="critical">CRITICAL ※</button></fieldset>
+<button id="preview-replay">▶ 再生</button><button id="preview-freeze">Ⅱ 停止</button><output id="preview-state" class="preview-stage-name"></output>
+</div>
+<main class="preview-surface"><section id="card-phase" class="card-phase" aria-label="攻撃演出プレビュー"></section></main>
+<p class="preview-note"><b>プレビューは全3技の成功演出を再生します。</b>実戦では強打の成功（STRONG HIT / BREAK）と迎撃成功（COUNTER）のみ発動。通常の斬撃・突きの HIT は追加演出なしです。<br>※ CRITICAL は将来用の演出比較です。現行の戦闘にはクリティカル判定・追加ダメージはありません。</p>
+<section class="preview-video"><video controls playsinline preload="metadata" data-src="./media/card-impact.mp4"></video><p>実画面録画：3技のNORMAL / OVER、強打のCRITICAL比較。実戦への組込みは別途ブラウザテストで検証。<a href="../forest-action-forest-environment/">改修前の森</a></p></section>
+<script type="module" src="./js/impact-preview.js"></script></body></html>

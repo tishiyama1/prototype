@@ -1,0 +1,21 @@
+import assert from 'node:assert/strict';
+import {IMPACTS,impactPlan,sampleImpact,normalizeImpactMode} from '../../forest-action-card-impact/js/impact-spec.js';
+import {Player} from '../../forest-action-card-impact/js/player.js';
+import {Enemy} from '../../forest-action-card-impact/js/enemy.js';
+import {capture,resolve} from '../../forest-action-card-impact/js/combat.js';
+import {assess} from '../../forest-action-card-impact/js/assessment.js';
+import {moves} from '../../forest-action-card-impact/js/config.js';
+let n=0;const test=(name,fn)=>{fn();n++;console.log('PASS',name)};
+function fixture(move,state='recovery',d=moves[move].range){const p=new Player(),e=new Enemy();p.x=-d;p.z=0;e.x=0;e.z=0;e.yaw=Math.PI;e.aim={x:-1,z:0};e.velocity={x:0,z:0};e.setState(state,2);const r=resolve(capture(p,e,move));return {r,a:assess(r)}}
+test('OFF has no overlay; invalid mode defaults to NORMAL',()=>{const {r,a}=fixture('heavy');assert.equal(impactPlan(r,a,'off'),null);assert.equal(normalizeImpactMode('oops'),'normal')});
+test('ordinary slash/thrust HIT is quiet; heavy STRONG HIT triggers',()=>{for(const move of ['slash','thrust','heavy']){const {r,a}=fixture(move);assert.equal(r.hit,true);assert.equal(!!impactPlan(r,a),move==='heavy')}});
+test('BREAK triggers without changing guard-break damage',()=>{const {r,a}=fixture('heavy','guard');assert.equal(a.outcome.type,'BREAK');assert.equal(r.damage,30);assert.ok(impactPlan(r,a))});
+test('COUNTER enables all three existing techniques',()=>{for(const move of Object.keys(moves)){const {r,a}=fixture(move,'windup');assert.equal(r.outcome,'intercept');assert.ok(impactPlan(r,a))}});
+test('all failed outcomes reject overlays, even inconsistent critical metadata',()=>{for(const outcome of ['whiff','guarded','evaded','interrupted'])assert.equal(impactPlan({moveId:'heavy',hit:false,outcome},{outcome:{critical:true}}),null)});
+test('unknown techniques never invent an effect',()=>assert.equal(impactPlan({moveId:'magic',hit:true,outcome:'hit'},{outcome:{critical:true}}),null));
+test('preview may show light HIT and CRITICAL; real critical remains false',()=>{for(const move of Object.keys(moves)){const {r,a}=fixture(move);assert.equal(a.outcome.critical,false);assert.ok(impactPlan(r,a,'normal',true));const critical=impactPlan(r,{...a,outcome:{...a.outcome,critical:true}},'normal',true);assert.equal(critical.critical,true);assert.ok(critical.fragments>impactPlan(r,a,'normal',true).fragments)}});
+test('NORMAL/OVER use identical 0.22–0.28s durations; stronger shape and amount',()=>{for(const move of Object.keys(moves)){const {r,a}=fixture(move);const p=impactPlan(r,a,'normal',true),o=impactPlan(r,a,'over',true);assert.equal(p.duration,o.duration);assert.ok(p.duration>=.15&&p.duration<=.35);assert.ok(o.scale>p.scale&&o.fragments>p.fragments&&o.trails>p.trails)}});
+test('plan and rendering never modify resolution/assessment data',()=>{const {r,a}=fixture('heavy','guard'),before=JSON.stringify({r,a});for(const mode of ['off','normal','over']){const p=impactPlan(r,a,mode);for(let t=0;t<.5;t+=.01)sampleImpact(p,t,280,80,{x:175,y:40,width:60})}assert.equal(JSON.stringify({r,a}),before)});
+test('pixel rectangles change over time, are deterministic and end completely',()=>{for(const move of Object.keys(moves)){const {r,a}=fixture(move),p=impactPlan(r,a,'over',true),anchor={x:175,y:40,width:60};const one=sampleImpact(p,.02,280,80,anchor),two=sampleImpact(p,.10,280,80,anchor);assert.ok(one.length);assert.notDeepEqual(one,two);assert.deepEqual(one,sampleImpact(p,.02,280,80,anchor));assert.deepEqual(sampleImpact(p,p.duration,280,80,anchor),[]);assert.deepEqual(sampleImpact(p,-.01,280,80,anchor),[]);assert.ok(one.every(r=>Number.isInteger(r.x)&&Number.isInteger(r.y)&&r.w>=1&&r.h>=1&&r.alpha>=0&&r.alpha<=1))}});
+test('three techniques have distinct geometry',()=>{const rows=Object.keys(IMPACTS).map(move=>{const {r,a}=fixture(move);return sampleImpact(impactPlan(r,a,'normal',true),.08,280,80,{x:175,y:40,width:60})});assert.notDeepEqual(rows[0],rows[1]);assert.notDeepEqual(rows[1],rows[2])});
+console.log('DONE',n,'presentation cases');

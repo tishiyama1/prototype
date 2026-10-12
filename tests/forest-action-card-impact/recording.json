@@ -1,0 +1,166 @@
+{
+  "clips": [
+    {
+      "name": "slash-normal",
+      "file": "/workspace/scratch/1914fb077918/impact-qa/slash-normal.mp4",
+      "frames": 15,
+      "recordMs": 2052,
+      "observedImpact": {
+        "mode": "normal",
+        "triggered": true,
+        "active": true,
+        "move": "slash",
+        "kind": "sweep",
+        "critical": false,
+        "age": 0,
+        "duration": 0.22,
+        "rectangles": 10,
+        "pixels": {
+          "width": 290,
+          "height": 77
+        },
+        "preview": true
+      }
+    },
+    {
+      "name": "slash-over",
+      "file": "/workspace/scratch/1914fb077918/impact-qa/slash-over.mp4",
+      "frames": 72,
+      "recordMs": 2022,
+      "observedImpact": {
+        "mode": "over",
+        "triggered": true,
+        "active": true,
+        "move": "slash",
+        "kind": "sweep",
+        "critical": false,
+        "age": 0,
+        "duration": 0.22,
+        "rectangles": 26,
+        "pixels": {
+          "width": 290,
+          "height": 77
+        },
+        "preview": true
+      }
+    },
+    {
+      "name": "thrust-normal",
+      "file": "/workspace/scratch/1914fb077918/impact-qa/thrust-normal.mp4",
+      "frames": 71,
+      "recordMs": 2163,
+      "observedImpact": {
+        "mode": "normal",
+        "triggered": true,
+        "active": true,
+        "move": "thrust",
+        "kind": "pierce",
+        "critical": false,
+        "age": 0,
+        "duration": 0.22,
+        "rectangles": 28,
+        "pixels": {
+          "width": 290,
+          "height": 77
+        },
+        "preview": true
+      }
+    },
+    {
+      "name": "thrust-over",
+      "file": "/workspace/scratch/1914fb077918/impact-qa/thrust-over.mp4",
+      "frames": 49,
+      "recordMs": 2212,
+      "observedImpact": {
+        "mode": "over",
+        "triggered": true,
+        "active": true,
+        "move": "thrust",
+        "kind": "pierce",
+        "critical": false,
+        "age": 0,
+        "duration": 0.22,
+        "rectangles": 44,
+        "pixels": {
+          "width": 290,
+          "height": 77
+        },
+        "preview": true
+      }
+    },
+    {
+      "name": "heavy-normal",
+      "file": "/workspace/scratch/1914fb077918/impact-qa/heavy-normal.mp4",
+      "frames": 74,
+      "recordMs": 2069,
+      "observedImpact": {
+        "mode": "normal",
+        "triggered": true,
+        "active": true,
+        "move": "heavy",
+        "kind": "shock",
+        "critical": false,
+        "age": 0,
+        "duration": 0.28,
+        "rectangles": 57,
+        "pixels": {
+          "width": 290,
+          "height": 77
+        },
+        "preview": true
+      }
+    },
+    {
+      "name": "heavy-over",
+      "file": "/workspace/scratch/1914fb077918/impact-qa/heavy-over.mp4",
+      "frames": 67,
+      "recordMs": 2006,
+      "observedImpact": {
+        "mode": "over",
+        "triggered": true,
+        "active": true,
+        "move": "heavy",
+        "kind": "shock",
+        "critical": false,
+        "age": 0,
+        "duration": 0.28,
+        "rectangles": 93,
+        "pixels": {
+          "width": 290,
+          "height": 77
+        },
+        "preview": true
+      }
+    },
+    {
+      "name": "heavy-critical",
+      "file": "/workspace/scratch/1914fb077918/impact-qa/heavy-critical.mp4",
+      "frames": 78,
+      "recordMs": 1986,
+      "observedImpact": {
+        "mode": "normal",
+        "triggered": true,
+        "active": true,
+        "move": "heavy",
+        "kind": "shock",
+        "critical": true,
+        "age": 0,
+        "duration": 0.28,
+        "rectangles": 81,
+        "pixels": {
+          "width": 290,
+          "height": 77
+        },
+        "preview": true
+      }
+    }
+  ],
+  "probe": {
+    "format": {
+      "duration": "11.033333",
+      "size": "621470"
+    }
+  },
+  "errors": [],
+  "description": "Actual Chrome compositor frames, original frame arrival intervals retained and duplicated at 30fps. No synthetic animation/interpolation. Preview uses same overlay renderer as combat. Real combat is verified separately by browser.cjs."
+}
