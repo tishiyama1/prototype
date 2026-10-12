@@ -9,7 +9,19 @@
 
 Detailed runtime values are in tests/forest-action-art-refinement/browser-local-results.json. The guide snapshot and final imagegen edit prompt set are in the same directory.
 
-Public deployment verification is pending and will be recorded after accessing both live URLs.
+## Public deployment verification
+
+Implementation commit: 3f74708cddd2544c39d251c7a619f3d78d7c0dee. GitHub Pages run 38212404861 completed successfully.
+
+Both actual public URLs were opened in Chromium:
+- https://tishiyama1.github.io/prototype/forest-action-forest-refined/
+- https://tishiyama1.github.io/prototype/forest-action-cave-refined/
+
+**17 public browser checks passed**: both scene startup and actual rendered backgrounds, matching camera/initial battle state, bounded environmental lighting, drifting leaves/static rock plates, environment OFF, drawing settings preserve battle state, approach/technique/cards/AI freeze, card resize/skip/normal resume/retry, CDP touch joystick/cancel/swipe, landscape sizes/portrait guidance, comparison page's 8 images and 4 version links, zero application/WebGL/network errors. See browser-public-results.json.
+
+**71 public static files** matched HTTP 200 and SHA256: 68 new runtime/art/comparison files, top index and original forest/cave indexes. Other existing files are protected by the 291-file baseline and the additive Git tree. See public-files.json; its recorded commit identifies the checked implementation before documentation/screenshot updates.
+
+media/after.jpg and media/mobile.jpg are screenshots captured from the actual public refined URLs. media/before.jpg comes from the respective original scene at the same initial PC camera/positions. Final screenshot publication and documentation do not change runtime/game logic.
 
 ## Limits
 
