@@ -30,7 +30,7 @@ Pinned Three.js 0.180.0 via CDN/import map. Static ES modules, relative paths, n
 - `node tests/forest-action-cave/logic.mjs` — 43 tactical/card/input cases.
 - `node tests/forest-action-cave/regression.mjs` — protected file hashes, 19 byte-identical modules, identical configured movement/camera/attack/card values; 1,450 fixed-step snapshots through victory, pause/skip/retry.
 - `tests/forest-action-cave/browser.cjs` — desktop/mobile real-key/touch battle through victory/retry, card modes/skip, resizing and cancellation.
-- `tests/forest-action-cave/visual.cjs` — five prior versions, same-state cave screenshots, 4 images/no forest model imports, parallax/fade/flicker/static rocks, landscape sizes and frame samples.
+- `tests/forest-action-cave/visual.cjs` — layered-forest reference, same-state cave screenshots, 4 images/no forest model imports, parallax/fade/flicker/static rocks, landscape sizes and frame samples.
 
 Physical iPhone Safari testing and 60FPS on-device are not available in this runtime. Chromium mobile emulation is distinct from physical Safari. See `VALIDATION.md` for recorded results and limits.
 

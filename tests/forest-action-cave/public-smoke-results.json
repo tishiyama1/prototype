@@ -1,0 +1,31 @@
+{
+  "url": "https://tishiyama1.github.io/prototype/forest-action-cave/",
+  "checks": [
+    {
+      "name": "公開URLでWebGL・背景4層・キャラクターの起動",
+      "detail": "https://tishiyama1.github.io/prototype/forest-action-cave/"
+    },
+    {
+      "name": "公開ファイル照合・既存5版とトップページのHTTP200",
+      "detail": "13 files"
+    },
+    {
+      "name": "公開版の接近・技選択・攻撃・演出停止・スキップ・通常復帰",
+      "detail": "guarded"
+    },
+    {
+      "name": "公開版のリトライ初期化"
+    },
+    {
+      "name": "公開版の844×390表示・実タッチイベントのスワイプ回避"
+    },
+    {
+      "name": "公開比較ページ・画像・リンク"
+    },
+    {
+      "name": "JavaScript・通信エラーなし"
+    }
+  ],
+  "errors": [],
+  "environment": "Chromium / SwiftShader software GPU; viewport and CDP touch emulation; physical iPhone Safari untested"
+}

@@ -1,0 +1,247 @@
+{
+  "checkedAt": "2026-10-12T04:16:42.573676+00:00",
+  "commit": "fa11c614f514e0371e561e57504b236d453afac6",
+  "base": "https://tishiyama1.github.io/prototype/",
+  "files": [
+    {
+      "path": "forest-action-cave/comparison.html",
+      "status": 200,
+      "match": true,
+      "sha256": "f35a1125386d8a0a835cd2636819777cba0f09af57698a64ae5126732d3f86c6"
+    },
+    {
+      "path": "forest-action-cave/index.html",
+      "status": 200,
+      "match": true,
+      "sha256": "047c30f7c5dd931fb9e77cb34bd31c22ce685bb4965db7efbeb995df77a2c5e1"
+    },
+    {
+      "path": "forest-action-cave/js/assessment.js",
+      "status": 200,
+      "match": true,
+      "sha256": "c28de779e6bc4a1f5dd3d3c170bfd1c7a5a143edc4af7acc1528e555d5bed041"
+    },
+    {
+      "path": "forest-action-cave/js/attack-phase.js",
+      "status": 200,
+      "match": true,
+      "sha256": "8c7d939d6312765f61ca8462dbce2d32c738b93c0f5833f35883306200efa218"
+    },
+    {
+      "path": "forest-action-cave/js/audio.js",
+      "status": 200,
+      "match": true,
+      "sha256": "9f963b011234bf04e59be09c7e6560519c04d43303e19d19ade04384bd74f316"
+    },
+    {
+      "path": "forest-action-cave/js/camera.js",
+      "status": 200,
+      "match": true,
+      "sha256": "693534a64d9c61783025795205ff1b1d10212859bf67a46cccb26698c9dbe267"
+    },
+    {
+      "path": "forest-action-cave/js/cards.js",
+      "status": 200,
+      "match": true,
+      "sha256": "8e532d3739adcf8e8d033af3b2bafa31192bc1e556abb1bc0af217b8437df323"
+    },
+    {
+      "path": "forest-action-cave/js/cave.js",
+      "status": 200,
+      "match": true,
+      "sha256": "a60436e33a59f20da554baed2f83cc5a0c87baf9ea41f0cf8d3f3ec5e9ab4df1"
+    },
+    {
+      "path": "forest-action-cave/js/character.js",
+      "status": 200,
+      "match": true,
+      "sha256": "b77a71258bac86f4b6e3a5de5991cd6b8f341132b8683f80cf6eaa09c9cce860"
+    },
+    {
+      "path": "forest-action-cave/js/combat.js",
+      "status": 200,
+      "match": true,
+      "sha256": "9145dc0a67bf528f579286a0edcfd93c6c77f4533fd62c34c0e1dd91ecde882a"
+    },
+    {
+      "path": "forest-action-cave/js/config.js",
+      "status": 200,
+      "match": true,
+      "sha256": "2e79567c9d1d5c29ed8d0af7eae593ddc7874d922fcf00707c1ebed1a5aad6e5"
+    },
+    {
+      "path": "forest-action-cave/js/effects.js",
+      "status": 200,
+      "match": true,
+      "sha256": "8b800561ab802a1c1f96869d76897cb1fcd779b01089719b9b14b4196081a45f"
+    },
+    {
+      "path": "forest-action-cave/js/enemy.js",
+      "status": 200,
+      "match": true,
+      "sha256": "360cc896fc560bfe46a15eea9f0c0c10ea58b76a4fc31227c01c2bc67a4ec38f"
+    },
+    {
+      "path": "forest-action-cave/js/game.js",
+      "status": 200,
+      "match": true,
+      "sha256": "76aa1c74546d3366adef4dcae2dbd0822e324fc778e1aaff24789c2bd62626e4"
+    },
+    {
+      "path": "forest-action-cave/js/input.js",
+      "status": 200,
+      "match": true,
+      "sha256": "b547baafe284d5ff1ad3cad08f33248b276e891100e57c2f9b5260f0a520f2d3"
+    },
+    {
+      "path": "forest-action-cave/js/main.js",
+      "status": 200,
+      "match": true,
+      "sha256": "129f0e999ba8a3c89ab9d0192e4aea72a3abd54005dd142ba696ba387f53ff1f"
+    },
+    {
+      "path": "forest-action-cave/js/player.js",
+      "status": 200,
+      "match": true,
+      "sha256": "5ff08533bfab2f80b978aa447bf340685e73a5e40d935cc2d86c3a418aadde70"
+    },
+    {
+      "path": "forest-action-cave/js/presentation.js",
+      "status": 200,
+      "match": true,
+      "sha256": "32ea429e8a0da6db7070337d4c899da3274abd0dab9385f339a3fbbcb9841b3f"
+    },
+    {
+      "path": "forest-action-cave/js/scene-backdrop.js",
+      "status": 200,
+      "match": true,
+      "sha256": "03b24c09b62e402a0eec36de30b5db210d7bef562123197e33ce3087a2cf0389"
+    },
+    {
+      "path": "forest-action-cave/js/sprite-art.js",
+      "status": 200,
+      "match": true,
+      "sha256": "228a7ceaef64fa3ffc1dcf9b846446935c42bb53f2babdd99311ef091e9623c0"
+    },
+    {
+      "path": "forest-action-cave/js/sprite-state.js",
+      "status": 200,
+      "match": true,
+      "sha256": "b0cb06cb0e0596ea37a476f0ea6b9fb74012452504f8a9eac6334867fb68a349"
+    },
+    {
+      "path": "forest-action-cave/js/surface.js",
+      "status": 200,
+      "match": true,
+      "sha256": "2c7274e20c4e34ab69f9ea3c5a71129ac5929d8edb5f6af3dda54e9335bf895b"
+    },
+    {
+      "path": "forest-action-cave/js/target.js",
+      "status": 200,
+      "match": true,
+      "sha256": "1027cf90c2816700c46ae9292f346c3445a5b77512d9fdafde876af551cc1079"
+    },
+    {
+      "path": "forest-action-cave/js/ui.js",
+      "status": 200,
+      "match": true,
+      "sha256": "a79fa194c5263beb9c34857f3855f690411320e4f3b6acc8797ac718c381883c"
+    },
+    {
+      "path": "forest-action-cave/media/after.jpg",
+      "status": 200,
+      "match": true,
+      "sha256": "62b53b0814c5b109fca31dd1fbd8c0afaf813be6b8eb0dfa340666e81450b83b"
+    },
+    {
+      "path": "forest-action-cave/media/art-metadata.json",
+      "status": 200,
+      "match": true,
+      "sha256": "93777103cb70ab936bb2535f68a55f2d2b25eea58a2ecc852f841052e16f3c61"
+    },
+    {
+      "path": "forest-action-cave/media/before.jpg",
+      "status": 200,
+      "match": true,
+      "sha256": "d905ab16ec3c2cf98d4d70cfb5689eb5d34755082a4129104e2e52daac7eb236"
+    },
+    {
+      "path": "forest-action-cave/media/far.webp",
+      "status": 200,
+      "match": true,
+      "sha256": "962e8d930a25b3a1ebf98a8b789b4ba78b7a6c31c63e83ae3264c20603060d7c"
+    },
+    {
+      "path": "forest-action-cave/media/foreground.webp",
+      "status": 200,
+      "match": true,
+      "sha256": "2173972a889b3db0955f53a5f7a441a598a80c39a368ce8ffb6c6b07e59c9128"
+    },
+    {
+      "path": "forest-action-cave/media/ground.webp",
+      "status": 200,
+      "match": true,
+      "sha256": "510250998256bfcf835a69938de36d0ea09236bfcee8819c400d74e2760dbba1"
+    },
+    {
+      "path": "forest-action-cave/media/middle.webp",
+      "status": 200,
+      "match": true,
+      "sha256": "081255828ded72da1df1e82023bc751ad4c3f3bb365748ebf16cdad20d492990"
+    },
+    {
+      "path": "forest-action-cave/media/mobile.jpg",
+      "status": 200,
+      "match": true,
+      "sha256": "ea20900bcf5c4a993218f61777dbf18844ee93d870c955cc8f77bf88a012a8c1"
+    },
+    {
+      "path": "forest-action-cave/media/scene.json",
+      "status": 200,
+      "match": true,
+      "sha256": "ec385d67486dea6ad91f043d15d4318c0c800b44a064557398468a2bd7b4c031"
+    },
+    {
+      "path": "forest-action-cave/style.css",
+      "status": 200,
+      "match": true,
+      "sha256": "1e933bc334a6f14ba7543bb5d4a32c6d789cbd56ca86839038aa6150b526ddb6"
+    },
+    {
+      "path": "index.html",
+      "status": 200,
+      "match": true,
+      "sha256": "641401ddaaa056535b2cb08062a1a28c79bcbef7d79ac30caa82ff75b3923a70"
+    },
+    {
+      "path": "forest-action/index.html",
+      "status": 200,
+      "match": true,
+      "sha256": "53ed8860209350adf89f6b98b25bd55c27a90fda7bdcec3caf0c0619dc86f77d"
+    },
+    {
+      "path": "forest-action-pixel/index.html",
+      "status": 200,
+      "match": true,
+      "sha256": "b07b5be13170ee121c6f212e5abd1f307f5d00a10fd40507fd1759e7179239b3"
+    },
+    {
+      "path": "forest-action-diorama/index.html",
+      "status": 200,
+      "match": true,
+      "sha256": "312ef9b3ac1c555dfffd4ebe984aa86dadd62ecafff38da41f741a3a126ab7c3"
+    },
+    {
+      "path": "forest-action-diorama-pixel/index.html",
+      "status": 200,
+      "match": true,
+      "sha256": "e03ba90b408f4d7b84c777d607f33c2b6aabea3297a62595b415fd9cbe49a79e"
+    },
+    {
+      "path": "forest-action-layered/index.html",
+      "status": 200,
+      "match": true,
+      "sha256": "530f5d8ca1a773264d980573210fe09d1c0f9ee990e39b7eb855730e52ff7940"
+    }
+  ]
+}

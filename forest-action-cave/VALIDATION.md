@@ -10,7 +10,17 @@
 
 - Mobile landscape/touch Chromium: **14 checks passed**, including multi-touch movement + attack, card resize/skip/modes, swipe dash, touch cancellation, debug scrolling and portrait pause/resume. This is emulation, not physical Safari.
 
-Public deployment verification is pending and will be recorded after accessing the deployed URL.
+## Deployed URL verification
+
+Implementation commit: `fa11c614f514e0371e561e57504b236d453afac6`. GitHub Pages run `38202658686` completed successfully.
+
+- **Public browser 7 checks passed** at https://tishiyama1.github.io/prototype/forest-action-cave/: WebGL startup, 4-layer readiness, characters, approach, technique selection, attack, paused AI/time, skip, resume, retry, landscape viewport, actual CDP touch swipe, comparison page and zero JavaScript/network errors.
+- **40 public static files**: HTTP 200 and SHA256 match (34 new files, top page and 5 prior versions' index files). Existing content was not replaced.
+- **12 final visual checks passed**: same camera/initial battle state versus the layered forest; 4 image loads and no original 3D forest modules; plane-only imagery; parallax ON/OFF; 17 foreground-fade samples; lantern flicker/static rocks; inspection freeze; drawing settings preserve game state; moving-camera parallax; 844×390 and 667×375 views; comparison images/links; no JavaScript/WebGL/network errors.
+- Screenshots `media/after.jpg` and `media/mobile.jpg` were captured from the actual public cave URL. `media/before.jpg` is the layered-forest scene at the same 1280×720 size and initial battle/camera state.
+- Final SwiftShader samples: desktop **4.39 FPS**, landscape viewport **5.78 FPS**; p95 frame intervals about **583/600 ms**. These are software GPU figures, not phone performance. **60FPS has not been verified.**
+
+Logs are in `tests/forest-action-cave/tactical-local-results.json`, `visual-local-results.json`, `public-smoke-results.json` and `public-files.json`. Early automated browser runs timed out in this single-process software-GPU environment; the final run used a shared browser page and allowed additional startup time. Final tests passed without application errors.
 
 ## Visual implementation
 
