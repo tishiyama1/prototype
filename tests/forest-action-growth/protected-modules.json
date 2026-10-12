@@ -1,0 +1,12 @@
+{
+  "js/assessment.js": "a0782ef4d2f327fa0af0df8986b89f6c62b7c419",
+  "js/combat.js": "b0acaaed651d7338c9a41bc8d84bdb5b4026b1a6",
+  "js/companion.js": "2adde459755ff863f3f1dfb7348bb2bc3f217aa7",
+  "js/config.js": "b96ec3e7f5940fa3f6d092bb2752b70d5f361183",
+  "js/enemy.js": "19bf9d8f68536aa5f60436821557d2796ec0c826",
+  "js/input.js": "fb69dae5f8eb99e0ed8bd0dc1a2703206aaac59c",
+  "js/player.js": "8866279424759363ebc02bba94896c4c44c022a8",
+  "js/support.js": "6d1ecd0d4d37ad9e37dc82e57ff89dfe5dae4d70",
+  "js/target.js": "d5d88a24b535d735b95d489f4c23e801feb5d4d5",
+  "js/team-space.js": "16fcc3f2526ef0bd7dbdaca5d459482cc3cc6b30"
+}

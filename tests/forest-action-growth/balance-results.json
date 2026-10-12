@@ -1,0 +1,164 @@
+[
+  {
+    "stage": "early",
+    "strategy": "idle",
+    "status": "clear",
+    "wallSimulation": 5.7,
+    "battleTime": 5.7,
+    "heroHP": 70,
+    "lordHP": 520,
+    "enemies": [
+      0,
+      0
+    ],
+    "heroDamage": 0,
+    "lordDamage": 195,
+    "attacks": 0,
+    "lordAttacks": 3,
+    "sacrifices": 0
+  },
+  {
+    "stage": "early",
+    "strategy": "simple",
+    "status": "clear",
+    "wallSimulation": 6.67,
+    "battleTime": 6.56,
+    "heroHP": 62,
+    "lordHP": 520,
+    "enemies": [
+      0,
+      0
+    ],
+    "heroDamage": 79,
+    "lordDamage": 116,
+    "attacks": 13,
+    "lordAttacks": 3,
+    "sacrifices": 0
+  },
+  {
+    "stage": "early",
+    "strategy": "observe",
+    "status": "clear",
+    "wallSimulation": 5.28,
+    "battleTime": 5.2,
+    "heroHP": 70,
+    "lordHP": 516,
+    "enemies": [
+      0,
+      0
+    ],
+    "heroDamage": 68,
+    "lordDamage": 127,
+    "attacks": 10,
+    "lordAttacks": 3,
+    "sacrifices": 0
+  },
+  {
+    "stage": "middle",
+    "strategy": "idle",
+    "status": "dead",
+    "wallSimulation": 33.11,
+    "battleTime": 31.81,
+    "heroHP": 4,
+    "lordHP": 0,
+    "enemies": [
+      0,
+      62
+    ],
+    "heroDamage": 0,
+    "lordDamage": 133,
+    "attacks": 0,
+    "lordAttacks": 15,
+    "sacrifices": 2
+  },
+  {
+    "stage": "middle",
+    "strategy": "simple",
+    "status": "clear",
+    "wallSimulation": 15.51,
+    "battleTime": 15.27,
+    "heroHP": 84,
+    "lordHP": 145,
+    "enemies": [
+      0,
+      0
+    ],
+    "heroDamage": 104,
+    "lordDamage": 91,
+    "attacks": 29,
+    "lordAttacks": 7,
+    "sacrifices": 0
+  },
+  {
+    "stage": "middle",
+    "strategy": "observe",
+    "status": "clear",
+    "wallSimulation": 13.72,
+    "battleTime": 13.51,
+    "heroHP": 88,
+    "lordHP": 145,
+    "enemies": [
+      0,
+      0
+    ],
+    "heroDamage": 118,
+    "lordDamage": 77,
+    "attacks": 26,
+    "lordAttacks": 6,
+    "sacrifices": 0
+  },
+  {
+    "stage": "late",
+    "strategy": "idle",
+    "status": "dead",
+    "wallSimulation": 38.97,
+    "battleTime": 38.32,
+    "heroHP": 1,
+    "lordHP": 0,
+    "enemies": [
+      96,
+      73
+    ],
+    "heroDamage": 0,
+    "lordDamage": 26,
+    "attacks": 0,
+    "lordAttacks": 18,
+    "sacrifices": 1
+  },
+  {
+    "stage": "late",
+    "strategy": "simple",
+    "status": "clear",
+    "wallSimulation": 17.05,
+    "battleTime": 16.79,
+    "heroHP": 129,
+    "lordHP": 38,
+    "enemies": [
+      0,
+      0
+    ],
+    "heroDamage": 181,
+    "lordDamage": 14,
+    "attacks": 31,
+    "lordAttacks": 8,
+    "sacrifices": 0
+  },
+  {
+    "stage": "late",
+    "strategy": "observe",
+    "status": "clear",
+    "wallSimulation": 13.68,
+    "battleTime": 13.47,
+    "heroHP": 133,
+    "lordHP": 38,
+    "enemies": [
+      0,
+      0
+    ],
+    "heroDamage": 183,
+    "lordDamage": 12,
+    "attacks": 26,
+    "lordAttacks": 6,
+    "sacrifices": 0
+  }
+]

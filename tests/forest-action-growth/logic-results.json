@@ -1,0 +1,19 @@
+{
+  "checks": [
+    "Original enemy / movement / card resolver and assessment modules remain byte-identical",
+    "All stages preserve identical enemies, arena and initial positions",
+    "Growth damage scales, existing decisions and four card factors remain unchanged across 189 conditions",
+    "Ranged lord decisions and movement identical for all stages before weapon impact",
+    "Royal swords spawn at locked world coordinate, delay then AoE both foes with no caster approach",
+    "Middle and late magic starts at caster and moves before collision; cannot use royal swords",
+    "All three fatal realtime paths redirect damage before hero HP reaches zero",
+    "Sacrifice ignores lord invulnerability, takes exactly ten ordinary hits, once; all modes reliable",
+    "Surviving protection pushes foes strongly without damage; all stages including tiny lord",
+    "Lord dies protecting, hero remains alive, loss waits for protection animation; normal lord KO also loses",
+    "Card interruption uses same guardian gateway and skipped / OFF results match",
+    "Cards freeze lord AI, royal swords and both teams of projectiles",
+    "Retry and stage switch clear cards / swords / guardian / bolts / stats, keep chosen stage",
+    "Deterministic 60 second paired runs remain finite, constrained, and hero never dies"
+  ],
+  "passed": 14
+}
