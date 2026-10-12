@@ -1,0 +1,30 @@
+{
+  "scene": "cave",
+  "base": "http://127.0.0.1:8004/",
+  "frames": 168,
+  "segments": [
+    {
+      "mode": "off",
+      "start": 1791794698467,
+      "durationMs": 2205
+    },
+    {
+      "mode": "normal",
+      "start": 1791794700774,
+      "durationMs": 5200
+    },
+    {
+      "mode": "over",
+      "start": 1791794706067,
+      "durationMs": 5200
+    }
+  ],
+  "probe": {
+    "format": {
+      "duration": "12.916667",
+      "size": "153575"
+    }
+  },
+  "errors": [],
+  "environment": "actual Chrome/SwiftShader screencast; original frame timing preserved; no synthetic interpolation; phone FPS untested"
+}

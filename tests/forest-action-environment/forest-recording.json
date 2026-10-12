@@ -1,0 +1,30 @@
+{
+  "scene": "forest",
+  "base": "http://127.0.0.1:8004/",
+  "frames": 103,
+  "segments": [
+    {
+      "mode": "off",
+      "start": 1791794666394,
+      "durationMs": 2201
+    },
+    {
+      "mode": "normal",
+      "start": 1791794668677,
+      "durationMs": 5202
+    },
+    {
+      "mode": "over",
+      "start": 1791794674075,
+      "durationMs": 5201
+    }
+  ],
+  "probe": {
+    "format": {
+      "duration": "13.041667",
+      "size": "180632"
+    }
+  },
+  "errors": [],
+  "environment": "actual Chrome/SwiftShader screencast; original frame timing preserved; no synthetic interpolation; phone FPS untested"
+}

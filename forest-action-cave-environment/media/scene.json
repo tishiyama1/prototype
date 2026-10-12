@@ -1,0 +1,93 @@
+{
+  "id": "cave",
+  "title": "灯りの先の岩窟",
+  "pitch": 43,
+  "background": "#101820",
+  "ground": {
+    "id": "ground",
+    "file": "ground.webp",
+    "width": 48,
+    "height": 36,
+    "position": [
+      0,
+      -0.045,
+      3
+    ]
+  },
+  "layers": [
+    {
+      "id": "far",
+      "file": "far.webp",
+      "role": "遠景",
+      "pass": "backdrop",
+      "width": 28.0,
+      "height": 18.50263720703125,
+      "offsetY": -0.7820313964843749,
+      "position": [
+        0,
+        0,
+        -10
+      ],
+      "parallaxX": 0.07,
+      "parallaxZ": 0.025,
+      "offsetX": 0.0
+    },
+    {
+      "id": "middle",
+      "file": "middle.webp",
+      "role": "中景",
+      "pass": "backdrop",
+      "width": 35.0,
+      "height": 23.3333,
+      "offsetY": 2.8,
+      "position": [
+        0,
+        0,
+        -3
+      ],
+      "parallaxX": 0.012,
+      "parallaxZ": 0.005,
+      "lamp": {
+        "x": -9.8,
+        "y": 2.2867,
+        "size": 1.6
+      },
+      "offsetX": 0.0
+    },
+    {
+      "id": "foreground",
+      "file": "foreground.webp",
+      "role": "前景",
+      "pass": "actors",
+      "width": 35.0,
+      "height": 16.57271702367531,
+      "offsetY": 3.891488162344984,
+      "position": [
+        0,
+        0,
+        7
+      ],
+      "parallaxX": -0.025,
+      "parallaxZ": -0.009,
+      "offsetX": 0.0
+    }
+  ],
+  "lightPools": [
+    {
+      "x": -9.8,
+      "z": -4.7,
+      "width": 7,
+      "height": 5,
+      "color": "#ffb851",
+      "opacity": 0.11
+    },
+    {
+      "x": 8.8,
+      "z": -5.2,
+      "width": 5,
+      "height": 3.5,
+      "color": "#edb375",
+      "opacity": 0.055
+    }
+  ]
+}

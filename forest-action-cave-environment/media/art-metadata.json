@@ -1,0 +1,90 @@
+{
+  "ground": {
+    "source": "exec-771de5a5-39f1-4755-8bfd-2dfcac2681bf.png",
+    "sourcePixels": [
+      1448,
+      1086
+    ],
+    "crop": [
+      0,
+      0,
+      1448,
+      1086
+    ],
+    "pixels": [
+      1448,
+      1086
+    ],
+    "bytes": 56206,
+    "alphaRange": [
+      255,
+      255
+    ]
+  },
+  "middle": {
+    "source": "exec-a6533c02-8482-4443-ad12-bee8c2c25d13.png",
+    "sourcePixels": [
+      1536,
+      1024
+    ],
+    "crop": [
+      0,
+      0,
+      1536,
+      1024
+    ],
+    "pixels": [
+      1536,
+      1024
+    ],
+    "bytes": 109404,
+    "alphaRange": [
+      0,
+      254
+    ]
+  },
+  "far": {
+    "source": "exec-f96a3bf5-41a3-42f8-8faa-7099af33daa9.png",
+    "sourcePixels": [
+      1536,
+      1024
+    ],
+    "crop": [
+      0,
+      9,
+      1536,
+      1024
+    ],
+    "pixels": [
+      1536,
+      1015
+    ],
+    "bytes": 107996,
+    "alphaRange": [
+      0,
+      254
+    ]
+  },
+  "foreground": {
+    "source": "exec-39313329-99e8-409f-a8c7-1cb8e0d52246.png",
+    "sourcePixels": [
+      1774,
+      887
+    ],
+    "crop": [
+      0,
+      29,
+      1774,
+      869
+    ],
+    "pixels": [
+      1774,
+      840
+    ],
+    "bytes": 65828,
+    "alphaRange": [
+      0,
+      255
+    ]
+  }
+}
