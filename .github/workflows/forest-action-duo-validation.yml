@@ -1,0 +1,51 @@
+name: Forest Action Duo validation
+on:
+  workflow_dispatch:
+  push:
+    paths:
+      - 'forest-action-duo/js/**'
+      - 'forest-action-duo/index.html'
+      - 'forest-action-duo/*.css'
+      - 'tests/forest-action-duo/**'
+      - '.github/workflows/forest-action-duo-validation.yml'
+concurrency:
+  group: forest-action-duo-validation
+  cancel-in-progress: true
+permissions:
+  contents: read
+jobs:
+  browser:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - name: Install isolated QA browser
+        run: |
+          mkdir -p "$RUNNER_TEMP/forest-duo-tools"
+          npm install --prefix "$RUNNER_TEMP/forest-duo-tools" playwright@1.56.1
+          "$RUNNER_TEMP/forest-duo-tools/node_modules/.bin/playwright" install --with-deps chromium
+          sudo apt-get install -y fonts-noto-cjk
+      - name: Deterministic and protected-file tests
+        run: node tests/forest-action-duo/logic.mjs
+      - name: Local forest and cave browser tests
+        env:
+          NODE_PATH: ${{ runner.temp }}/forest-duo-tools/node_modules
+          FOREST_QA_OUTPUT: ${{ github.workspace }}/forest-action-duo/media/validation-local
+        run: node tests/forest-action-duo/ci.cjs
+      - name: Public Pages forest and cave browser tests
+        env:
+          NODE_PATH: ${{ runner.temp }}/forest-duo-tools/node_modules
+          FOREST_ENV_BASE: https://tishiyama1.github.io/prototype/
+          FOREST_QA_OUTPUT: ${{ github.workspace }}/forest-action-duo/media/validation-public
+        run: node tests/forest-action-duo/ci.cjs
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: forest-action-duo-browser-evidence
+          path: forest-action-duo/media/validation-*/
+          compression-level: 0
