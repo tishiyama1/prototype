@@ -20,37 +20,44 @@ export function impactPlan(result,assessment,mode='normal',preview=false){
 const clamp=n=>Math.max(0,Math.min(1,n));
 // Integer rectangles are rasterized by the renderer. No blurred sprites or
 // anti-aliased vector strokes; every edge follows the effect's pixel grid.
-export function sampleImpact(plan,age,width,height,anchor){
+export function sampleImpact(plan,age,width,height){
  if(!plan||age<0||age>=plan.duration)return [];
  const t=clamp(age/plan.duration),fade=t>.52?(1-t)/.48:1,rects=[];
- const x=anchor.x,y=anchor.y,s=plan.scale,r=Math.max(8,Math.min(anchor.width*.70,height*.46))*s;
+ const x=width*.5,y=height*.5,s=plan.scale;
  const rect=(px,py,w,h,color,alpha=1)=>rects.push({x:Math.round(px),y:Math.round(py),w:Math.max(1,Math.round(w)),h:Math.max(1,Math.round(h)),color,alpha:clamp(alpha*fade)});
  const line=(x1,y1,x2,y2,thick,color,alpha=1)=>{
   const count=Math.max(1,Math.ceil(Math.max(Math.abs(x2-x1),Math.abs(y2-y1))));
   for(let i=0;i<=count;i++){const a=i/count;rect(x1+(x2-x1)*a-thick/2,y1+(y2-y1)*a-thick/2,thick,thick,color,alpha);}
  };
+ let particleX=x,particleY=y;
  if(plan.kind==='sweep'){
-  const head=Math.min(1,t*2.8),tail=Math.max(0,head-.64),span=r*2;
-  for(let i=plan.trails-1;i>=0;i--)line(x-r+span*tail,y+r*.38-span*.38*tail+i*2,x-r+span*head,y+r*.38-span*.38*head+i*2,i===0?3*s:1,plan.colors[Math.min(i,2)],i? .55:1);
+  const head=clamp(t*3.6),tail=clamp((t-.40)*2.7),span=width*1.10;
+  const px=a=>-width*.05+span*a,py=a=>height*(.80-.60*a);
+  // Both endpoints extend past the viewport. At the peak, the entire diagonal
+  // is visible; the tail then follows the tip off the opposite edge.
+  for(let i=plan.trails-1;i>=0;i--)line(px(tail),py(tail)+i*3*s,px(head),py(head)+i*3*s,i===0?Math.max(3,height*.025)*s:Math.max(1,height*.006),plan.colors[Math.min(i,2)],i?.50:1);
+  particleX=px(head);particleY=py(head);
  }else if(plan.kind==='pierce'){
-  const head=Math.min(1,t*3.4),tail=Math.max(0,head-.72);
-  line(x-r+r*2*tail,y,x-r+r*2*head,y,2*s,plan.colors[0]);
-  const tip=x-r+r*2*head;line(tip-r*.20,y-r*.12,tip,y,2,plan.colors[1]);line(tip-r*.20,y+r*.12,tip,y,2,plan.colors[1]);
-  for(let i=0;i<plan.trails+1;i++)rect(x-r*.9+r*.35*t,y+(i%2?1:-1)*(4+i*3),r*(.25+i*.07),1,plan.colors[1],.8);
+  const head=clamp(t*4.2),tail=clamp((t-.36)*3),tip=-width*.06+width*1.12*head;
+  line(-width*.06+width*1.12*tail,y,tip,y,Math.max(2,height*.016)*s,plan.colors[0]);
+  line(tip-width*.07,y-height*.04*s,tip,y,2*s,plan.colors[1]);line(tip-width*.07,y+height*.04*s,tip,y,2*s,plan.colors[1]);
+  for(let i=0;i<plan.trails+1;i++)rect(width*(.02+.21*i)+width*.18*t,y+(i%2?1:-1)*height*(.035+i*.025)*s,width*(.17+i*.035),Math.max(1,height*.005),plan.colors[1],.8);
+  particleX=tip;
  }else{
   // Heavy impact: a short solid core, expanding broken diamond and thick rays.
-  if(t<.38)rect(x-3*s,y-3*s,6*s,6*s,plan.colors[0],1-t*.9);
-  const radius=r*(.12+.85*Math.pow(t,.55));
-  for(let i=0;i<8;i++){const a=i*Math.PI/4,inner=radius*.38,outer=radius;
-   line(x+Math.cos(a)*inner,y+Math.sin(a)*inner,x+Math.cos(a)*outer,y+Math.sin(a)*outer,Math.max(1,3*s*(1-t)),plan.colors[i%3],.95);
+  const core=Math.max(5,height*.07)*s;
+  if(t<.38)rect(x-core/2,y-core/2,core,core,plan.colors[0],1-t*.9);
+  const growth=.08+.92*Math.pow(t,.55),rx=width*.53*s*growth,ry=height*.52*s*growth,rays=plan.mode==='over'?16:8;
+  for(let i=0;i<rays;i++){const a=i*Math.PI*2/rays;
+   line(x+Math.cos(a)*rx*.25,y+Math.sin(a)*ry*.25,x+Math.cos(a)*rx,y+Math.sin(a)*ry,Math.max(2,height*.026*s*(1-t)),plan.colors[i%3],.95);
   }
-  const d=radius*.64;
-  for(let i=0;i<4;i++){const a=i*Math.PI/2,b=a+Math.PI/2;line(x+Math.cos(a)*d,y+Math.sin(a)*d,x+Math.cos(b)*d,y+Math.sin(b)*d,1,plan.colors[1],.7);}
+  for(let i=0;i<4;i++){const a=i*Math.PI/2,b=a+Math.PI/2;line(x+Math.cos(a)*rx*.64,y+Math.sin(a)*ry*.64,x+Math.cos(b)*rx*.64,y+Math.sin(b)*ry*.64,Math.max(1,height*.007),plan.colors[1],.7);}
  }
  for(let i=0;i<plan.fragments;i++){
-  const a=i*2.399963+(plan.kind==='pierce'?.2:0),radius=r*(.15+t*(.55+(i%4)*.13));
-  const size=(i%3===0?2:1)*(plan.kind==='shock'?s:1);
-  rect(x+Math.cos(a)*radius,y+Math.sin(a)*radius+(plan.kind==='shock'?t*t*5:0),size,size,plan.colors[i%3],.8);
+  const a=i*2.399963+(plan.kind==='pierce'?.2:0),growth=.05+t*(.55+(i%4)*.13);
+  const size=(i%3===0?2:1)*Math.max(1,height*.012)*s;
+  const rx=width*(plan.kind==='shock'?.42:.065)*s*growth,ry=height*(plan.kind==='shock'?.45:.08)*s*growth;
+  rect(particleX+Math.cos(a)*rx,particleY+Math.sin(a)*ry+(plan.kind==='shock'?t*t*height*.05:0),size,size,plan.colors[i%3],.8);
  }
  return rects;
 }

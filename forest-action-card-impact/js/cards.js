@@ -1,4 +1,4 @@
-import {CardImpact} from './card-impact.js';
+import {CardImpact} from './card-impact.js?v=wide1';
 import {GRADES,TECHNIQUES} from './assessment.js';
 import {phase} from './attack-phase.js';
 import {clamp,smooth,config} from './config.js';

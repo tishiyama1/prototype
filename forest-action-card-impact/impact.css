@@ -1,5 +1,6 @@
 .factor-row{position:relative}
-.card-impact{position:absolute;inset:0;width:100%;height:100%;z-index:3;pointer-events:none;image-rendering:pixelated;image-rendering:crisp-edges}
+.card-impact{position:fixed;inset:0;width:100%;height:100%;z-index:7;pointer-events:none;image-rendering:pixelated;image-rendering:crisp-edges}
+#game-shell.inspect~.card-impact{visibility:hidden}
 .card-phase.prominent-impact[data-phase=action] .factor-row,.card-phase.prominent-impact[data-phase=return] .factor-row{filter:none}
 .card-phase.prominent-impact[data-phase=action] .judgment,.card-phase.prominent-impact[data-phase=return] .judgment{position:relative;bottom:auto;max-width:100%;padding:0;background:none}
 #impact-controls{position:absolute;z-index:5;top:calc(119px + env(safe-area-inset-top,0px));left:50%;transform:translateX(-50%);display:flex;align-items:center;gap:5px;padding:5px 8px;border:1px solid #d5cfaa55;border-radius:9px;background:#142b24ed;white-space:nowrap;font-size:9px;touch-action:manipulation}

@@ -1,5 +1,5 @@
 import {config,moves,resetConfig} from './config.js';
-import {Cards} from './cards.js';
+import {Cards} from './cards.js?v=wide1';
 import {OUTCOMES} from './combat.js';
 const $=id=>document.getElementById(id);
 export const formatTime=s=>{const n=Math.max(0,Math.round(s*10));return `${Math.floor(n/600)}:${String(Math.floor(n/10)%60).padStart(2,'0')}.${n%10}`;};

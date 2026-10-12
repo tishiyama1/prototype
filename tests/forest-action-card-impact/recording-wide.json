@@ -1,0 +1,229 @@
+{
+  "clips": [
+    {
+      "name": "slash-normal",
+      "file": "/workspace/scratch/1914fb077918/impact-qa/wide-slash-normal.mp4",
+      "frames": 51,
+      "recordMs": 1919,
+      "observedImpact": {
+        "scope": "viewport",
+        "bounds": {
+          "width": 1280,
+          "height": 720
+        },
+        "mode": "normal",
+        "triggered": true,
+        "active": true,
+        "move": "slash",
+        "kind": "sweep",
+        "critical": false,
+        "age": 0,
+        "duration": 0.22,
+        "rectangles": 10,
+        "pixels": {
+          "width": 427,
+          "height": 240
+        },
+        "preview": true
+      },
+      "probe": {
+        "duration": "1.566667",
+        "size": "84725"
+      }
+    },
+    {
+      "name": "slash-over",
+      "file": "/workspace/scratch/1914fb077918/impact-qa/wide-slash-over.mp4",
+      "frames": 69,
+      "recordMs": 1996,
+      "observedImpact": {
+        "scope": "viewport",
+        "bounds": {
+          "width": 1280,
+          "height": 720
+        },
+        "mode": "over",
+        "triggered": true,
+        "active": true,
+        "move": "slash",
+        "kind": "sweep",
+        "critical": false,
+        "age": 0,
+        "duration": 0.22,
+        "rectangles": 26,
+        "pixels": {
+          "width": 427,
+          "height": 240
+        },
+        "preview": true
+      },
+      "probe": {
+        "duration": "1.566667",
+        "size": "92955"
+      }
+    },
+    {
+      "name": "thrust-normal",
+      "file": "/workspace/scratch/1914fb077918/impact-qa/wide-thrust-normal.mp4",
+      "frames": 75,
+      "recordMs": 2007,
+      "observedImpact": {
+        "scope": "viewport",
+        "bounds": {
+          "width": 1280,
+          "height": 720
+        },
+        "mode": "normal",
+        "triggered": true,
+        "active": true,
+        "move": "thrust",
+        "kind": "pierce",
+        "critical": false,
+        "age": 0,
+        "duration": 0.22,
+        "rectangles": 72,
+        "pixels": {
+          "width": 427,
+          "height": 240
+        },
+        "preview": true
+      },
+      "probe": {
+        "duration": "1.566667",
+        "size": "91907"
+      }
+    },
+    {
+      "name": "thrust-over",
+      "file": "/workspace/scratch/1914fb077918/impact-qa/wide-thrust-over.mp4",
+      "frames": 78,
+      "recordMs": 1976,
+      "observedImpact": {
+        "scope": "viewport",
+        "bounds": {
+          "width": 1280,
+          "height": 720
+        },
+        "mode": "over",
+        "triggered": true,
+        "active": true,
+        "move": "thrust",
+        "kind": "pierce",
+        "critical": false,
+        "age": 0,
+        "duration": 0.22,
+        "rectangles": 84,
+        "pixels": {
+          "width": 427,
+          "height": 240
+        },
+        "preview": true
+      },
+      "probe": {
+        "duration": "1.566667",
+        "size": "99129"
+      }
+    },
+    {
+      "name": "heavy-normal",
+      "file": "/workspace/scratch/1914fb077918/impact-qa/wide-heavy-normal.mp4",
+      "frames": 63,
+      "recordMs": 2109,
+      "observedImpact": {
+        "scope": "viewport",
+        "bounds": {
+          "width": 1280,
+          "height": 720
+        },
+        "mode": "normal",
+        "triggered": true,
+        "active": true,
+        "move": "heavy",
+        "kind": "shock",
+        "critical": false,
+        "age": 0,
+        "duration": 0.28,
+        "rectangles": 157,
+        "pixels": {
+          "width": 427,
+          "height": 240
+        },
+        "preview": true
+      },
+      "probe": {
+        "duration": "1.566667",
+        "size": "108578"
+      }
+    },
+    {
+      "name": "heavy-over",
+      "file": "/workspace/scratch/1914fb077918/impact-qa/wide-heavy-over.mp4",
+      "frames": 64,
+      "recordMs": 2099,
+      "observedImpact": {
+        "scope": "viewport",
+        "bounds": {
+          "width": 1280,
+          "height": 720
+        },
+        "mode": "over",
+        "triggered": true,
+        "active": true,
+        "move": "heavy",
+        "kind": "shock",
+        "critical": false,
+        "age": 0,
+        "duration": 0.28,
+        "rectangles": 341,
+        "pixels": {
+          "width": 427,
+          "height": 240
+        },
+        "preview": true
+      },
+      "probe": {
+        "duration": "1.533333",
+        "size": "111886"
+      }
+    },
+    {
+      "name": "heavy-critical",
+      "file": "/workspace/scratch/1914fb077918/impact-qa/wide-heavy-critical.mp4",
+      "frames": 64,
+      "recordMs": 2097,
+      "observedImpact": {
+        "scope": "viewport",
+        "bounds": {
+          "width": 1280,
+          "height": 720
+        },
+        "mode": "normal",
+        "triggered": true,
+        "active": true,
+        "move": "heavy",
+        "kind": "shock",
+        "critical": true,
+        "age": 0.016700000000000825,
+        "duration": 0.28,
+        "rectangles": 559,
+        "pixels": {
+          "width": 427,
+          "height": 240
+        },
+        "preview": true
+      },
+      "probe": {
+        "duration": "1.566667",
+        "size": "120188"
+      }
+    }
+  ],
+  "probe": {
+    "format": {
+      "duration": "10.933333",
+      "size": "704404"
+    }
+  },
+  "errors": [],
+  "description": "Real browser frames; original timing retained, duplicated to H264 30fps. All 7 clips decoded and verified before joining. No synthetic animation."
+}

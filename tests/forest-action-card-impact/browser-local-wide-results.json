@@ -1,0 +1,130 @@
+{
+  "base": "http://127.0.0.1:8011/",
+  "checks": [
+    {
+      "name": "preview slash normal: visible pixels and pause"
+    },
+    {
+      "name": "preview thrust normal: visible pixels and pause"
+    },
+    {
+      "name": "preview heavy normal: visible pixels and pause"
+    },
+    {
+      "name": "preview slash over: visible pixels and pause"
+    },
+    {
+      "name": "preview thrust over: visible pixels and pause"
+    },
+    {
+      "name": "preview heavy over: visible pixels and pause"
+    },
+    {
+      "name": "CRITICAL is isolated preview data"
+    },
+    {
+      "name": "OFF adds no preview effect"
+    },
+    {
+      "name": "preview resize / 844x390 and 667x375 / pointer-transparent canvas"
+    },
+    {
+      "name": "battle heavy BREAK: real resolver / impact event / unchanged damage / return"
+    },
+    {
+      "name": "battle heavy STRONG HIT: real resolver / impact event / unchanged damage / return"
+    },
+    {
+      "name": "battle slash COUNTER: real resolver / impact event / unchanged damage / return"
+    },
+    {
+      "name": "battle thrust COUNTER: real resolver / impact event / unchanged damage / return"
+    },
+    {
+      "name": "battle slash HIT: real resolver / impact event / unchanged damage / return"
+    },
+    {
+      "name": "battle thrust HIT: real resolver / impact event / unchanged damage / return"
+    },
+    {
+      "name": "battle heavy MISS: real resolver / impact event / unchanged damage / return"
+    },
+    {
+      "name": "battle slash GUARD: real resolver / impact event / unchanged damage / return"
+    },
+    {
+      "name": "battle heavy EVADE: real resolver / impact event / unchanged damage / return"
+    },
+    {
+      "name": "OFF / NORMAL / OVER commit identical damage, counts and presentation time"
+    },
+    {
+      "name": "tap/Space skip applies once; retry removes stale canvas/effect"
+    },
+    {
+      "name": "killing hit reaches result after phase; immediate retry"
+    },
+    {
+      "name": "original movement / touch swipe / toolbar separated / portrait guidance"
+    },
+    {
+      "name": "actual recording MP4 metadata and playback",
+      "detail": "{\"error\":null,\"width\":960,\"height\":540,\"duration\":10.933333}"
+    },
+    {
+      "name": "no application JavaScript / WebGL / failed request errors"
+    }
+  ],
+  "errors": [],
+  "cancelledMedia": [
+    "http://127.0.0.1:8011/forest-action-card-impact/media/card-impact-wide.mp4: net::ERR_ABORTED"
+  ],
+  "equal": [
+    {
+      "hp": 90,
+      "counts": {
+        "hit": 1,
+        "evaded": 0,
+        "guarded": 0,
+        "whiff": 0,
+        "interrupted": 0,
+        "intercept": 0
+      },
+      "attacks": 1,
+      "presentation": 1.358333333333331
+    },
+    {
+      "hp": 90,
+      "counts": {
+        "hit": 1,
+        "evaded": 0,
+        "guarded": 0,
+        "whiff": 0,
+        "interrupted": 0,
+        "intercept": 0
+      },
+      "attacks": 1,
+      "presentation": 1.358333333333331
+    },
+    {
+      "hp": 90,
+      "counts": {
+        "hit": 1,
+        "evaded": 0,
+        "guarded": 0,
+        "whiff": 0,
+        "interrupted": 0,
+        "intercept": 0
+      },
+      "attacks": 1,
+      "presentation": 1.358333333333331
+    }
+  ],
+  "video": {
+    "error": null,
+    "width": 960,
+    "height": 540,
+    "duration": 10.933333
+  },
+  "environment": "Chromium / SwiftShader; physical iPhone Safari untested; battle fixtures arranged in browser harness only"
+}

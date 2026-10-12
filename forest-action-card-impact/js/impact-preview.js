@@ -1,4 +1,4 @@
-import {Cards} from './cards.js';
+import {Cards} from './cards.js?v=wide1';
 import {ImpactUI} from './impact-ui.js';
 import {createTimeline,phase} from './attack-phase.js';
 import {capture,resolve} from './combat.js';

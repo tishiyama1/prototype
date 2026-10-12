@@ -7,7 +7,7 @@ import {CharacterView} from './character.js';
 import {Forest} from './forest.js';
 import {Effects} from './effects.js';
 import {AudioEngine} from './audio.js';
-import {UI} from './ui.js';
+import {UI} from './ui.js?v=wide1';
 import {poses} from './presentation.js';
 import {EnvironmentEffects} from './environment-effects.js';
 import {EnvironmentUI} from './environment-ui.js';
