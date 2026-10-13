@@ -1,0 +1,18 @@
+{
+  "checks": [
+    "Protected combat / assessment / input / arena and enemy modules identical to growth version",
+    "One fixed target; rear cannot be selected, damaged or collide with front actors",
+    "Rear actors stay fixed, no melee, same cast clock across three stages",
+    "All stages have identical enemy HP, attack damage and warning timings",
+    "189 snapshots preserve original outcomes and exactly four assessment factors",
+    "Positioning: out-of-range misses; flank beats guard; startup must fit recovery",
+    "Rally extends only wary/guard; it never erases a punishable recovery",
+    "Rear shot aims once with 1.10s warning and finite flight; no lock-on or inevitable damage",
+    "Guardian always dies, no multiplier or counter, all stages and all three damage paths",
+    "Front death alone starts escape, clears threats, then wins while rear remains alive",
+    "Card skip / OFF commits once, freezes all rear clocks and projectiles",
+    "Blocked/missed attacks need extra ready time; favorable hits keep original cooldown",
+    "Retry clears defeat / escape / shots / swords and retains stage; no target UI present"
+  ],
+  "passed": 13
+}
