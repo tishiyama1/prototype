@@ -1,0 +1,30 @@
+import {journeyContext,effectivePower,postureInfo} from './journey-context.js';
+import {Game as Progression} from './progression-base.js?v=journey1';
+import {Game as Duel} from './duel-base.js?v=journey1';
+import {RearLord,RearSupport} from './rear-actors.js?v=journey1';
+import {TargetLock,distance} from './target.js';
+import {separateTeam,segmentDistance} from './team-space.js';
+import {tickGuardian} from './guardian.js';
+import {rearPosition} from './rear-follow.js?v=journey1';
+export class Game extends Progression{
+ reset(playing=true){this.stageId=journeyContext.creation?'early':'middle';super.reset(playing);this.stage={...this.stage,heroHP:100,heroPower:1,lordScale:journeyContext.height/1.5};this.player.hp=this.player.maxHP=100;this.lord=new RearLord(this.stage);this.moveUses={slash:0,thrust:0,heavy:0};this.support=new RearSupport();this.player.x=-2.8;this.player.z=1;this.front.x=2.2;this.front.z=-.4;Object.assign(this.lord,rearPosition(this.player,this.front));Object.assign(this.support,rearPosition(this.front,this.player));this.allies=[this.player,this.lord];this.enemies=[this.front];this.actors=[this.player,this.lord,this.front,this.support];this.targets=new TargetLock();this.targets.set(this.front);this.enemy=this.front;this.player.focusId=this.front.id;this.targets.face(this.player);this.fleeing=null;this.stats.rearPulses=0;}
+ get currentMoves(){return Object.fromEntries(Object.entries(super.currentMoves).map(([id,m])=>[id,{...m,damage:Math.max(1,Math.round(m.damage*effectivePower(this.player,id)))}]));}
+ commandAttack(){const ok=super.commandAttack();if(ok)this.moveUses[this.selected]++;return ok;}
+ setStage(id,playing=false){super.setStage(journeyContext.creation?'early':'middle',playing);}
+ selectEnemy(){return false;}
+ cycleEnemy(){return false;}
+ ensureTarget(){this.enemy=this.front;this.player.focusId=this.front.hp>0?this.front.id:null;}
+ hostileTarget(enemy){enemy.focusId='player';return this.player;}
+ finishCinematic(){const actors=this.actors,r=this.cinematic?.result;this.actors=[this.player,this.front];try{super.finishCinematic();if(r)this.player.attackCooldown+=r.outcome==='guarded'?.48:r.outcome==='whiff'?.18:0;}finally{this.actors=actors;}}
+ fire(source,target){this.stats.enemyShots++;this.projectiles.push({id:++this.nextBolt,team:'enemy',power:8,sourceId:source.id,targetId:'player',x:source.x+source.aim.x*.8,z:source.z+source.aim.z*.8,vx:source.aim.x*5.6,vz:source.aim.z*5.6,life:4.2});}
+ castLord(){return super.castLord(this.front);}
+ tickBolts(dt){for(const b of this.projectiles){if(this.guardian)break;const old={x:b.x,z:b.z};b.x+=b.vx*dt;b.z+=b.vz*dt;b.life-=dt;const target=b.team==='ally'?this.front:this.player;if(target.hp>0&&segmentDistance(target,old,b)<target.radius+.1){if(b.team==='ally')this.lordHit(target,b.power);else this.deal(this.support,target,b.power);b.life=0;}}this.projectiles=this.projectiles.filter(b=>b.life>0);}
+ checkEnd(){if(!this.allies||this.guardian)return;if(this.lord.hp<=0){if(this.status!=='dead'){this.status='dead';this.events.push({type:'result'});}return;}if(this.front.hp<=0&&!this.fleeing&&this.status!=='clear'){this.fleeing={time:0,total:.90};this.projectiles=[];this.swords=[];this.support.setState('retreat',.90);this.support.intent='flee';this.support.telegraph=null;this.lord.setState('wary',10);this.events.push({type:'rear-flee'});}}
+ step(dt,input={}){if(this.status!=='playing')return;if(this.guardian){tickGuardian(this,dt);return;}if(this.fleeing){this.fleeing.time+=dt;this.presentationTime+=dt;this.support.time+=dt;this.support.walk+=dt*22;this.support.x+=dt*6;this.support.z-=dt*2.5;if(this.fleeing.time>=this.fleeing.total){this.status='clear';this.support.fled=true;this.fleeing=null;this.events.push({type:'result'});}return;}if(this.cinematic){Duel.prototype.step.call(this,dt,input);return;}this.checkEnd();if(this.status!=='playing'||this.fleeing)return;if(input.move)this.select(input.move);if(input.attack&&this.commandAttack())return;this.elapsed+=dt;
+  this.player.update(dt,input,this.front);this.lord.update(dt,this);this.front.invulnerable=Math.max(0,this.front.invulnerable-dt);const before=this.player.hp,state=this.front.state;this.front.focusId='player';this.damageSource=this.front;this.front.update(dt,this.player);this.damageSource=null;
+  if(state==='windup'&&this.front.state==='attack')this.events.push({type:'npc-attack',actorId:this.front.id,move:this.front.kind==='heavy'?'heavy':'slash'});if(this.front.damageEvent){this.front.damageEvent=false;if(before!==this.player.hp)this.events.push({type:'hurt',actorId:'player',sourceId:this.front.id,x:this.player.x,z:this.player.z,damage:before-this.player.hp});}if(this.guardian)return;
+  this.support.update(dt,this.player,this);this.tickBolts(dt);if(this.guardian)return;this.tickSwords(dt);separateTeam([this.player,this.front]);this.targets.face(this.player);if(input.dash&&this.player.dash&&this.player.dash.time<=dt)this.events.push({type:'dodge'});this.checkEnd();
+ }
+ debugScenario(kind){this.reset();this.debugRun=true;this.player.x=-2;this.player.z=1;this.front.x=0;this.front.z=1;this.front.setState('recovery',3);if(kind==='fatal'){this.player.hp=1;this.player.invulnerable=0;this.deal(this.front,this.player,12);}if(kind==='attack')this.castLord();if(kind==='victory'){this.front.hp=0;this.front.setState('dead',Infinity);this.checkEnd();}if(kind==='rear'){this.support.time=3.5;this.support.update(1/120,this.player,this);}return true;}
+ snapshot(){return {...super.snapshot(),version:'journey-battle-1',journey:{creation:journeyContext.creation,height:journeyContext.height,uses:{...this.moveUses},weapon:journeyContext.weaponName,fit:journeyContext.fit},targetId:'enemy-a',fleeing:this.fleeing?{...this.fleeing}:null,busy:!!this.cinematic||!!this.guardian||!!this.fleeing,rear:{fled:!!this.support.fled,state:this.support.state,intent:this.support.intent,remaining:this.support.remaining,aim:{...this.support.aim},telegraph:this.support.telegraph?{...this.support.telegraph}:null},rules:{target:'enemy-a',rearUntargetable:true,rearMovement:'follow-own-front',victory:'enemy-front-defeated',lethal:'guardian-defeat'}};}
+}

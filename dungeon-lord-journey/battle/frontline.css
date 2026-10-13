@@ -1,0 +1,33 @@
+/* Keep the battle field open: two HP meters, one settings button, attack controls. */
+#hud{z-index:9;top:calc(12px + env(safe-area-inset-top,0px));gap:18px;align-items:flex-start}
+#hud .identity,#team-hud,#observation,#duo-notice,.stick-wrap{display:none}
+#hud .health,#hud .enemy-health{display:block;width:145px;max-width:145px;font-size:11px}
+#hud .health{padding:7px 10px;background:#142725ae;border:1px solid #c9c9a433;border-radius:8px}
+#hud .hp-track{height:4px;margin-top:5px}
+#hud .small-button{min-width:56px;min-height:40px;border-radius:8px;background:#142725ce}
+#actor-labels,.actor-label{pointer-events:none!important}
+.actor-label,.actor-label.rear{border:0;background:transparent;text-shadow:0 1px 3px #000,0 0 5px #000;min-width:0;opacity:.85;padding:0;font-size:10px}
+.actor-label i,.actor-label small,.actor-label.selected{border:0}
+.actor-label:not(.rear){display:none}
+.actor-label.rear i,.actor-label.rear small{display:none}
+.actor-label.rear.warning small{display:block;color:#f0c0ff;background:#302142b8;border-radius:4px;padding:2px 4px}
+.actions{flex-direction:row;align-items:flex-end;right:calc(20px + var(--safe-right));bottom:calc(16px + env(safe-area-inset-bottom,0px));gap:10px}
+.moves{gap:5px}.moves button{min-width:54px;min-height:45px;padding:9px 12px;background:#142725ce}.moves small{display:none}
+#attack{width:78px;height:78px;gap:3px}#attack b{font-size:22px}#attack span{font-size:9px}
+#swipe-hint{left:calc(24px + var(--safe-left));bottom:calc(18px + env(safe-area-inset-bottom,0px));transform:none;font-size:10px;opacity:.7}
+#dash-ready{font-size:9px}#guardian-banner{max-width:80vw}.busy #actor-labels{opacity:.2}
+#debug-panel{position:absolute;inset:0;width:100%;height:100%;max-height:none;z-index:12;display:flex;align-items:center;justify-content:center;padding:16px max(16px,var(--safe-left)) 16px max(16px,var(--safe-right));background:#081a16cf;border:0;border-radius:0;overflow:hidden;touch-action:none}
+.settings-card{width:min(640px,100%);max-height:calc(100dvh - 32px - env(safe-area-inset-top,0px) - env(safe-area-inset-bottom,0px));overflow:auto;overscroll-behavior:contain;touch-action:pan-y;padding:0 22px 20px;background:#142e28;border:1px solid #dac99566;border-radius:14px;box-shadow:0 18px 70px #0008;font-size:12px}
+.debug-header{position:sticky;top:0;z-index:2;background:#142e28;padding:12px 0;border-bottom:1px solid #e0d4a633}.debug-header b{font-size:18px}.debug-header button{min-width:44px;min-height:44px}
+.settings-section{padding:10px 0;border-bottom:1px solid #daca9833}.settings-section h3{font-size:13px;color:#e9d4a1;margin:7px 0}.settings-section p{font-size:12px;line-height:1.8;margin:8px 0}
+#debug-panel #stage-controls{margin:8px 0;gap:8px}#debug-panel #stage-controls button{min-width:76px;min-height:42px;border-radius:7px;font-size:12px;padding:9px 12px}
+#debug-panel #environment-controls,#debug-panel #impact-controls{position:static;transform:none;display:flex;flex-wrap:wrap;visibility:visible;gap:6px;margin:10px 0;padding:7px 0;white-space:normal;background:none;border:0;font-size:11px}
+#debug-panel #environment-controls>span,#debug-panel #impact-controls>span{min-width:52px;font-size:10px}
+#debug-panel #environment-controls button,#debug-panel #impact-controls button{min-height:40px;padding:7px 14px;font-size:11px}
+.settings-utilities{display:flex;flex-wrap:wrap;gap:8px}.settings-utilities .small-button{min-height:40px}
+.advanced-settings{margin-top:16px}.advanced-settings summary{padding:12px 0;cursor:pointer;font-size:13px;color:#e4d4a7}.settings-card .primary{width:100%}#debug-panel input[type=range]{touch-action:pan-x}
+.settings-open #controls,.settings-open #actor-labels{visibility:hidden}.settings-open #hud{pointer-events:none}
+#intro .instructions{grid-template-columns:1fr 1fr}#intro h1{font-size:28px}#intro .version-links{display:none}.panel{max-height:90dvh;overflow:auto}
+@media(max-height:450px){#hud{top:calc(8px + env(safe-area-inset-top,0px));gap:10px;left:calc(12px + var(--safe-left));right:calc(12px + var(--safe-right))}#hud .health,#hud .enemy-health{width:110px;max-width:110px;font-size:10px;padding:5px 8px}#hud .small-button{min-height:36px}.actions{right:calc(12px + var(--safe-right));bottom:calc(10px + env(safe-area-inset-bottom,0px));gap:7px}#attack{width:65px;height:65px}#attack b{font-size:19px}.moves button{min-width:48px;min-height:42px;padding:8px 9px;font-size:11px}#swipe-hint{left:calc(16px + var(--safe-left));bottom:calc(12px + env(safe-area-inset-bottom,0px));font-size:9px}.actor-label.rear{font-size:9px}.settings-card{max-height:calc(100dvh - 20px - env(safe-area-inset-top,0px) - env(safe-area-inset-bottom,0px));padding:0 18px 15px}#debug-panel{padding-top:10px;padding-bottom:10px}#intro h1{font-size:24px}}
+@media(max-width:720px){#swipe-hint{max-width:260px;white-space:normal;text-align:left;line-height:1.8}#dash-ready{display:block;margin-left:0}}
+#game-shell.settings-open #debug-panel #environment-controls,#game-shell.settings-open #debug-panel #impact-controls{visibility:visible}

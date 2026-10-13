@@ -1,0 +1,10 @@
+{
+  "base": "http://127.0.0.1:8020/",
+  "checks": [
+    "Three viewport sizes: both actions visible and region caption not clipped",
+    "Unreadable save is retained until explicit restart, then backed up; new save reloads",
+    "A result message from outside the active combat iframe is ignored"
+  ],
+  "errors": [],
+  "device": "Chromium touch emulation, not iPhone Safari"
+}
