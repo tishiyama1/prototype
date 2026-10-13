@@ -1,0 +1,42 @@
+name: Forest Action 10-battle validation
+on:
+  workflow_dispatch:
+  pull_request:
+    paths: ['forest-action-gauntlet/**', 'tests/forest-action-gauntlet/**', '.github/workflows/forest-action-gauntlet-validation.yml']
+  push:
+    branches: [main]
+    paths: ['forest-action-gauntlet/**', 'tests/forest-action-gauntlet/**', '.github/workflows/forest-action-gauntlet-validation.yml']
+permissions:
+  contents: read
+jobs:
+  gauntlet:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - run: node tests/forest-action-gauntlet/logic.mjs
+      - run: node tests/forest-action-gauntlet/balance.mjs
+      - name: Check protected combat and journey modes
+        run: |
+          node tests/forest-action-frontline/logic.mjs
+          node tests/dungeon-lord-journey/logic.mjs
+      - name: Install test browser
+        run: |
+          npm install --prefix "$RUNNER_TEMP/gauntlet-tools" playwright@1.56.1
+          "$RUNNER_TEMP/gauntlet-tools/node_modules/.bin/playwright" install --with-deps chromium
+          sudo apt-get install -y fonts-noto-cjk
+      - name: Play ten battles in browser
+        env:
+          NODE_PATH: ${{ runner.temp }}/gauntlet-tools/node_modules
+          FOREST_QA_OUTPUT: ${{ runner.temp }}/gauntlet-evidence
+        run: node tests/forest-action-gauntlet/browser.cjs
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: gauntlet-browser-evidence
+          path: ${{ runner.temp }}/gauntlet-evidence/

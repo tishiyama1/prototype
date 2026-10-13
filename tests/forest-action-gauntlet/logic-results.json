@@ -1,0 +1,17 @@
+{
+  "passed": 12,
+  "checks": [
+    "10 distinct encounters, 5 frontline styles and escalating rear profiles",
+    "Four weapon timings, real close-range spear failure, short dagger and long spear reach",
+    "Posture reduces but does not forbid damage; dagger tolerates instability better",
+    "Shield blocks frontal light attacks; committed heavy breaks at close range; large enemies expose longer openings",
+    "Mastery strengthens performance and preserves range, minimum range and opening rules",
+    "Equipment environment includes weapon, armor and boots rather than weapon alone",
+    "Lunge is gated by loot and distinct from ordinary reach/startup/recovery",
+    "Exactly 3 legal rewards per win, accepted once and carry to next battle including stage10",
+    "All modes automate distinct Lord attacks; ordinary magic does not stagger or cancel enemy attack",
+    "Rear projectiles remain hostile, knockback displaces hero, grip reduces it and sacrifice ends run",
+    "Debug jumps mark records and preserve acquired loadout; retry resets progression",
+    "Baseline and journey paths have no tracked modifications; renderer asset paths use shared pinned assets"
+  ]
+}

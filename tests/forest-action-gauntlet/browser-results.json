@@ -1,0 +1,252 @@
+{
+  "checks": [
+    "Real CDP touch hold/release/swipe controls use actual input and physics",
+    "Five real judgment cards render in landscape",
+    "Loot checkpoint reload retains three choices and completed fight",
+    "Usage cap and visible rarity promotion after three fights",
+    "10 full engine victories, 30 offered choices, selected loot carried and final report",
+    "Separated lab shows telemetry, factors, loot and arbitrary stage jump",
+    "Loan weapons and mode switching restart with marked/reset progression",
+    "Real guardian sacrifice ends run, saved defeat and retry",
+    "844/667 landscape and portrait guide, modal remains within screen"
+  ],
+  "errors": [],
+  "rows": [
+    {
+      "stage": 1,
+      "name": "木漏れ日の決闘",
+      "mode": "standard",
+      "weapon": "sword",
+      "win": true,
+      "seconds": 23.42,
+      "actionSeconds": 6.19,
+      "hero": 204,
+      "lord": 20,
+      "hp": 100,
+      "attacks": 11,
+      "hits": 11,
+      "gains": {
+        "dagger": 0,
+        "sword": 4,
+        "greatsword": 0,
+        "spear": 0,
+        "lunge": 0
+      },
+      "promoted": [],
+      "debug": false
+    },
+    {
+      "stage": 2,
+      "name": "槍の間合い",
+      "mode": "standard",
+      "weapon": "sword",
+      "win": true,
+      "seconds": 28.02,
+      "actionSeconds": 13.77,
+      "hero": 155,
+      "lord": 80,
+      "hp": 100,
+      "attacks": 9,
+      "hits": 9,
+      "gains": {
+        "dagger": 0,
+        "sword": 4,
+        "greatsword": 0,
+        "spear": 0,
+        "lunge": 0
+      },
+      "promoted": [],
+      "debug": false
+    },
+    {
+      "stage": 3,
+      "name": "駆け抜ける牙",
+      "mode": "standard",
+      "weapon": "sword",
+      "win": true,
+      "seconds": 30.89,
+      "actionSeconds": 10.3,
+      "hero": 195,
+      "lord": 40,
+      "hp": 100,
+      "attacks": 13,
+      "hits": 10,
+      "gains": {
+        "dagger": 0,
+        "sword": 4,
+        "greatsword": 0,
+        "spear": 0,
+        "lunge": 3
+      },
+      "promoted": [
+        "sword"
+      ],
+      "debug": false
+    },
+    {
+      "stage": 4,
+      "name": "盾の向こう",
+      "mode": "standard",
+      "weapon": "sword",
+      "win": true,
+      "seconds": 46.83,
+      "actionSeconds": 18.34,
+      "hero": 146,
+      "lord": 100,
+      "hp": 100,
+      "attacks": 19,
+      "hits": 7,
+      "gains": {
+        "dagger": 0,
+        "sword": 4,
+        "greatsword": 0,
+        "spear": 0,
+        "lunge": 0
+      },
+      "promoted": [],
+      "debug": false
+    },
+    {
+      "stage": 5,
+      "name": "狭い採掘路",
+      "mode": "standard",
+      "weapon": "sword",
+      "win": true,
+      "seconds": 27.98,
+      "actionSeconds": 13.72,
+      "hero": 189,
+      "lord": 63,
+      "hp": 100,
+      "attacks": 9,
+      "hits": 9,
+      "gains": {
+        "dagger": 0,
+        "sword": 4,
+        "greatsword": 0,
+        "spear": 0,
+        "lunge": 0
+      },
+      "promoted": [],
+      "debug": false
+    },
+    {
+      "stage": 6,
+      "name": "大鉈の空白",
+      "mode": "standard",
+      "weapon": "sword",
+      "win": true,
+      "seconds": 31.3,
+      "actionSeconds": 17.04,
+      "hero": 189,
+      "lord": 91,
+      "hp": 100,
+      "attacks": 9,
+      "hits": 9,
+      "gains": {
+        "dagger": 0,
+        "sword": 4,
+        "greatsword": 0,
+        "spear": 0,
+        "lunge": 0
+      },
+      "promoted": [],
+      "debug": false
+    },
+    {
+      "stage": 7,
+      "name": "踏み込む獣",
+      "mode": "standard",
+      "weapon": "sword",
+      "win": true,
+      "seconds": 18.32,
+      "actionSeconds": 4.06,
+      "hero": 243,
+      "lord": 20,
+      "hp": 100,
+      "attacks": 9,
+      "hits": 9,
+      "gains": {
+        "dagger": 0,
+        "sword": 4,
+        "greatsword": 0,
+        "spear": 0,
+        "lunge": 0
+      },
+      "promoted": [],
+      "debug": false
+    },
+    {
+      "stage": 8,
+      "name": "盾と速い弾",
+      "mode": "standard",
+      "weapon": "sword",
+      "win": true,
+      "seconds": 48.17,
+      "actionSeconds": 13.89,
+      "hero": 208,
+      "lord": 61,
+      "hp": 100,
+      "attacks": 23,
+      "hits": 8,
+      "gains": {
+        "dagger": 0,
+        "sword": 4,
+        "greatsword": 0,
+        "spear": 0,
+        "lunge": 0
+      },
+      "promoted": [
+        "sword"
+      ],
+      "debug": false
+    },
+    {
+      "stage": 9,
+      "name": "槍と二つの予兆",
+      "mode": "standard",
+      "weapon": "sword",
+      "win": true,
+      "seconds": 24.95,
+      "actionSeconds": 12.17,
+      "hero": 214,
+      "lord": 60,
+      "hp": 100,
+      "attacks": 8,
+      "hits": 8,
+      "gains": {
+        "dagger": 0,
+        "sword": 4,
+        "greatsword": 0,
+        "spear": 0,
+        "lunge": 0
+      },
+      "promoted": [],
+      "debug": false
+    },
+    {
+      "stage": 10,
+      "name": "最後の大振り",
+      "mode": "standard",
+      "weapon": "sword",
+      "win": true,
+      "seconds": 31.05,
+      "actionSeconds": 16.79,
+      "hero": 228,
+      "lord": 80,
+      "hp": 100,
+      "attacks": 9,
+      "hits": 9,
+      "gains": {
+        "dagger": 0,
+        "sword": 4,
+        "greatsword": 0,
+        "spear": 0,
+        "lunge": 0
+      },
+      "promoted": [],
+      "debug": false
+    }
+  ],
+  "device": "Chromium touch + software GPU, not actual iPhone Safari",
+  "method": "Real touch gestures and real engine tactical input; no forced victory or reduced enemy HP"
+}
