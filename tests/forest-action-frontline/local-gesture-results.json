@@ -1,7 +1,8 @@
 {
   "base": "http://127.0.0.1:8018/",
   "checks": [
-    "Two fingers: hold the field / attack / keep approaching after the cards / release",
+    "Two fingers: hold the field / attack / keep the hold after skipping the cards / release",
+    "Settings pause the cards and keep all effect settings visible",
     "Native touch scroll in settings / battle remains paused / closing resumes"
   ],
   "errors": [],

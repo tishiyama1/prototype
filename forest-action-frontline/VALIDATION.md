@@ -10,7 +10,9 @@
 
 ローカルChromiumで森・洞窟の3段階を検証し32群すべて通過。後衛追従、援護、身代わり敗北、再戦、敵後衛の射撃予兆、4枚カード・スキップ・時間停止、敵後衛逃走、設定画面の停止・復帰、設定項目の収納、スティック撤去、押し続けて接近・離して離脱、上下左右のスワイプ、入力キャンセル、844×390／667×375の横画面、縦画面案内を確認。JavaScript実行エラーなし。
 
-結果：`tests/forest-action-frontline/local-browser-results.json`。マルチタッチと設定のネイティブタッチスクロールも `gestures.cjs` の2群が通過。結果：`tests/forest-action-frontline/local-gesture-results.json`。公開後の検証記録は追記します。
+結果：`tests/forest-action-frontline/local-browser-results.json`。マルチタッチと設定のネイティブタッチスクロールも `gestures.cjs` の3群が通過。結果：`tests/forest-action-frontline/local-gesture-results.json`。公開URLでも32群すべて通過。実行エラーなし。アプリ公開コミット：`28b6d6017233e5a5271782ff424636f250afc5ec`、Pages run `38385246983` 成功。結果：`tests/forest-action-frontline/public-browser-results.json`。
+
+その後、カード演出中に設定を開いてもENV／IMPACTが隠れないCSS補正を追加し、ローカルの追加3群で確認しました。追加の公開タッチ検証は接続処理が中断したため、記録はローカルの確認結果です。
 
 iPhone実機Safari、実機FPS／発熱、人間による操作感は未検証です。
 ## 固定操作モデル

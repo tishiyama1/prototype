@@ -46,6 +46,6 @@
 
 ## 検証と残課題
 
-`node tests/forest-action-frontline/logic.mjs`、`balance.mjs`、`browser.cjs`。詳細は `VALIDATION.md`。
+`node tests/forest-action-frontline/logic.mjs`、`balance.mjs`、`browser.cjs`、`gestures.cjs`。詳細は `VALIDATION.md`。
 
 自動離脱と後衛追従で援護が届きやすくなりました。固定操作モデルでは、終盤も無操作の自動離脱だけで長時間後に勝てるケースがあります。今回の変更は操作・追従・UIに限定し、敵の強さや援護威力は調整していません。iPhone実機Safari、実機FPS／発熱、人間による操作感は未検証です。
