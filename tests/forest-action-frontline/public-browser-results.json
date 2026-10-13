@@ -1,0 +1,32 @@
+{
+  "base": "https://tishiyama1.github.io/prototype/",
+  "checks": [
+    "forest early one target / relative movement / stationary rear",
+    "forest early royal swords / caster-origin magic",
+    "forest early guaranteed sacrifice loss / retry",
+    "forest middle one target / relative movement / stationary rear",
+    "forest middle royal swords / caster-origin magic",
+    "forest middle guaranteed sacrifice loss / retry",
+    "forest late one target / relative movement / stationary rear",
+    "forest late royal swords / caster-origin magic",
+    "forest late guaranteed sacrifice loss / retry",
+    "forest rear warning / four card factors / all timers frozen / skip",
+    "forest front defeated / living rear flees / victory",
+    "forest mobile swipe / 844 and 667 controls / portrait",
+    "cave early one target / relative movement / stationary rear",
+    "cave early royal swords / caster-origin magic",
+    "cave early guaranteed sacrifice loss / retry",
+    "cave middle one target / relative movement / stationary rear",
+    "cave middle royal swords / caster-origin magic",
+    "cave middle guaranteed sacrifice loss / retry",
+    "cave late one target / relative movement / stationary rear",
+    "cave late royal swords / caster-origin magic",
+    "cave late guaranteed sacrifice loss / retry",
+    "cave rear warning / four card factors / all timers frozen / skip",
+    "cave front defeated / living rear flees / victory",
+    "cave mobile swipe / 844 and 667 controls / portrait"
+  ],
+  "errors": [],
+  "device": "Chromium software GPU and touch emulation, not iPhone Safari",
+  "appCommit": "4dff5417705105969e288611d7801613f38ca02c"
+}
