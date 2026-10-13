@@ -1,11 +1,12 @@
-import {Game as Progression} from './progression-base.js';
-import {Game as Duel} from './duel-base.js';
-import {RearLord,RearSupport} from './rear-actors.js';
+import {Game as Progression} from './progression-base.js?v=follow-touch1';
+import {Game as Duel} from './duel-base.js?v=follow-touch1';
+import {RearLord,RearSupport} from './rear-actors.js?v=follow-touch1';
 import {TargetLock,distance} from './target.js';
 import {separateTeam,segmentDistance} from './team-space.js';
 import {tickGuardian} from './guardian.js';
+import {rearPosition} from './rear-follow.js?v=follow-touch1';
 export class Game extends Progression{
- reset(playing=true){super.reset(playing);this.lord=new RearLord(this.stage);this.support=new RearSupport();this.player.x=-2.8;this.player.z=1;this.front.x=2.2;this.front.z=-.4;this.allies=[this.player,this.lord];this.enemies=[this.front];this.actors=[this.player,this.lord,this.front,this.support];this.targets=new TargetLock();this.targets.set(this.front);this.enemy=this.front;this.player.focusId=this.front.id;this.targets.face(this.player);this.fleeing=null;this.stats.rearPulses=0;}
+ reset(playing=true){super.reset(playing);this.lord=new RearLord(this.stage);this.support=new RearSupport();this.player.x=-2.8;this.player.z=1;this.front.x=2.2;this.front.z=-.4;Object.assign(this.lord,rearPosition(this.player,this.front));Object.assign(this.support,rearPosition(this.front,this.player));this.allies=[this.player,this.lord];this.enemies=[this.front];this.actors=[this.player,this.lord,this.front,this.support];this.targets=new TargetLock();this.targets.set(this.front);this.enemy=this.front;this.player.focusId=this.front.id;this.targets.face(this.player);this.fleeing=null;this.stats.rearPulses=0;}
  selectEnemy(){return false;}
  cycleEnemy(){return false;}
  ensureTarget(){this.enemy=this.front;this.player.focusId=this.front.hp>0?this.front.id:null;}
@@ -21,5 +22,5 @@ export class Game extends Progression{
   this.support.update(dt,this.player,this);this.tickBolts(dt);if(this.guardian)return;this.tickSwords(dt);separateTeam([this.player,this.front]);this.targets.face(this.player);if(input.dash&&this.player.dash&&this.player.dash.time<=dt)this.events.push({type:'dodge'});this.checkEnd();
  }
  debugScenario(kind){this.reset();this.debugRun=true;this.player.x=-2;this.player.z=1;this.front.x=0;this.front.z=1;this.front.setState('recovery',3);if(kind==='fatal'){this.player.hp=1;this.player.invulnerable=0;this.deal(this.front,this.player,12);}if(kind==='attack')this.castLord();if(kind==='victory'){this.front.hp=0;this.front.setState('dead',Infinity);this.checkEnd();}if(kind==='rear'){this.support.time=3.5;this.support.update(1/120,this.player,this);}return true;}
- snapshot(){return {...super.snapshot(),version:'6.0-frontline',targetId:'enemy-a',fleeing:this.fleeing?{...this.fleeing}:null,busy:!!this.cinematic||!!this.guardian||!!this.fleeing,rear:{fled:!!this.support.fled,state:this.support.state,intent:this.support.intent,remaining:this.support.remaining,aim:{...this.support.aim},telegraph:this.support.telegraph?{...this.support.telegraph}:null},rules:{target:'enemy-a',rearUntargetable:true,victory:'enemy-front-defeated',lethal:'guardian-defeat'}};}
+ snapshot(){return {...super.snapshot(),version:'6.1-follow-touch',targetId:'enemy-a',fleeing:this.fleeing?{...this.fleeing}:null,busy:!!this.cinematic||!!this.guardian||!!this.fleeing,rear:{fled:!!this.support.fled,state:this.support.state,intent:this.support.intent,remaining:this.support.remaining,aim:{...this.support.aim},telegraph:this.support.telegraph?{...this.support.telegraph}:null},rules:{target:'enemy-a',rearUntargetable:true,rearMovement:'follow-own-front',victory:'enemy-front-defeated',lethal:'guardian-defeat'}};}
 }

@@ -1,8 +1,10 @@
 {
   "checks": [
-    "Protected combat / assessment / input / arena and enemy modules identical to growth version",
+    "Protected combat / assessment / arena and enemy modules identical to growth version",
     "One fixed target; rear cannot be selected, damaged or collide with front actors",
-    "Rear actors stay fixed, no melee, same cast clock across three stages",
+    "Both rear actors follow their own front without melee; cast timing is stage independent",
+    "Rear follows around the arena and keeps separation when a front fighter reaches its edge",
+    "Screen-direction dodge moves along the requested world vector and honors arena/cooldown",
     "All stages have identical enemy HP, attack damage and warning timings",
     "189 snapshots preserve original outcomes and exactly four assessment factors",
     "Positioning: out-of-range misses; flank beats guard; startup must fit recovery",
@@ -14,5 +16,5 @@
     "Blocked/missed attacks need extra ready time; favorable hits keep original cooldown",
     "Retry clears defeat / escape / shots / swords and retains stage; no target UI present"
   ],
-  "passed": 13
+  "passed": 15
 }

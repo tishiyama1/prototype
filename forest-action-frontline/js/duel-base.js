@@ -1,4 +1,4 @@
-import {Player} from './player.js';
+import {Player} from './player.js?v=follow-touch1';
 import {Enemy} from './enemy.js';
 import {TargetLock,separate} from './target.js';
 import {capture,resolve,OUTCOMES} from './combat.js';

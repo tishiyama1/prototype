@@ -1,0 +1,9 @@
+{
+  "base": "http://127.0.0.1:8018/",
+  "checks": [
+    "Two fingers: hold the field / attack / keep approaching after the cards / release",
+    "Native touch scroll in settings / battle remains paused / closing resumes"
+  ],
+  "errors": [],
+  "device": "Chromium touch emulation, not iPhone Safari"
+}

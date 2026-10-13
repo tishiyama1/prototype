@@ -1,7 +1,7 @@
 import * as THREE from 'three';
 import {DuoEffects} from './duo-effects.js';
 import {distance} from './target.js';
-import {LORD_RULES as R} from './progression.js';
+import {LORD_RULES as R} from './progression.js?v=follow-touch1';
 function pixelTexture(kind){const c=document.createElement('canvas');c.width=kind==='sword'?12:12;c.height=kind==='sword'?36:12;const ctx=c.getContext('2d');ctx.imageSmoothingEnabled=false;const dot=(x,y,w,h,color)=>{ctx.fillStyle=color;ctx.fillRect(x,y,w,h);};if(kind==='sword'){
  dot(5,0,3,7,'#28213e');dot(5,1,2,5,'#d1a84f');dot(1,6,10,3,'#f0d486');dot(0,7,2,3,'#bd8a3b');dot(10,7,2,3,'#bd8a3b');dot(4,9,4,23,'#283a56');dot(5,9,2,23,'#aabccc');dot(5,9,1,23,'#fff3ca');dot(5,32,2,2,'#c6d6df');dot(5,34,1,1,'#fff3d5');
  }else{dot(3,1,6,10,'#392248');dot(1,3,10,6,'#392248');dot(3,2,6,8,'#a780dd');dot(2,3,8,6,'#a780dd');dot(4,3,4,6,'#e2caff');dot(3,4,6,4,'#e2caff');dot(5,4,2,3,'#fff1d0');}

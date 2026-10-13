@@ -1,15 +1,15 @@
 import {ImpactUI} from './impact-ui.js';
 import * as THREE from 'three';
-import {Game} from './game.js';
-import {Input} from './input.js';
+import {Game} from './game.js?v=follow-touch1';
+import {Input} from './input.js?v=follow-touch1';
 import {CameraRig} from './camera.js';
-import {CharacterView} from './character.js';
+import {CharacterView} from './character.js?v=follow-touch1';
 import {Forest} from './forest.js';
-import {LordEffects as Effects} from './lord-effects.js';
-import {STAGES,stageOf} from './progression.js';
+import {LordEffects as Effects} from './lord-effects.js?v=follow-touch1';
+import {STAGES,stageOf} from './progression.js?v=follow-touch1';
 import {Cave} from './cave.js';
 import {AudioEngine} from './audio.js';
-import {UI} from './ui.js?v=wide1';
+import {UI} from './ui.js?v=follow-touch1';
 import {poses} from './presentation.js';
 import {EnvironmentEffects} from './environment-effects.js';
 import {EnvironmentUI} from './environment-ui.js';
@@ -21,7 +21,10 @@ try {
  const sceneKind=new URLSearchParams(location.search).get('scene')==='cave'?'cave':'forest';
  const canvas=$('world'),renderer=new THREE.WebGLRenderer({canvas,antialias:sceneKind!=='cave',alpha:sceneKind==='cave',powerPreference:'high-performance'});
  renderer.setPixelRatio(Math.min(window.devicePixelRatio,1.5));renderer.autoClear=false;renderer.shadowMap.enabled=false;renderer.shadowMap.type=THREE.PCFSoftShadowMap;renderer.outputColorSpace=THREE.SRGBColorSpace;renderer.toneMapping=THREE.ACESFilmicToneMapping;renderer.toneMappingExposure=1.08;
- const impactUI=new ImpactUI();const scene=new THREE.Scene(),game=new Game(),input=new Input(canvas),camera=new CameraRig(),forest=sceneKind==='cave'?new Cave(scene):new Forest(scene),effects=new Effects(scene),audio=new AudioEngine(),ui=new UI(game,{mode:()=>impactUI.mode});
+ const impactUI=new ImpactUI();const scene=new THREE.Scene(),game=new Game(),camera=new CameraRig();
+ const ground=new THREE.Plane(new THREE.Vector3(0,1,0),0),ray=new THREE.Raycaster();
+ const screenDirection=(dx,dy)=>{const a=new THREE.Vector3(),b=new THREE.Vector3();ray.setFromCamera(new THREE.Vector2(0,0),camera.camera);ray.ray.intersectPlane(ground,a);ray.setFromCamera(new THREE.Vector2(dx*2/innerWidth,-dy*2/innerHeight),camera.camera);ray.ray.intersectPlane(ground,b);return {x:b.x-a.x,z:b.z-a.z};};
+ const input=new Input(canvas,screenDirection),forest=sceneKind==='cave'?new Cave(scene):new Forest(scene),effects=new Effects(scene),audio=new AudioEngine(),ui=new UI(game,{mode:()=>impactUI.mode});
  forest.scenery=false;const ambient=new EnvironmentEffects(scene,sceneKind,forest),environmentUI=new EnvironmentUI(ambient);
  const views=new Map(game.actors.map(a=>[a.id,new CharacterView(scene,a.team==='enemy',{id:a.id,archetype:a.id==='lord'?'dungeon-lord':a.id==='enemy-b'?'support':a.id==='enemy-a'?'sword-fiend':'adventurer'})]));
  game.setStage(stageOf(new URLSearchParams(location.search).get('stage')),false);
@@ -29,26 +32,33 @@ try {
  document.querySelector('.subtitle').textContent=sceneKind==='cave'?'洞窟の決闘':'古道の決闘';
  const labels=new Map(game.actors.map(a=>{const el=document.createElement('div');el.className='actor-label '+(a.team==='enemy'?'enemy':'ally');el.setAttribute('aria-label',a.name);el.innerHTML='<b></b><small></small><i></i>';el.classList.toggle('rear',a.radius===0);$('actor-labels').append(el);return[a.id,el];}));
  
- function teamUI(view){const tag=id=>id==='player'?'主人公':id==='lord'?'主・後衛':id==='enemy-a'?'敵前衛':'敵後衛';for(const a of game.actors){const el=labels.get(a.id),pose=view.actors[a.id],pt=new THREE.Vector3(0,a.radius===0?-.60:2.35*(pose.visualScale||1),0).applyQuaternion(camera.camera.quaternion).add(new THREE.Vector3(pose.x,0,pose.z)).project(camera.camera);el.style.left=(pt.x+1)*innerWidth/2+'px';el.style.top=(1-pt.y)*innerHeight/2+'px';el.hidden=!!a.fled;el.classList.toggle('selected',a.id==='enemy-a'&&a.hp>0);el.classList.toggle('dead',a.hp<=0);el.querySelector('b').textContent=tag(a.id)+(a.radius===0?'':' '+a.hp);el.querySelector('small').textContent=a.hp<=0?'倒れた':a.id==='lord'?(game.stage.lordAttack==='kings-swords'?'王の剣':'魔法弾'):a.id==='enemy-b'?(a.intent==='flee'?'逃走':a.state==='windup'?'射撃予兆':a.intent==='rally'?'警戒支援':'援護待機'):({wary:'警戒',idle:'待機',move:'移動',dash:'回避',approach:'接近',orbit:'旋回',retreat:'離脱',guard:'防御',windup:'構え',attack:'攻撃',recovery:'硬直',stagger:'崩れ',hurt:'被弾'}[a.state]||a.state);el.querySelector('i').style.width=a.hp/a.maxHP*100+'%';}
+ function teamUI(view){const tag=id=>id==='player'?'主人公':id==='lord'?'主':id==='enemy-a'?'敵前衛':'敵後衛';for(const a of game.actors){const el=labels.get(a.id),pose=view.actors[a.id],pt=new THREE.Vector3(0,a.radius===0?-.60:2.35*(pose.visualScale||1),0).applyQuaternion(camera.camera.quaternion).add(new THREE.Vector3(pose.x,0,pose.z)).project(camera.camera);el.style.left=(pt.x+1)*innerWidth/2+'px';el.style.top=(1-pt.y)*innerHeight/2+'px';el.hidden=!!a.fled;el.classList.toggle('warning',a.id==='enemy-b'&&a.state==='windup');el.classList.toggle('selected',a.id==='enemy-a'&&a.hp>0);el.classList.toggle('dead',a.hp<=0);el.querySelector('b').textContent=tag(a.id);el.querySelector('small').textContent=a.hp<=0?'倒れた':a.id==='lord'?(game.stage.lordAttack==='kings-swords'?'王の剣':'魔法弾'):a.id==='enemy-b'?(a.intent==='flee'?'逃走':a.state==='windup'?'射撃予兆':a.intent==='rally'?'警戒支援':'援護待機'):({wary:'警戒',idle:'待機',move:'移動',dash:'回避',approach:'接近',orbit:'旋回',retreat:'離脱',guard:'防御',windup:'構え',attack:'攻撃',recovery:'硬直',stagger:'崩れ',hurt:'被弾'}[a.state]||a.state);el.querySelector('i').style.width=a.hp/a.maxHP*100+'%';}
  $('lord-hp').textContent=game.lord.hp;$('lord-fill').style.width=game.lord.hp/game.lord.maxHP*100+'%';$('rear-intent').textContent=game.support.fled?'敵後衛：逃走':game.fleeing?'敵後衛：逃走中':game.support.state==='windup'?'敵後衛：射撃予兆':game.support.intent==='rally'?'敵後衛：警戒支援':'敵後衛：援護待機';$('rear-intent').classList.toggle('warning',game.support.state==='windup');$('duo-notice').textContent=game.debugRun?'検証用戦闘 · HPと配置を設定しています':'';}
  function stageUI(){for(const b of document.querySelectorAll('[data-stage]')){b.classList.toggle('selected',b.dataset.stage===game.stageId);b.setAttribute('aria-pressed',b.dataset.stage===game.stageId);}const st=game.stage;$('stage-description').textContent=st.name+'：'+st.description;$('lord-preview').textContent=st.lordAttack==='kings-swords'?'王の剣を再生':'魔法弾を再生';$('stage-stats').textContent=`${st.name} · 人間HP ${st.heroHP} / 主HP ${st.lordHP}\n人間の威力 ${Object.values(game.currentMoves).map(m=>m.damage).join(' / ')}\n主の威力 ${st.lordPower} / 大きさ ${st.lordScale}倍\n敵前衛 HP120（全段階固定） / 敵後衛は攻撃対象外`;for(const a of document.querySelectorAll('.version-links a')){const u=new URL(a.href);if(u.pathname===location.pathname&&u.searchParams.has('scene')){u.searchParams.set('stage',game.stageId);a.href=u.pathname+u.search;}}}
  for(const b of document.querySelectorAll('[data-stage]'))b.addEventListener('click',()=>{const playing=game.status!=='ready';game.stageId=b.dataset.stage;if(playing)start();else{game.setStage(b.dataset.stage,false);effects.clear();camera.reset();ui.clear();}stageUI();const u=new URL(location.href);u.searchParams.set('stage',game.stageId);history.replaceState(null,'',u);});
  for(const b of document.querySelectorAll('[data-scenario]'))b.addEventListener('click',()=>{start();game.debugScenario(b.dataset.scenario);$('debug-panel').hidden=true;events();});stageUI();
- let last=performance.now(),accumulator=0,worldTime=0,environmentTime=0,fps=60,contextLost=false,lastDraw=0,inspecting=false;
+ let last=performance.now(),accumulator=0,worldTime=0,environmentTime=0,fps=60,contextLost=false,lastDraw=0,inspecting=false,settingsReturn=null;
+ function dismissSettings(){$('debug-panel').hidden=true;$('game-shell').classList.remove('settings-open');settingsReturn=null;input.clear();}
+ function openSettings(){if(!$('debug-panel').hidden)return;settingsReturn={status:game.status,focus:document.activeElement};if(game.status==='playing'){game.status='paused';audio.suspend();}input.enabled=false;input.clear();accumulator=0;$('debug-panel').hidden=false;$('game-shell').classList.add('settings-open');$('debug-close').focus();}
+ function closeSettings(){const previous=settingsReturn;if(!previous)return;dismissSettings();if(previous.status==='playing'&&game.status==='paused'&&!portrait()&&!document.hidden){game.status='playing';input.enabled=true;audio.unlock();ui.hideOverlay();}else if(game.status==='paused'&&!inspecting)ui.paused();last=performance.now();accumulator=0;previous.focus?.focus();}
+ for(const id of ['debug-toggle','intro-settings'])$(id).addEventListener('click',openSettings);
+ for(const id of ['debug-close','settings-done'])$(id).addEventListener('click',closeSettings);
+ $('debug-panel').addEventListener('click',e=>{if(e.target===$('debug-panel'))closeSettings();});
+ $('debug-panel').addEventListener('keydown',e=>{if(e.key!=='Tab')return;const focusable=[...$('debug-panel').querySelectorAll('button,a,input,select,summary')].filter(el=>!el.disabled&&el.getClientRects().length);const first=focusable[0],last=focusable.at(-1);if(e.shiftKey&&document.activeElement===first){e.preventDefault();last.focus();}else if(!e.shiftKey&&document.activeElement===last){e.preventDefault();first.focus();}});
  const portrait=()=>matchMedia('(orientation:portrait) and (max-width:900px)').matches;
  function pause(){if(game.status!=='playing')return;game.status='paused';input.enabled=false;input.clear();accumulator=0;audio.suspend();ui.paused();}
- function start(){if(portrait()||!forest.ready)return;inspect(false);game.reset();effects.clear();camera.reset();input.clear();input.enabled=true;input.locked=false;last=performance.now();accumulator=0;ui.hideOverlay();ui.clear();audio.unlock();}
+ function start(){if(portrait()||!forest.ready)return;dismissSettings();inspect(false);game.reset();effects.clear();camera.reset();input.clear();input.enabled=true;input.locked=false;last=performance.now();accumulator=0;ui.hideOverlay();ui.clear();audio.unlock();canvas.focus({preventScroll:true});}
  const resize=()=>{renderer.setSize(innerWidth,innerHeight,false);camera.resize(innerWidth,innerHeight);if(portrait())pause();};
  for(const id of ['start','retry','restart'])$(id).addEventListener('click',start);
- function inspect(active){inspecting=active;$('game-shell').classList.toggle('inspect',active);$('inspect-actions').hidden=!active;if(active){pause();input.enabled=false;input.clear();ui.hideOverlay();last=performance.now();environmentUI.refresh();}}
+ function inspect(active){if(active)dismissSettings();inspecting=active;$('game-shell').classList.toggle('inspect',active);$('inspect-actions').hidden=!active;if(active){pause();input.enabled=false;input.clear();ui.hideOverlay();last=performance.now();environmentUI.refresh();}}
  $('inspect-start').addEventListener('click',()=>inspect(true));$('inspect').addEventListener('click',()=>{if(inspecting)$('inspect-resume').click();else inspect(true);});$('inspect-resume').addEventListener('click',()=>{if(game.status==='ready'){start();return;}inspect(false);if(['clear','dead'].includes(game.status)){ui.result();return;}$('resume').click();});
  for(const [id,key]of [['scene-shadows','shadows'],['scene-fog','fogEnabled']])$(id).addEventListener('change',e=>{forest[key]=e.target.checked;});
  $('reset-config').addEventListener('click',()=>{forest.shadows=forest.fogEnabled=forest.parallax=true;environmentUI.reset();$('scene-parallax').checked=true;for(const id of ['scene-shadows','scene-fog','scene-environment'])$(id).checked=true;});
- $('pause').addEventListener('click',()=>{inspect(false);if(game.status==='paused')ui.paused();else pause();});$('resume').addEventListener('click',()=>{if(portrait())return;inspect(false);game.status='playing';input.clear();input.enabled=true;accumulator=0;last=performance.now();ui.hideOverlay();audio.unlock();});
+ $('pause').addEventListener('click',()=>{dismissSettings();inspect(false);if(game.status==='paused')ui.paused();else pause();});$('resume').addEventListener('click',()=>{if(portrait())return;dismissSettings();inspect(false);game.status='playing';input.clear();input.enabled=true;accumulator=0;last=performance.now();ui.hideOverlay();audio.unlock();});
  $('sound').addEventListener('click',()=>{$('sound').textContent=audio.toggle()?'音 ON':'音 OFF';if(game.status==='playing')audio.unlock();});
- const skip=()=>{if(game.skipPresentation()){input.clear();}};
+ const skip=()=>{if(game.skipPresentation()){input.clearCommands();}};
  $('card-phase').addEventListener('pointerdown',e=>{e.preventDefault();skip();});
- window.addEventListener('keydown',e=>{if(e.code==='Escape')pause();if(e.code==='Space'&&game.cinematic){e.preventDefault();skip();}});window.addEventListener('blur',pause);document.addEventListener('visibilitychange',()=>{if(document.hidden)pause();last=performance.now();accumulator=0;});window.addEventListener('resize',resize);
+ window.addEventListener('keydown',e=>{if(e.code==='Escape'){if(!$('debug-panel').hidden)closeSettings();else pause();}if(e.code==='Space'&&game.cinematic&&$('debug-panel').hidden){e.preventDefault();skip();}});window.addEventListener('blur',()=>{if(settingsReturn?.status==='playing')settingsReturn.status='paused';pause();});document.addEventListener('visibilitychange',()=>{if(document.hidden){if(settingsReturn?.status==='playing')settingsReturn.status='paused';pause();}last=performance.now();accumulator=0;});window.addEventListener('resize',resize);
  canvas.addEventListener('webglcontextlost',e=>{e.preventDefault();contextLost=true;pause();fatal('描画が停止しました。ページを再読み込みしてください。');});
  resize();camera.reset();ui.ready();
  $('inspect-start').disabled=true;$('start').disabled=true;$('start').textContent='背景レイヤーを準備しています…';

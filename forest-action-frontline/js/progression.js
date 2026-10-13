@@ -2,7 +2,7 @@
 export const STAGES=Object.freeze({
  early:Object.freeze({name:'序盤',heroHP:70,heroPower:.65,lordHP:520,lordDefense:.5,lordScale:2,lordPower:48,lordAttack:'kings-swords',description:'主が道を切り開く · 物体生成能力'}),
  middle:Object.freeze({name:'中盤',heroHP:100,heroPower:1,lordHP:145,lordDefense:.8,lordScale:1,lordPower:13,lordAttack:'magic-bolt',description:'互いを支える · 物体生成能力を失った主'}),
- late:Object.freeze({name:'終盤',heroHP:145,heroPower:1.5,lordHP:38,lordDefense:1,lordScale:.62,lordPower:2,lordAttack:'magic-bolt',description:'人間が主力になる · 小さな主を守る'}),
+ late:Object.freeze({name:'終盤',heroHP:145,heroPower:1.5,lordHP:38,lordDefense:1,lordScale:.62,lordPower:2,lordAttack:'magic-bolt',description:'人間が主力になる · 小さな主が最後まで援護する'}),
 });
 export const stageOf=id=>STAGES[id]?id:'early';
 export const normalLordDamage=(raw,stage)=>Math.max(1,Math.round(raw*stage.lordDefense));
