@@ -1,0 +1,21 @@
+{
+  "base": "http://127.0.0.1:8019/",
+  "checks": [
+    "farmer initial discovery / rumors / journal has no hidden conditions",
+    "farmer real battle / reload / capability / five cards / victory return",
+    "farmer spontaneous gift / reduced size / save-reload",
+    "farmer real battle / reload / capability / five cards / victory return",
+    "farmer two/four-week development / added work / items / mastery / map change marker",
+    "farmer 844/667 landscape / portrait guidance / separate settings",
+    "miner initial discovery / rumors / journal has no hidden conditions",
+    "miner real battle / reload / capability / five cards / victory return",
+    "miner spontaneous gift / reduced size / save-reload",
+    "miner real battle / reload / capability / five cards / victory return",
+    "miner two/four-week development / added work / items / mastery / map change marker",
+    "miner 844/667 landscape / portrait guidance / separate settings",
+    "Actual sacrifice defeat / journey game over / saved defeat / departure checkpoint"
+  ],
+  "errors": [],
+  "device": "Chromium with software GPU and touch emulation; not iPhone Safari",
+  "battleMethod": "Actual battle engine driven by deterministic tactical input; no fabricated victory message"
+}

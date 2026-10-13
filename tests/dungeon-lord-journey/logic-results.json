@@ -1,0 +1,18 @@
+{
+  "checks": [
+    "Both automatic gift routes; no second grant and delayed world development",
+    "Visiting both places first keeps the choice implicit in the next related work",
+    "Two completed actions advance a week and camp at the last location; no turn spent mid-event/battle",
+    "Deterministic actions; action order and history conditions produce different events",
+    "Exploration varies 0 / 1 / 2 fights and escort always starts an encounter",
+    "No deadlock at zero food, hygiene and money; shopping costs money without spending time",
+    "Shrinking permits town hygiene recovery; the place is not a base",
+    "Save/reload preserves pending events, encounters, game over and developed worlds; invalid data is rejected",
+    "Encounter results are accepted once, bind to the active encounter and require valid mastery",
+    "Combat core is a protected copy, fixed target and following rear support retained",
+    "Actual Lord attacks: royal swords before grant, caster magic after either grant, with smaller visual scale",
+    "Five assessment factors reflect posture, full equipment set and mastery without relaxed range/opening",
+    "Actual lethal damage still kills the Lord and leaves the hero alive; combat victory is front-only"
+  ],
+  "passed": 13
+}

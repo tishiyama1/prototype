@@ -1,0 +1,63 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
+<meta name="theme-color" content="#1c342c">
+<title>Forest Action — 前衛決闘と後衛援護</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Ctext y='25' font-size='25'%3E%F0%9F%91%91%3C/text%3E%3C/svg%3E">
+<link rel="stylesheet" href="./style.css"><link rel="stylesheet" href="./impact.css?v=wide1"><link rel="stylesheet" href="./duo.css"><link rel="stylesheet" href="./growth.css"><link rel="stylesheet" href="./frontline.css?v=journey1">
+<script type="importmap">{"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.180.0/build/three.module.js"}}</script>
+<link rel="stylesheet" href="./journey.css?v=1"></head>
+<body>
+<main id="game-shell">
+ <canvas id="world" tabindex="0" aria-label="前衛の決闘と後衛の援護。押し続けて接近、離して離脱、スワイプで回避"></canvas><div class="vignette"></div>
+ <header id="hud">
+  <div class="identity"><span class="eyebrow">FOREST ACTION / FRONTLINE</span><span class="subtitle">人間と主の共闘</span></div>
+  <div class="health"><span>冒険者 <b id="hp-text">100</b></span><div class="hp-track"><i id="hp-fill"></i></div></div>
+  <div class="health enemy-health"><span>敵前衛 <b id="enemy-hp-text">120</b></span><div class="hp-track"><i id="enemy-hp-fill"></i></div></div>
+  <nav><button id="debug-toggle" class="small-button" aria-label="設定を開く" aria-haspopup="dialog">⚙ 設定</button></nav>
+ </header>
+ <div id="team-hud"><div class="lord-health">主・後衛 <b id="lord-hp">520</b><i id="lord-fill"></i></div><span id="rear-intent">敵後衛：援護待機</span></div><div id="actor-labels"></div><div id="duo-notice"></div>
+ <div id="observation"><span id="enemy-intent">警戒</span><span id="distance-label">間合い 5.9</span><span id="timer">0:00.0</span></div>
+
+
+ <div id="guardian-banner" hidden role="status"></div><section id="card-phase" class="card-phase" hidden aria-label="攻防の戦術評価"></section>
+ <section id="controls" aria-label="タッチ操作">
+<div id="swipe-hint">押して接近 · 離して離脱 · スワイプで回避 <span id="dash-ready">READY</span></div>
+  <div class="actions">
+   <div class="moves" role="group" aria-label="攻撃技を選択"><button data-move="slash" class="selected" aria-pressed="true">斬撃<small>1</small></button><button data-move="thrust" aria-pressed="false">突き<small>2</small></button><button data-move="heavy" aria-pressed="false">強打<small>3</small></button></div>
+   <button id="attack" data-action="attack"><b id="attack-name">斬撃</b><span>攻撃指示 · J</span></button>
+
+  </div>
+ </section>
+ <section id="overlay" class="overlay">
+  <div id="intro" class="panel">
+   <span class="eyebrow">DUEL / REAR SUPPORT</span><h1>受け継ぐ力、変わらぬ守り<span>FRONTLINE / PARTY BALANCE</span></h1>
+   <p>敵前衛だけを見据え、間合いと隙を読む。<br>後衛は前衛の後ろを追いながら援護します。</p>
+   <div class="instructions"><span><b>押し続ける</b> 接近</span><span><b>指を離す</b> 離脱</span><span><b>スワイプ</b> その方向に回避</span><span><b>右下のボタン</b> 技を選択・攻撃</span></div>
+   <p class="tip">敵前衛を倒すと敵後衛は逃走し、勝利。<br>人間への致命傷は主が必ず身代わりに。主は必ず主人公を守って倒れ、敗北します。<br>攻撃中は時間が止まり、戦況を4枚の札で読み解きます。<br>タップ / Space で演出を短縮できます。</p>
+   <button id="intro-settings" class="secondary">設定・操作説明</button><button id="start" class="primary" disabled>森を準備しています…</button><button id="inspect-start" class="secondary">環境を眺める</button><div class="version-links"><a href="?scene=forest">森で戦う</a><a href="?scene=cave">洞窟で戦う</a><a href="../../forest-action-growth/">3段階の2対2</a><a href="../../forest-action-card-impact/preview.html">3技のプレビュー</a></div>
+  </div>
+  <div id="result" class="panel" hidden><span class="eyebrow" id="result-eyebrow">DUEL COMPLETE</span><h2 id="result-title">判断が、届いた。</h2>
+   <div class="result-grid"><span>戦闘時間<b id="result-time"></b></span><span>被ダメージ<b id="result-damage"></b></span><span>攻撃回数<b id="result-attacks"></b></span><span>命中率<b id="result-accuracy"></b></span></div>
+   <p id="lord-result"></p><div id="result-breakdown"></div><p class="tip">戦闘時間は攻防演出・一時停止を除きます。<br>命中率は「命中＋迎撃成功 / 攻撃指示数」です。</p>
+   <button id="retry" class="primary">旅へ戻る</button><div class="version-links"><a href="?scene=forest">森で戦う</a><a href="?scene=cave">洞窟で戦う</a><a href="../../forest-action-growth/">3段階の2対2</a><a href="../../forest-action-card-impact/preview.html">3技のプレビュー</a></div>
+  </div>
+  <div id="pause-panel" class="panel" hidden><span class="eyebrow">PAUSED</span><h2>ひと呼吸。</h2><p>戦闘・攻防演出とも進行しません。</p><button id="resume" class="primary">続ける</button><button id="restart" class="secondary">最初から再戦</button></div>
+ </section>
+ <div id="inspect-actions" hidden><span id="environment-state">人物固定 · 環境再生</span><button id="environment-freeze">環境停止</button><a href="../../forest-action-card-impact/preview.html" target="_blank" rel="noopener">演出を確認</a><button id="inspect-resume">戦闘へ</button></div>
+ <aside id="debug-panel" hidden role="dialog" aria-modal="true" aria-labelledby="settings-title"><div class="settings-card"><div class="debug-header"><b id="settings-title">設定</b><button id="debug-close" aria-label="設定を閉じる">×</button></div><section class="settings-section"><h3>戦闘</h3><p>段階を変更すると、選んだ段階で再戦します。</p><div id="stage-controls" aria-label="戦闘段階（切替で再戦）"><button data-stage="early">序盤</button><button data-stage="middle">中盤</button><button data-stage="late">終盤</button></div><p id="stage-description"></p><div class="settings-utilities"><button id="sound" class="small-button">音 ON</button><button id="pause" class="small-button">一時停止</button><button id="inspect" class="small-button">環境を見る</button></div><div class="version-links"><a href="?scene=forest">森</a><a href="?scene=cave">洞窟</a></div></section>
+<section class="settings-section"><h3>操作</h3><p>フィールドを押し続けると接近し、指を離すと離脱します。<br>素早くスワイプすると、その方向へ回避します。<br>押したまま別の指で、右下の技と攻撃ボタンを操作できます。<br>PC：W/Sで接近・離脱、A/Dで旋回、Shift＋移動で回避。1/2/3で技、Jで攻撃。</p><span id="move-range"></span></section>
+<section class="settings-section"><h3>演出</h3><aside id="environment-controls" aria-label="環境演出の強度"><span>ENV</span><button data-environment="off" aria-pressed="false">OFF</button><button data-environment="normal" aria-pressed="true">NORMAL</button><button data-environment="over" aria-pressed="false">OVER</button><a href="../../forest-action-card-impact/preview.html">演出プレビュー</a></aside><aside id="impact-controls" aria-label="カード攻撃演出の強度"><span>IMPACT</span><button data-impact="off">OFF</button><button data-impact="normal">NORMAL</button><button data-impact="over">OVER</button><a href="../../forest-action-card-impact/preview.html">技のプレビュー</a></aside></section><details class="advanced-settings"><summary>詳細調整・動作検証</summary><div class="scenery-options"><b>森の描画</b><label class="check"><input id="scene-shadows" type="checkbox" checked>キャラクターの投影影</label><label class="check"><input id="scene-fog" type="checkbox" checked>遠景の霞色（焼き込み基準）</label><label class="check"><input id="scene-environment" type="checkbox" checked>木漏れ日・落ち葉・浮遊粒子</label><label class="check"><input id="scene-parallax" type="checkbox" checked>控えめな追加視差</label></div><section id="progression-debug"><b>専用動作検証（戦闘をリセット）</b><p>検証用のHP・位置・敵状態を設定します。通常プレイとは区別します。</p><button data-scenario="fatal">身代わり敗北</button><button data-scenario="victory">前衛撃破→後衛逃走</button><button data-scenario="rear">後衛射撃の予兆</button><button data-scenario="attack" id="lord-preview">王の剣を再生</button><output id="stage-stats"></output></section><output id="debug-status"></output>
+  <label class="check"><input id="range-display" type="checkbox">選択技の攻撃可能距離を表示</label>
+  <label class="check"><input id="cinema-enabled" type="checkbox" checked>攻防演出を再生する</label>
+  <label class="check">カード演出 <select id="card-mode"><option value="normal">通常</option><option value="fast">高速</option><option value="detail">詳細</option></select></label><label class="env-gain-label">環境の強さ <output id="environment-gain-value">100%</output></label><input id="environment-gain" type="range" min="0" max="150" value="100" step="5" aria-label="環境演出の強さ"><div id="sliders"></div><button id="reset-config" class="secondary">初期設定に戻す</button>
+  <p>調整は次の攻撃指示から反映します。演出OFFも同じ判定結果になります。</p></details><button id="settings-done" class="primary">戻る</button></div>
+ </aside>
+ <section id="portrait"><span>↻</span><h2>横画面で、森へ。</h2><p>iPhoneを横向きにしてください。</p></section><div id="fatal" hidden role="alert"></div>
+</main>
+<script type="module" src="./js/main.js?v=journey1"></script><script type="module" src="./js/journey-bridge.js"></script>
+<script>window.addEventListener('error',function(e){if(e.target&&e.target.tagName==='SCRIPT'){var f=document.getElementById('fatal');f.hidden=false;f.textContent='読み込みに失敗しました。通信環境を確認して再読み込みしてください。';}},true);</script>
+<noscript>このゲームにはJavaScriptが必要です。</noscript>
+</body></html>

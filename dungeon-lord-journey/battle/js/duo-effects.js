@@ -1,0 +1,8 @@
+import * as THREE from 'three';
+import {Effects} from './effects.js';
+export class DuoEffects extends Effects{
+ constructor(scene){super(scene);this.lines=new Map();this.bolts=new Map();for(const id of ['enemy-a','enemy-b']){const o=new THREE.Mesh(new THREE.PlaneGeometry(1,1),new THREE.MeshBasicMaterial({color:id==='enemy-b'?'#c99af7':'#eb7559',transparent:true,opacity:.20,side:THREE.DoubleSide,depthWrite:false}));o.rotation.x=-Math.PI/2;scene.add(o);this.lines.set(id,o);}}
+ update(dt,game,poses,showRange,camera){super.update(dt,game,poses,showRange,camera);this.telegraph.visible=this.arcTelegraph.visible=false;for(const e of game.enemies){const o=this.lines.get(e.id),len=e.role==='support'?9:e.kind==='rush'?5.7:e.kind==='heavy'?2.9:2.65;const aim=e.aim||{x:Math.cos(e.yaw),z:-Math.sin(e.yaw)};o.visible=!game.cinematic&&e.hp>0&&['windup','attack'].includes(e.state)&&['playing','paused'].includes(game.status);o.position.set(e.x+aim.x*len/2,.014,e.z+aim.z*len/2);o.rotation.z=e.yaw;o.scale.set(len,e.role==='support'?.30:e.kind==='rush'?1.36:1.3,1);o.material.opacity=.18+Math.sin(e.time*15)*.045;}
+ const live=new Set();for(const b of game.projectiles){live.add(b.id);let o=this.bolts.get(b.id);if(!o){o=new THREE.Mesh(new THREE.PlaneGeometry(.32,.32),new THREE.MeshBasicMaterial({color:'#d9c2ff',side:THREE.DoubleSide,toneMapped:false}));this.scene.add(o);this.bolts.set(b.id,o);}o.position.set(b.x,.9,b.z);o.quaternion.copy(camera.quaternion);}for(const[id,o]of this.bolts)if(!live.has(id)){o.removeFromParent();o.geometry.dispose();o.material.dispose();this.bolts.delete(id);}}
+ clear(){super.clear();for(const o of this.bolts.values()){o.removeFromParent();o.geometry.dispose();o.material.dispose();}this.bolts.clear();}
+}
