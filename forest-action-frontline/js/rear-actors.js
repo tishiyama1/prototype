@@ -1,7 +1,7 @@
 import {RangedLord} from './ranged-lord.js';
 import {Fighter} from './companion.js';
 import {yawTo} from './target.js';
-export const REAR_POSTS=Object.freeze({lord:Object.freeze({x:-8,z:-6.2}),support:Object.freeze({x:8,z:-6.2})});
+export const REAR_POSTS=Object.freeze({lord:Object.freeze({x:-8,z:-4.6}),support:Object.freeze({x:8,z:-4.6})});
 export class RearLord extends RangedLord{
  constructor(stage){super(stage);Object.assign(this,REAR_POSTS.lord);this.role='ally-rear';this.radius=0;this.setState('wary',.65);this.focusId='enemy-a';}
  update(dt,game){this.time+=dt;this.invulnerable=Math.max(0,this.invulnerable-dt);if(this.hp<=0)return;const target=game.front;this.yaw=yawTo(this,target);this.focusId=target.id;this.intent='support';
