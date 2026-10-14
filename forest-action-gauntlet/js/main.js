@@ -3,17 +3,17 @@ import {STAGES as ENCOUNTERS} from './run-data.js';
 import * as RunUI from './run-ui.js';
 import {ImpactUI} from './impact-ui.js';
 import * as THREE from 'three';
-import {Game} from './game.js?v=gauntlet1';
-import {Input} from './input.js?v=gauntlet1';
+import {Game} from './game.js?v=gauntlet2';
+import {Input} from './input.js?v=gauntlet2';
 import {CameraRig} from './camera.js';
-import {CharacterView} from './character.js?v=gauntlet1';
+import {CharacterView} from './character.js?v=gauntlet2';
 import {Forest} from './forest.js';
-import {LordEffects as Effects} from './lord-effects.js?v=gauntlet1';
-import {STAGES,stageOf} from './progression.js?v=gauntlet1';
+import {LordEffects as Effects} from './lord-effects.js?v=gauntlet2';
+import {STAGES,stageOf} from './progression.js?v=gauntlet2';
 import {Cave} from './cave.js';
 import {AudioEngine} from './audio.js';
-import {UI} from './ui.js?v=gauntlet1';
-import {poses} from './presentation.js';
+import {UI} from './ui.js?v=gauntlet2';
+import {poses} from './presentation.js?v=gauntlet2';
 import {EnvironmentEffects} from './environment-effects.js';
 import {EnvironmentUI} from './environment-ui.js';
 import {FIXED_DT} from './config.js';
@@ -28,7 +28,7 @@ try {
  const ground=new THREE.Plane(new THREE.Vector3(0,1,0),0),ray=new THREE.Raycaster();
  const screenDirection=(dx,dy)=>{const a=new THREE.Vector3(),b=new THREE.Vector3();ray.setFromCamera(new THREE.Vector2(0,0),camera.camera);ray.ray.intersectPlane(ground,a);ray.setFromCamera(new THREE.Vector2(dx*2/innerWidth,-dy*2/innerHeight),camera.camera);ray.ray.intersectPlane(ground,b);return {x:b.x-a.x,z:b.z-a.z};};
  const input=new Input(canvas,screenDirection),forest=sceneKind==='cave'?new Cave(scene):new Forest(scene),effects=new Effects(scene),audio=new AudioEngine(),ui=new UI(game,{mode:()=>impactUI.mode});
- forest.scenery=false;const ambient=new EnvironmentEffects(scene,sceneKind,forest),environmentUI=new EnvironmentUI(ambient);
+ input.onClear=()=>{game.player.pendingDodge=null;};forest.scenery=false;const ambient=new EnvironmentEffects(scene,sceneKind,forest),environmentUI=new EnvironmentUI(ambient);
  const views=new Map(game.actors.map(a=>[a.id,new CharacterView(scene,a.team==='enemy',{id:a.id,archetype:a.id==='lord'?'dungeon-lord':a.id==='enemy-b'?'support':a.id==='enemy-a'?'sword-fiend':'adventurer'})]));
  game.setStage(stageOf(new URLSearchParams(location.search).get('stage')),false);
  const playerView=views.get('player');
@@ -92,12 +92,12 @@ try {
   }game.events.length=0;}
  function frame(now){requestAnimationFrame(frame);if(contextLost)return;
   const raw=Math.max(0,(now-last)/1000),dt=Math.min(.05,raw);last=now;fps+=(1/Math.max(.001,raw)-fps)*.04;
-  const running=game.status==='playing';if(running){worldTime+=dt;accumulator+=dt;
+  const running=game.status==='playing';if(running){worldTime+=dt*(game.guardian?.25:1);accumulator+=dt;
    while(accumulator>=FIXED_DT){input.locked=!!game.cinematic||!!game.guardian||!!game.fleeing;game.step(FIXED_DT,input.sample());accumulator-=FIXED_DT;events();if(game.status!=='playing'){accumulator=0;break;}}
    input.locked=!!game.cinematic||!!game.guardian||!!game.fleeing;audio.update(dt);
   }
   const envRunning=!document.hidden&&!portrait()&&(running||(inspecting&&environmentUI.live));if(envRunning)environmentTime+=Math.min(1,raw);
-  const view=poses(game);$('guardian-banner').hidden=!game.guardian;$('guardian-banner').textContent=game.guardian?(game.guardian.received?'身代わり · 最後まで守る':game.stageId==='early'?'転移 · あなたを守る':'疾駆 · あなたを守る'):'';effects.update(running?dt:0,game,view,$('range-display').checked,camera.camera);camera.update(running?dt:game.status==='ready'&&!inspecting?dt:0,game,view);forest.sync(camera.camera,view,inspecting);ambient.update(environmentTime,camera.camera,view);for(const [id,character]of views)character.update({...view.actors[id],selected:id===game.targets.active?.id},worldTime,camera.camera,forest.shadows);teamUI(view);ui.update(running?dt:0,fps);RunUI.update();if(running||(inspecting&&!portrait())||now-lastDraw>=250){forest.settings();renderer.shadowMap.enabled=false;renderer.clear();if(sceneKind==='forest'){renderer.render(forest.groundScene,camera.camera);renderer.clearDepth();}renderer.render(scene,camera.camera);lastDraw=now;}
+  const view=poses(game);$('guardian-banner').hidden=!game.guardian;$('guardian-banner').textContent=game.guardian?(game.guardian.received?'主が身代わりになった':'主が、あなたの前に割って入る'):'';effects.update(running?dt*(game.guardian?.25:1):0,game,view,$('range-display').checked,camera.camera);camera.update(running?dt:game.status==='ready'&&!inspecting?dt:0,game,view);forest.sync(camera.camera,view,inspecting);ambient.update(environmentTime,camera.camera,view);for(const [id,character]of views)character.update({...view.actors[id],selected:id===game.targets.active?.id},worldTime,camera.camera,forest.shadows);teamUI(view);ui.update(running?dt:0,fps);RunUI.update();if(running||(inspecting&&!portrait())||now-lastDraw>=250){forest.settings();renderer.shadowMap.enabled=false;renderer.clear();if(sceneKind==='forest'){renderer.render(forest.groundScene,camera.camera);renderer.clearDepth();}renderer.render(scene,camera.camera);lastDraw=now;}
  }
  requestAnimationFrame(frame);
  window.forestAction=Object.freeze({visualInspection:(sampleArena=false)=>{const project=o=>{const b=new THREE.Box3().setFromObject(o),ps=[];for(const x of [b.min.x,b.max.x])for(const y of [b.min.y,b.max.y])for(const z of [b.min.z,b.max.z]){const p=new THREE.Vector3(x,y,z).project(camera.camera);ps.push([(p.x+1)*innerWidth/2,(1-p.y)*innerHeight/2]);}const xs=ps.map(p=>p[0]),ys=ps.map(p=>p[1]);return {x:Math.min(...xs),y:Math.min(...ys),width:Math.max(...xs)-Math.min(...xs),height:Math.max(...ys)-Math.min(...ys)};};const v=poses(game),samples=[];if(sampleArena)for(let i=0;i<48;i++){const a=i*Math.PI/24,x=Math.cos(a)*10.8,z=Math.sin(a)*6.5;samples.push({x,z,visible:forest.visibilityAt(x,z,camera.camera)});}return {hero:project(playerView.body),enemy:project(views.get(game.enemy.id).body),visible:[forest.visibilityAt(v.player.x,v.player.z,camera.camera),forest.visibilityAt(v.enemy.x,v.enemy.z,camera.camera)],arenaSamples:samples,meshes:scene.children.filter(o=>o.isMesh).length,dpr:renderer.getPixelRatio()};},snapshot:()=>({...game.snapshot(),camera:{zoom:camera.zoom,focus:camera.focus.toArray(),position:camera.camera.position.toArray()},render:{calls:renderer.info.render.calls,triangles:renderer.info.render.triangles},visual:{style:'frontline',cardImpact:ui.cards.impact.snapshot(),layers:forest.snapshot(),sprites:Object.fromEntries([...views].map(([id,v])=>[id,v.frame])),scene:sceneKind,inspecting,shadows:forest.shadows,fog:forest.fogEnabled,environment:ambient.snapshot(),environmentLive:environmentUI.live,pitch:90-camera.camera.position.clone().sub(camera.focus).angleTo(new THREE.Vector3(0,1,0))*180/Math.PI},input:{enabled:input.enabled,locked:input.locked,radial:input.joy.radial,orbit:input.joy.orbit,swipes:input.swipes.size,pressed:input.attackPointers.size}})});

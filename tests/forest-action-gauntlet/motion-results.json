@@ -1,0 +1,10 @@
+{
+  "checks": [
+    "Fast release flick versus held drag, slow swipe and tap",
+    "Drag maps screen vector to world movement with dead zone and capped strength",
+    "Back-to-back dodge buffers one direction; no one-second lockout or permanently invincible chain",
+    "Rear goals keep space from both front fighters and opposite rear, with slow acceleration and capped speed",
+    "Guardian approaches visibly, receives lethal blow after 1.28s and ends after 4.4s; hero stays alive"
+  ],
+  "passed": 5
+}

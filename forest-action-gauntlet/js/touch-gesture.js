@@ -1,0 +1,6 @@
+// Pixels and milliseconds; a flick is recognized only on release, not during dragging.
+export const TOUCH=Object.freeze({deadZone:9,travel:52,flickDistance:24,flickSpeed:.45,flickWindow:120,releaseGrace:65});
+export function contact(x,y,time){return {x,y,lastX:x,lastY:y,time,lastMotion:time,points:[{x,y,time}],dx:0,dy:0};}
+export function moveContact(s,x,y,time){if(x!==s.lastX||y!==s.lastY)s.lastMotion=time;s.lastX=x;s.lastY=y;s.dx=x-s.x;s.dy=y-s.y;if(time-s.points.at(-1).time>TOUCH.flickWindow)s.points=[{x:s.points.at(-1).x,y:s.points.at(-1).y,time:time-40}];s.points.push({x,y,time});s.points=s.points.filter(p=>time-p.time<=TOUCH.flickWindow);}
+export function releaseFlick(s,x,y,time){moveContact(s,x,y,time);const a=s.points[0],dx=x-a.x,dy=y-a.y,dt=Math.max(1,time-a.time),length=Math.hypot(dx,dy);return length>=TOUCH.flickDistance&&length/dt>=TOUCH.flickSpeed&&time-s.lastMotion<=TOUCH.releaseGrace?{x:dx,z:dy}:null;}
+export function dragVector(s,screenDirection){const length=Math.hypot(s.dx,s.dy);if(length<=TOUCH.deadZone)return null;const v=screenDirection(s.dx,s.dy),n=Math.hypot(v.x,v.z);return n>.001?{x:v.x/n,z:v.z/n,strength:Math.min(1,(length-TOUCH.deadZone)/TOUCH.travel)}:null;}

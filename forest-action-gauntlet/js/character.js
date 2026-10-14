@@ -1,6 +1,6 @@
 import * as THREE from 'three';
-import {WIDTH,CELL} from './sprite-state.js?v=gauntlet1';
-import {atlasFor,selectFrame} from './sprite-art.js?v=gauntlet1';
+import {WIDTH,CELL} from './sprite-state.js?v=gauntlet2';
+import {atlasFor,selectFrame} from './sprite-art.js?v=gauntlet2';
 import {softLight} from './surface.js';
 export class CharacterView{
  constructor(scene,enemy=false,options={}){

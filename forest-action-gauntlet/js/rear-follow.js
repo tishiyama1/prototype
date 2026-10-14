@@ -1,17 +1,4 @@
-import {distance} from './target.js';
-
-export const REAR_FOLLOW=Object.freeze({gap:3.2,speed:6.8,deadZone:.12});
-export function rearPosition(front,opponent){
- const dx=front.x-opponent.x,dz=front.z-opponent.z,n=Math.hypot(dx,dz)||1;
- // Front fighters stay in the ellipse. Rear fighters can use its outer margin,
- // so retreating to the edge does not pile the Lord onto the hero.
- return {x:front.x+dx/n*REAR_FOLLOW.gap,z:front.z+dz/n*REAR_FOLLOW.gap};
-}
-export function followRear(actor,front,opponent,dt){
- const target=rearPosition(front,opponent),dx=target.x-actor.x,dz=target.z-actor.z,n=Math.hypot(dx,dz);
- actor.following=n>REAR_FOLLOW.deadZone;if(!actor.following)return;
- // Catch up smoothly after a dodge; never participate in front-line collisions.
- const speed=REAR_FOLLOW.speed+Math.max(0,distance(actor,front)-5)*2;
- const step=Math.min(n,speed*dt);actor.x+=dx/n*step;actor.z+=dz/n*step;
- actor.walk+=step*4.7;
-}
+export const REAR_FOLLOW=Object.freeze({gap:4.4,speed:2.2,acceleration:2.4,deadZone:.7});
+export function rearPosition(front,opponent){const dx=front.x-opponent.x,dz=front.z-opponent.z,n=Math.hypot(dx,dz)||1;return {x:front.x+dx/n*REAR_FOLLOW.gap,z:front.z+dz/n*REAR_FOLLOW.gap};}
+export function rearDestination(actor,front,opponent,others=[]){const target=rearPosition(front,opponent);for(let pass=0;pass<5;pass++)for(const other of [front,opponent,...others]){if(other===actor||other.hp<=0||other.fled)continue;const dx=target.x-other.x,dz=target.z-other.z,n=Math.hypot(dx,dz),gap=other.radius===0?3.5:3.8;if(n<gap){const angle=n>.001?Math.atan2(dz,dx):actor.team==='ally'?Math.PI:0;target.x=other.x+Math.cos(angle)*gap;target.z=other.z+Math.sin(angle)*gap;}}return target;}
+export function followRear(actor,front,opponent,dt,others=[]){const next=rearDestination(actor,front,opponent,others),old=actor.rearGoal;if(!old||Math.hypot(next.x-old.x,next.z-old.z)>1)actor.rearGoal=next;const target=actor.rearGoal,dx=target.x-actor.x,dz=target.z-actor.z,n=Math.hypot(dx,dz);actor.following=n>REAR_FOLLOW.deadZone;const desired=actor.following?Math.min(REAR_FOLLOW.speed,Math.max(.35,(n-REAR_FOLLOW.deadZone)*.8)):0;actor.rearSpeed=(actor.rearSpeed||0)+Math.max(-REAR_FOLLOW.acceleration*dt,Math.min(REAR_FOLLOW.acceleration*dt,desired-(actor.rearSpeed||0)));if(n<.001)return;const step=Math.min(n,actor.rearSpeed*dt);actor.x+=dx/n*step;actor.z+=dz/n*step;actor.walk+=step*4.7;}
