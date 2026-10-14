@@ -1,3 +1,4 @@
+import {GUARDIAN_TIMING} from './guardian.js?v=gauntlet2';
 import {smooth,lerp} from './config.js';
 import {phase} from './attack-phase.js';
 import {yawTo} from './target.js';
@@ -17,6 +18,4 @@ function pairPoses(game){
 }
 
 export function poses(game){const v=pairPoses(game);v.actors=Object.fromEntries(game.actors.map(a=>[a.id,a.state==='dead'?{...a,time:Math.max(.5,a.time)}:a]));v.actors.player=v.player;v.actors[game.enemy.id]=v.enemy;v.actors['enemy-b']={...v.actors['enemy-b'],fled:!!game.support.fled};
- const g=game.guardian;if(g){const t=smooth(g.time/.1),l={...game.lord,time:g.time};if(game.stageId!=='early'){l.x=lerp(g.origin.x,g.end.x,t);l.z=lerp(g.origin.z,g.end.z,t);l.state=g.time<.1?'dash':g.received?g.survived?g.countered?'counter':'hurt':'dead':'guard';}else l.state=g.received?g.survived?g.countered?'counter':'hurt':'dead':'guard';v.actors.lord=l;
-  for(const [id,k]of Object.entries(g.knockbacks||{})){const t=smooth((g.time-.34)/.14);v.actors[id]={...v.actors[id],x:lerp(k.origin.x,k.end.x,t),z:lerp(k.origin.z,k.end.z,t)};}v.enemy=v.actors[game.enemy.id];
- }return v;}
+ const g=game.guardian;if(g){v.actors.lord={...game.lord,time:Math.max(0,g.time-(g.received?GUARDIAN_TIMING.damage:0)),state:g.time<GUARDIAN_TIMING.arrival?'dash':g.received?'dead':'guard'};v.enemy=v.actors[game.enemy.id];}return v;}

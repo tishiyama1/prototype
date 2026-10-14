@@ -19,6 +19,7 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: '24'
+      - run: node tests/forest-action-gauntlet/motion.mjs
       - run: node tests/forest-action-gauntlet/logic.mjs
       - run: node tests/forest-action-gauntlet/balance.mjs
       - name: Check protected combat and journey modes

@@ -1,7 +1,7 @@
 import {Fighter} from './companion.js';
 import {distance,yawTo,relativeMove} from './target.js';
 import {closestTarget} from './team-space.js';
-import {LORD_RULES as R,normalLordDamage} from './progression.js?v=gauntlet1';
+import {LORD_RULES as R,normalLordDamage} from './progression.js?v=gauntlet2';
 export class RangedLord extends Fighter{
  constructor(stage){super('lord','ダンジョンの主','ally',-4.1,-1.5,stage.lordHP,'companion',.76);this.stage=stage;this.visualScale=stage.lordScale;this.intent='cast';this.setState('orbit',.35);}
  receive(raw){if(this.hp<=0||this.invulnerable>0)return false;const amount=normalLordDamage(raw,this.stage);this.lastIncoming=amount;const actual=Math.min(this.hp,amount);this.hp-=actual;this.damageTaken+=actual;this.invulnerable=.13;this.setState(this.hp>0?'hurt':'dead',this.hp>0?.28:Infinity);return true;}

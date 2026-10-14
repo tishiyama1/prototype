@@ -1,7 +1,7 @@
 import {journeyContext,postureInfo} from './journey-context.js';
-import {Game as Duel} from './duel-base.js?v=gauntlet1';
+import {Game as Duel} from './duel-base.js?v=gauntlet2';
 import {Fighter} from './companion.js';
-import {RangedLord} from './ranged-lord.js?v=gauntlet1';
+import {RangedLord} from './ranged-lord.js?v=gauntlet2';
 import {Support} from './support.js';
 import {TeamTarget} from './team-target.js';
 import {separateTeam,closestTarget,segmentDistance} from './team-space.js';
@@ -10,8 +10,8 @@ import {capture,resolve} from './combat.js';
 import {assess} from './assessment.js';
 import {createTimeline} from './attack-phase.js';
 import {config,moves} from './config.js';
-import {STAGES,stageOf,LORD_RULES as R} from './progression.js?v=gauntlet1';
-import {beginGuardian,tickGuardian} from './guardian.js';
+import {STAGES,stageOf,LORD_RULES as R} from './progression.js?v=gauntlet2';
+import {beginGuardian,tickGuardian} from './guardian.js?v=gauntlet2';
 export class Game extends Duel{
  reset(playing=true){super.reset(playing);this.stageId=stageOf(this.stageId);this.stage=STAGES[this.stageId];Object.assign(this.player,{id:'player',name:'冒険者',team:'ally',role:'player',radius:.6,x:-4,z:1.2,hp:this.stage.heroHP,maxHP:this.stage.heroHP});this.lord=new RangedLord(this.stage);this.front=new Fighter('enemy-a','牙の前衛','enemy',2.2,-1.1,120,'front');this.support=new Support();this.allies=[this.player,this.lord];this.enemies=[this.front,this.support];this.actors=[...this.allies,...this.enemies];this.targets=new TeamTarget(this.enemies);this.enemy=this.targets.active;this.player.focusId=this.enemy.id;this.targets.face(this.player);this.projectiles=[];this.swords=[];this.nextBolt=0;this.pendingTarget=null;this.dashTarget=null;this.lastTargetId=null;this.guardian=null;this.lastGuardian=null;this.damageSource=null;this.debugRun=false;this.stats={lordAttacks:0,lordHits:0,lordDamage:0,lordStops:0,enemyShots:0,sacrifices:0,sacrificeDamage:0,heroDamage:0};
   const damage=this.player.damage.bind(this.player);this.player.damage=amount=>{if(this.player.hp<=0||this.player.invincible||this.player.invulnerable>0||this.guardian)return false;if(amount>=this.player.hp)return beginGuardian(this,amount,this.damageSource);return damage(amount);};

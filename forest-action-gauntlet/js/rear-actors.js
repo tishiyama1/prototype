@@ -1,11 +1,11 @@
-import {RangedLord} from './ranged-lord.js?v=gauntlet1';
+import {RangedLord} from './ranged-lord.js?v=gauntlet2';
 import {Fighter} from './companion.js';
 import {yawTo} from './target.js';
-import {followRear} from './rear-follow.js?v=gauntlet1';
+import {followRear} from './rear-follow.js?v=gauntlet2';
 export const REAR_POSTS=Object.freeze({lord:Object.freeze({x:-8,z:-4.6}),support:Object.freeze({x:8,z:-4.6})});
 export class RearLord extends RangedLord{
  constructor(stage){super(stage);Object.assign(this,REAR_POSTS.lord);this.role='ally-rear';this.radius=0;this.setState('wary',.65);this.focusId='enemy-a';}
- update(dt,game){this.time+=dt;this.invulnerable=Math.max(0,this.invulnerable-dt);if(this.hp<=0)return;followRear(this,game.player,game.front,dt);const target=game.front;this.yaw=yawTo(this,target);this.focusId=target.id;this.intent='support';
+ update(dt,game){this.time+=dt;this.invulnerable=Math.max(0,this.invulnerable-dt);if(this.hp<=0)return;followRear(this,game.player,game.front,dt,[game.support]);const target=game.front;this.yaw=yawTo(this,target);this.focusId=target.id;this.intent='support';
   // Follow our own front fighter, while keeping the shared ranged cast clock.
   if(['hurt','stagger'].includes(this.state)){if(this.remaining<=0)this.setState('wary',.35);return;}
   if(this.state==='wary'&&this.remaining<=0)this.setState('windup',.55);
@@ -17,7 +17,7 @@ export class RearLord extends RangedLord{
 export class RearSupport extends Fighter{
  constructor(){super('enemy-b','敵の援護役','enemy',REAR_POSTS.support.x,REAR_POSTS.support.z,75,'enemy-rear',0);this.setState('wary',3.5);this.intent='support';this.focusId='player';this.volley=0;this.telegraph=null;}
  damage(){return false;}
- update(dt,target,game){if(this.hp<=0)return;this.time+=dt;followRear(this,game.front,game.player,dt);this.yaw=yawTo(this,this.telegraph||target);if(this.telegraph)this.aim={x:Math.cos(this.yaw),z:-Math.sin(this.yaw)};
+ update(dt,target,game){if(this.hp<=0)return;this.time+=dt;followRear(this,game.front,game.player,dt,[game.lord]);this.yaw=yawTo(this,this.telegraph||target);if(this.telegraph)this.aim={x:Math.cos(this.yaw),z:-Math.sin(this.yaw)};
   if(this.state==='wary'&&this.remaining<=0){this.volley++;this.intent='ranged';
    if(this.intent==='ranged'){this.aim={x:Math.cos(this.yaw),z:-Math.sin(this.yaw)};this.telegraph={x:target.x,z:target.z};this.setState('windup',1.10);game.events.push({type:'rear-warning'});}
    else this.setState('guard',.60);
