@@ -41,6 +41,7 @@ jobs:
           FOREST_QA_OUTPUT: ${{ github.workspace }}/dungeon-lord/forest-action-duo/media/validation-local
         run: node tests/forest-action-duo/ci.cjs
       - name: Public Pages forest and cave browser tests
+        if: github.ref == 'refs/heads/main'
         env:
           NODE_PATH: ${{ runner.temp }}/forest-duo-tools/node_modules
           FOREST_ENV_BASE: https://tishiyama1.github.io/prototype/dungeon-lord/
@@ -53,6 +54,7 @@ jobs:
           path: dungeon-lord/forest-action-duo/media/validation-*/
           compression-level: 0
       - name: Export verified public screenshot bytes
+        if: github.ref == 'refs/heads/main'
         run: |
           node - <<'NODE'
           const fs=require('fs'),crypto=require('crypto');
