@@ -1,0 +1,64 @@
+{
+  "commit": "debdcac051a8ddb14cc1b41f088760b4e38903f6",
+  "files": {
+    "forest-action/style.css": "48231054bb589f9b8bb1c35adb2fbb4bbbd339a237f2201e2e1bee7d865c011a",
+    "forest-action/README.md": "e89604bd7905da80e2d3ef347517f2ff85cf68aea277c693d937213b943cdee8",
+    "forest-action/index.html": "53ed8860209350adf89f6b98b25bd55c27a90fda7bdcec3caf0c0619dc86f77d",
+    "forest-action/VALIDATION.md": "2c0e8e25720e0346f291bbb4f884c588b10285c0bf68b4ba3a6ff8fc12dfa4e8",
+    "forest-action/media/card-phase-normal.png": "b92cdef30731fa75615b6094d8ea37eab1f0f16e97c58d394956382cdf21d5f7",
+    "forest-action/js/assessment.js": "c28de779e6bc4a1f5dd3d3c170bfd1c7a5a143edc4af7acc1528e555d5bed041",
+    "forest-action/js/camera.js": "43b308ec676ffb17429b314b5f3d2f7bf4ff228657508ebb10ccba1fe0049f30",
+    "forest-action/js/game.js": "76aa1c74546d3366adef4dcae2dbd0822e324fc778e1aaff24789c2bd62626e4",
+    "forest-action/js/input.js": "b547baafe284d5ff1ad3cad08f33248b276e891100e57c2f9b5260f0a520f2d3",
+    "forest-action/js/audio.js": "9f963b011234bf04e59be09c7e6560519c04d43303e19d19ade04384bd74f316",
+    "forest-action/js/cards.js": "8e532d3739adcf8e8d033af3b2bafa31192bc1e556abb1bc0af217b8437df323",
+    "forest-action/js/effects.js": "5fb4e0150fe9ba90071ce63ad1ce834eb41b73b1dcea79c711e25319fbdf6a6e",
+    "forest-action/js/forest.js": "88cdcc011cd42e508e5d915e6cc690f68d461e83a10d9cf1eccd43e5c81706d0",
+    "forest-action/js/presentation.js": "32ea429e8a0da6db7070337d4c899da3274abd0dab9385f339a3fbbcb9841b3f",
+    "forest-action/js/enemy.js": "360cc896fc560bfe46a15eea9f0c0c10ea58b76a4fc31227c01c2bc67a4ec38f",
+    "forest-action/js/ui.js": "a79fa194c5263beb9c34857f3855f690411320e4f3b6acc8797ac718c381883c",
+    "forest-action/js/combat.js": "9145dc0a67bf528f579286a0edcfd93c6c77f4533fd62c34c0e1dd91ecde882a",
+    "forest-action/js/player.js": "5ff08533bfab2f80b978aa447bf340685e73a5e40d935cc2d86c3a418aadde70",
+    "forest-action/js/main.js": "c3c753c33036972f836cd68808724821d6d4816807733e0f7a4e50ac1990fc77",
+    "forest-action/js/config.js": "ef9674696629f09163a1b7cf298690ec63c04dee63a21731d5e6bececd6873fe",
+    "forest-action/js/character.js": "8178bef2967c63cd1400d3911c51826b8282e5dfb4d1c58c80238955acbc2a0e",
+    "forest-action/js/target.js": "1027cf90c2816700c46ae9292f346c3445a5b77512d9fdafde876af551cc1079",
+    "forest-action/js/attack-phase.js": "8c7d939d6312765f61ca8462dbce2d32c738b93c0f5833f35883306200efa218",
+    "../index.html": "388db581f838da450b4f9f48570cfa47b4911bc14e6086a828b1f6e819db1f07",
+    "../chigai.html": "088bf3a6a0b2de7c1b79be94faa529143a7f714a90d126d0e78616c30fb15dbd",
+    "../bingo.html": "550d724b36a1f7f3827fb7620af3b90dfd7f780f462ac235272005d0f6c959df",
+    "../karesansui.html": "396a3abaa85c93af86e281ba1969bc62a41cbea6eb449a1e94f20fd9b62f7ee4",
+    "../rakujan.html": "627c76a71a15f37d5e3eb6377d95f408535238e319703b886a1f065128794023",
+    "../mebae.html": "358a152daf1059496ce89eaea83a641cb6850ad6265b111d74a25ae9950cf22d",
+    "../engi.html": "8516a39c598e6d2b5540bea4b93c0b62644dc8192af4f7ba9b80fa93bb777c32",
+    "../kata.html": "e04703a3387e8fa96b7e3fb400c0a2b1887d7ed8d89aac3aad7f4129d0ca7308",
+    "../abyss.html": "9b2eb49d364b5e5e16ff6c6bce237f79069dbeaccdd6f54aed875a240701e759",
+    "../galaxy.html": "83375e98d8ff4c1647e27d205a6a2a3b6225e001fd5ad1580039db9af3f2366b",
+    "../doubutsu.html": "3f2aa3b7274237fd683e1aa5f07accee4c2c4d6e87b7a2e8208ad8604fd86b58",
+    "../snake.html": "1f93a45722b591439cba69f24c2a06705a614a2d5f2a88bc9562ec2b7ae4138c",
+    "../hakaba.html": "0b1a92ccb68ceb8a96ec2f3cc709ec492e1cc13170bd8d8f7554fcc6e2a792fc",
+    "../hyoryu.html": "adc319d19b3eb639c5723dc962ce51bfe86d9d83bc620a6bad70ddd74d747c45",
+    "../mahjong.html": "9f5ece6751a96e1dbb8ba0eacf91c000e7688dab137be2a4e8732a01b1b9c778",
+    "../terra.html": "f0c74929472ce73a883be2245226246e27ee378c703fb20976148f79f0c85af8"
+  },
+  "layoutMigration": {
+    "reason": "Move Forest Action into dungeon-lord; update navigation/docs and nested historical baseline paths. Runtime JS and media preserved.",
+    "updatedReferences": [
+      {
+        "path": "forest-action/README.md",
+        "previousSha256": "eab9a8f5506093a48be1f047acfc4d8ea6b66992f6520a9943378519471b039a",
+        "sha256": "e89604bd7905da80e2d3ef347517f2ff85cf68aea277c693d937213b943cdee8"
+      },
+      {
+        "path": "forest-action/VALIDATION.md",
+        "previousSha256": "7172d416725abca4329395518251f23be9a204eeffbac4e43868783ddf874c33",
+        "sha256": "2c0e8e25720e0346f291bbb4f884c588b10285c0bf68b4ba3a6ff8fc12dfa4e8"
+      },
+      {
+        "path": "../index.html",
+        "previousSha256": "641401ddaaa056535b2cb08062a1a28c79bcbef7d79ac30caa82ff75b3923a70",
+        "sha256": "388db581f838da450b4f9f48570cfa47b4911bc14e6086a828b1f6e819db1f07"
+      }
+    ]
+  }
+}

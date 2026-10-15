@@ -1,0 +1,164 @@
+[
+  {
+    "source": "/dungeon-lord-journey/battle/",
+    "target": "/dungeon-lord/dungeon-lord-journey/battle/",
+    "file": "redirects/dungeon-lord-journey--battle--index.html",
+    "relative": "../../dungeon-lord/dungeon-lord-journey/battle/"
+  },
+  {
+    "source": "/dungeon-lord-journey/",
+    "target": "/dungeon-lord/dungeon-lord-journey/",
+    "file": "redirects/dungeon-lord-journey--index.html",
+    "relative": "../dungeon-lord/dungeon-lord-journey/"
+  },
+  {
+    "source": "/forest-action-card-impact/",
+    "target": "/dungeon-lord/forest-action-card-impact/",
+    "file": "redirects/forest-action-card-impact--index.html",
+    "relative": "../dungeon-lord/forest-action-card-impact/"
+  },
+  {
+    "source": "/forest-action-card-impact/preview.html",
+    "target": "/dungeon-lord/forest-action-card-impact/preview.html",
+    "file": "redirects/forest-action-card-impact--preview.html",
+    "relative": "../dungeon-lord/forest-action-card-impact/preview.html"
+  },
+  {
+    "source": "/forest-action-cave-environment/comparison.html",
+    "target": "/dungeon-lord/forest-action-cave-environment/comparison.html",
+    "file": "redirects/forest-action-cave-environment--comparison.html",
+    "relative": "../dungeon-lord/forest-action-cave-environment/comparison.html"
+  },
+  {
+    "source": "/forest-action-cave-environment/",
+    "target": "/dungeon-lord/forest-action-cave-environment/",
+    "file": "redirects/forest-action-cave-environment--index.html",
+    "relative": "../dungeon-lord/forest-action-cave-environment/"
+  },
+  {
+    "source": "/forest-action-cave-refined/comparison.html",
+    "target": "/dungeon-lord/forest-action-cave-refined/comparison.html",
+    "file": "redirects/forest-action-cave-refined--comparison.html",
+    "relative": "../dungeon-lord/forest-action-cave-refined/comparison.html"
+  },
+  {
+    "source": "/forest-action-cave-refined/",
+    "target": "/dungeon-lord/forest-action-cave-refined/",
+    "file": "redirects/forest-action-cave-refined--index.html",
+    "relative": "../dungeon-lord/forest-action-cave-refined/"
+  },
+  {
+    "source": "/forest-action-cave/comparison.html",
+    "target": "/dungeon-lord/forest-action-cave/comparison.html",
+    "file": "redirects/forest-action-cave--comparison.html",
+    "relative": "../dungeon-lord/forest-action-cave/comparison.html"
+  },
+  {
+    "source": "/forest-action-cave/",
+    "target": "/dungeon-lord/forest-action-cave/",
+    "file": "redirects/forest-action-cave--index.html",
+    "relative": "../dungeon-lord/forest-action-cave/"
+  },
+  {
+    "source": "/forest-action-diorama-pixel/comparison.html",
+    "target": "/dungeon-lord/forest-action-diorama-pixel/comparison.html",
+    "file": "redirects/forest-action-diorama-pixel--comparison.html",
+    "relative": "../dungeon-lord/forest-action-diorama-pixel/comparison.html"
+  },
+  {
+    "source": "/forest-action-diorama-pixel/",
+    "target": "/dungeon-lord/forest-action-diorama-pixel/",
+    "file": "redirects/forest-action-diorama-pixel--index.html",
+    "relative": "../dungeon-lord/forest-action-diorama-pixel/"
+  },
+  {
+    "source": "/forest-action-diorama/comparison.html",
+    "target": "/dungeon-lord/forest-action-diorama/comparison.html",
+    "file": "redirects/forest-action-diorama--comparison.html",
+    "relative": "../dungeon-lord/forest-action-diorama/comparison.html"
+  },
+  {
+    "source": "/forest-action-diorama/",
+    "target": "/dungeon-lord/forest-action-diorama/",
+    "file": "redirects/forest-action-diorama--index.html",
+    "relative": "../dungeon-lord/forest-action-diorama/"
+  },
+  {
+    "source": "/forest-action-duo/",
+    "target": "/dungeon-lord/forest-action-duo/",
+    "file": "redirects/forest-action-duo--index.html",
+    "relative": "../dungeon-lord/forest-action-duo/"
+  },
+  {
+    "source": "/forest-action-forest-environment/comparison.html",
+    "target": "/dungeon-lord/forest-action-forest-environment/comparison.html",
+    "file": "redirects/forest-action-forest-environment--comparison.html",
+    "relative": "../dungeon-lord/forest-action-forest-environment/comparison.html"
+  },
+  {
+    "source": "/forest-action-forest-environment/",
+    "target": "/dungeon-lord/forest-action-forest-environment/",
+    "file": "redirects/forest-action-forest-environment--index.html",
+    "relative": "../dungeon-lord/forest-action-forest-environment/"
+  },
+  {
+    "source": "/forest-action-forest-refined/comparison.html",
+    "target": "/dungeon-lord/forest-action-forest-refined/comparison.html",
+    "file": "redirects/forest-action-forest-refined--comparison.html",
+    "relative": "../dungeon-lord/forest-action-forest-refined/comparison.html"
+  },
+  {
+    "source": "/forest-action-forest-refined/",
+    "target": "/dungeon-lord/forest-action-forest-refined/",
+    "file": "redirects/forest-action-forest-refined--index.html",
+    "relative": "../dungeon-lord/forest-action-forest-refined/"
+  },
+  {
+    "source": "/forest-action-frontline/",
+    "target": "/dungeon-lord/forest-action-frontline/",
+    "file": "redirects/forest-action-frontline--index.html",
+    "relative": "../dungeon-lord/forest-action-frontline/"
+  },
+  {
+    "source": "/forest-action-gauntlet/",
+    "target": "/dungeon-lord/forest-action-gauntlet/",
+    "file": "redirects/forest-action-gauntlet--index.html",
+    "relative": "../dungeon-lord/forest-action-gauntlet/"
+  },
+  {
+    "source": "/forest-action-growth/",
+    "target": "/dungeon-lord/forest-action-growth/",
+    "file": "redirects/forest-action-growth--index.html",
+    "relative": "../dungeon-lord/forest-action-growth/"
+  },
+  {
+    "source": "/forest-action-layered/comparison.html",
+    "target": "/dungeon-lord/forest-action-layered/comparison.html",
+    "file": "redirects/forest-action-layered--comparison.html",
+    "relative": "../dungeon-lord/forest-action-layered/comparison.html"
+  },
+  {
+    "source": "/forest-action-layered/",
+    "target": "/dungeon-lord/forest-action-layered/",
+    "file": "redirects/forest-action-layered--index.html",
+    "relative": "../dungeon-lord/forest-action-layered/"
+  },
+  {
+    "source": "/forest-action-pixel/comparison.html",
+    "target": "/dungeon-lord/forest-action-pixel/comparison.html",
+    "file": "redirects/forest-action-pixel--comparison.html",
+    "relative": "../dungeon-lord/forest-action-pixel/comparison.html"
+  },
+  {
+    "source": "/forest-action-pixel/",
+    "target": "/dungeon-lord/forest-action-pixel/",
+    "file": "redirects/forest-action-pixel--index.html",
+    "relative": "../dungeon-lord/forest-action-pixel/"
+  },
+  {
+    "source": "/forest-action/",
+    "target": "/dungeon-lord/forest-action/",
+    "file": "redirects/forest-action--index.html",
+    "relative": "../dungeon-lord/forest-action/"
+  }
+]
