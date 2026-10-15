@@ -3,14 +3,17 @@ on:
   workflow_dispatch:
   push:
     paths:
-      - 'forest-action-duo/js/**'
-      - 'forest-action-duo/index.html'
-      - 'forest-action-duo/*.css'
-      - 'tests/forest-action-duo/**'
+      - 'dungeon-lord/forest-action-duo/js/**'
+      - 'dungeon-lord/forest-action-duo/index.html'
+      - 'dungeon-lord/forest-action-duo/*.css'
+      - 'dungeon-lord/tests/forest-action-duo/**'
       - '.github/workflows/forest-action-duo-validation.yml'
 concurrency:
   group: forest-action-duo-validation
   cancel-in-progress: true
+defaults:
+  run:
+    working-directory: dungeon-lord
 permissions:
   contents: read
 jobs:
@@ -35,19 +38,19 @@ jobs:
       - name: Local forest and cave browser tests
         env:
           NODE_PATH: ${{ runner.temp }}/forest-duo-tools/node_modules
-          FOREST_QA_OUTPUT: ${{ github.workspace }}/forest-action-duo/media/validation-local
+          FOREST_QA_OUTPUT: ${{ github.workspace }}/dungeon-lord/forest-action-duo/media/validation-local
         run: node tests/forest-action-duo/ci.cjs
       - name: Public Pages forest and cave browser tests
         env:
           NODE_PATH: ${{ runner.temp }}/forest-duo-tools/node_modules
-          FOREST_ENV_BASE: https://tishiyama1.github.io/prototype/
-          FOREST_QA_OUTPUT: ${{ github.workspace }}/forest-action-duo/media/validation-public
+          FOREST_ENV_BASE: https://tishiyama1.github.io/prototype/dungeon-lord/
+          FOREST_QA_OUTPUT: ${{ github.workspace }}/dungeon-lord/forest-action-duo/media/validation-public
         run: node tests/forest-action-duo/ci.cjs
       - uses: actions/upload-artifact@v4
         if: always()
         with:
           name: forest-action-duo-browser-evidence
-          path: forest-action-duo/media/validation-*/
+          path: dungeon-lord/forest-action-duo/media/validation-*/
           compression-level: 0
       - name: Export verified public screenshot bytes
         run: |

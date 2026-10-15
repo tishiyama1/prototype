@@ -1,0 +1,30 @@
+name: Dungeon Lord folder and Pages compatibility
+on:
+  pull_request:
+    paths: ['dungeon-lord/**', '.github/workflows/dungeon-lord-layout-validation.yml']
+  push:
+    branches: [main]
+    paths: ['dungeon-lord/**', '.github/workflows/dungeon-lord-layout-validation.yml']
+permissions:
+  contents: read
+jobs:
+  layout:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - name: Check layout and relative references
+        working-directory: dungeon-lord
+        run: node tests/layout.mjs
+      - name: Build actual GitHub Pages output
+        uses: actions/jekyll-build-pages@v1
+        with:
+          source: ./
+          destination: ./_site
+      - name: Check all legacy redirects after Jekyll
+        working-directory: dungeon-lord
+        run: node tests/layout.mjs ../_site

@@ -2,10 +2,13 @@ name: Forest Action 10-battle validation
 on:
   workflow_dispatch:
   pull_request:
-    paths: ['forest-action-gauntlet/**', 'tests/forest-action-gauntlet/**', '.github/workflows/forest-action-gauntlet-validation.yml']
+    paths: ['dungeon-lord/forest-action-gauntlet/**', 'dungeon-lord/tests/forest-action-gauntlet/**', '.github/workflows/forest-action-gauntlet-validation.yml']
   push:
     branches: [main]
-    paths: ['forest-action-gauntlet/**', 'tests/forest-action-gauntlet/**', '.github/workflows/forest-action-gauntlet-validation.yml']
+    paths: ['dungeon-lord/forest-action-gauntlet/**', 'dungeon-lord/tests/forest-action-gauntlet/**', '.github/workflows/forest-action-gauntlet-validation.yml']
+defaults:
+  run:
+    working-directory: dungeon-lord
 permissions:
   contents: read
 jobs:
